@@ -1,6 +1,6 @@
 ### Kafka with Docker
 
-Uses confluentinc images
+Uses `confluentinc` images
 
 ### Usage
 
