@@ -2,7 +2,7 @@
 
 Uses `confluentinc` images
 
-### Usage
+### Single Zookeeper and Kafka
 
 ```bash
 $ docker-compose -f single-zookeeper-and-kafka.yml up
@@ -19,6 +19,32 @@ CONTAINER ID        IMAGE                             COMMAND                  C
 ```bash
 $ docker-compose -f single-zookeeper-and-kafka.yml down
 ```
+
+
+### Landoop fast-data-dev
+
+Increase you Docker memory to 4 GB (at least).
+
+```bash
+$ docker-compose -f landoop-kafka-cluster.yml up
+```
+
+Open in browser
+http://localhost:3030/
+
+```bash
+$ docker-compose -f landoop-kafka-cluster.yml down
+```
+
+#### Insomnia
+
+Great HTTP client:
+https://insomnia.rest/
+
+```bash
+$ brew cask install insomnia
+```
+
 
 ### Resources:
 
