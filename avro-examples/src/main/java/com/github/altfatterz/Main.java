@@ -4,8 +4,6 @@ import com.github.altfatterz.avro.Account;
 import com.github.altfatterz.avro.AccountType;
 import com.github.altfatterz.avro.Customer;
 
-import java.time.LocalDate;
-
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -15,7 +13,6 @@ public class Main {
         Customer customer = Customer.newBuilder()
                 .setFirstName("John")
                 .setLastName("Doe")
-                .setBirthDate(LocalDate.of(1960, 10, 10).toEpochDay())
                 .setAccounts(Arrays.asList(
                         Account.newBuilder()
                                 .setIban("CH93 0076 2011 6238 5295 7")

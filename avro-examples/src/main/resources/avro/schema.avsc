@@ -40,10 +40,6 @@
         "doc": "the last name of the customer"
       },
       {
-        "name": "birth_date",
-        "type": "long"
-      },
-      {
         "name": "accounts",
         "type": {
           "type": "array",
