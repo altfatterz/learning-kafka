@@ -1,0 +1,20 @@
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "accounts": [
+    {
+      "iban": "CH93 0076 2011 6238 5295 7",
+      "type": "CHECKING"
+    },
+    {
+      "iban": "CH93 0076 2011 6238 5295 8",
+      "type": "SAVING"
+    }
+  ],
+  "settings": {
+    "e-billing-enabled": true,
+    "push-notification-enabled": false
+  },
+  "signup_timestamp": 1577482241093,
+  "phone_number": null
+}

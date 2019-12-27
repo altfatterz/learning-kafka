@@ -1,73 +1,67 @@
-[
-  {
-    "namespace": "com.github.altfatterz.avro",
-    "name": "AccountType",
-    "type": "enum",
-    "symbols": [
-      "SAVING",
-      "CHECKING",
-      "JOINT"
-    ]
-  },
-  {
-    "namespace": "com.github.altfatterz.avro",
-    "name": "Account",
-    "type": "record",
-    "fields": [
-      {
-        "name": "iban",
-        "type": "string"
-      },
-      {
-        "name": "type",
-        "type": "AccountType"
-      }
-    ]
-  },
-  {
-    "namespace": "com.github.altfatterz.avro",
-    "name": "Customer",
-    "type": "record",
-    "fields": [
-      {
-        "name": "first_name",
-        "type": "string",
-        "doc": "the first name of the customer"
-      },
-      {
-        "name": "last_name",
-        "type": "string",
-        "doc": "the last name of the customer"
-      },
-      {
-        "name": "accounts",
-        "type": {
-          "type": "array",
-          "items": "Account"
+{
+  "namespace": "com.github.altfatterz.avro",
+  "name": "Customer",
+  "type": "record",
+  "fields": [
+    {
+      "name": "first_name",
+      "type": "string",
+      "doc": "the first name of the customer"
+    },
+    {
+      "name": "last_name",
+      "type": "string",
+      "doc": "the last name of the customer"
+    },
+    {
+      "name": "accounts",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "Account",
+          "type": "record",
+          "fields": [
+            {
+              "name": "iban",
+              "type": "string"
+            },
+            {
+              "name": "type",
+              "type": {
+                "name": "AccountType",
+                "type": "enum",
+                "symbols": [
+                  "SAVING",
+                  "CHECKING",
+                  "JOINT"
+                ]
+              }
+            }
+          ]
         }
-      },
-      {
-        "name": "settings",
-        "type": {
-          "type": "map",
-          "values": "boolean"
-        }
-      },
-      {
-        "name": "signup_timestamp",
-        "doc": "Customer Signup Timestamp",
-        "type": "long",
-        "logicalType": "timestamp-millis"
-      },
-      {
-        "name": "phone_number",
-        "type": [
-          "null",
-          "string"
-        ],
-        "default": null,
-        "doc": "the phone number of the customer"
       }
-    ]
-  }
-]
+    },
+    {
+      "name": "settings",
+      "type": {
+        "type": "map",
+        "values": "boolean"
+      }
+    },
+    {
+      "name": "signup_timestamp",
+      "doc": "Customer Signup Timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis"
+    },
+    {
+      "name": "phone_number",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "doc": "the phone number of the customer"
+    }
+  ]
+}
