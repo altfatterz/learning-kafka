@@ -24,6 +24,18 @@
       }
     ]
   },
+    {
+      "namespace": "com.github.altfatterz.avro",
+      "name": "Accounts",
+      "type": "array",
+      "items": "com.github.altfatterz.avro.Account"
+    },
+  {
+    "namespace": "com.github.altfatterz.avro",
+    "name": "CustomerSettings",
+    "type": "map",
+    "values": "boolean"
+  },
   {
     "namespace": "com.github.altfatterz.avro",
     "name": "Customer",
