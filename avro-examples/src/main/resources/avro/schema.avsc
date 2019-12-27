@@ -1,12 +1,27 @@
 [
   {
     "namespace": "com.github.altfatterz.avro",
-    "name": "CustomerStatus",
+    "name": "AccountType",
     "type": "enum",
     "symbols": [
-      "GOLD",
-      "SILVER",
-      "BRONZE"
+      "SAVING",
+      "CHECKING",
+      "JOINT"
+    ]
+  },
+  {
+    "namespace": "com.github.altfatterz.avro",
+    "name": "Account",
+    "type": "record",
+    "fields": [
+      {
+        "name": "iban",
+        "type": "string"
+      },
+      {
+        "name": "type",
+        "type": "AccountType"
+      }
     ]
   },
   {
@@ -30,8 +45,8 @@
         "doc": "the birth date of the customer"
       },
       {
-        "name": "customer_status",
-        "type": "CustomerStatus"
+        "name": "account",
+        "type": "Account"
       },
       {
         "name": "phone_number",

@@ -1,5 +1,7 @@
 package com.github.altfatterz;
 
+import com.github.altfatterz.avro.Account;
+import com.github.altfatterz.avro.AccountType;
 import com.github.altfatterz.avro.Customer;
 import com.github.altfatterz.avro.CustomerStatus;
 
@@ -13,7 +15,8 @@ public class Main {
         Customer.Builder builder = Customer.newBuilder();
 
         builder.setBirthDate(LocalDate.now().toEpochDay());
-        builder.setCustomerStatus(CustomerStatus.GOLD);
+//        builder.setCustomerStatus(CustomerStatus.GOLD);
+
 
     }
 }
