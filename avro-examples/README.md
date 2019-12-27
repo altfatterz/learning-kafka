@@ -10,3 +10,7 @@ $ avro-tools tojson --pretty customer.avro
 $ avro-tools getschema customer.avro
 ```
 
+
+
+Avro Specification:
+http://avro.apache.org/docs/current/spec.html
