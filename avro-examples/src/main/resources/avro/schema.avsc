@@ -24,18 +24,6 @@
       }
     ]
   },
-    {
-      "namespace": "com.github.altfatterz.avro",
-      "name": "Accounts",
-      "type": "array",
-      "items": "com.github.altfatterz.avro.Account"
-    },
-  {
-    "namespace": "com.github.altfatterz.avro",
-    "name": "CustomerSettings",
-    "type": "map",
-    "values": "boolean"
-  },
   {
     "namespace": "com.github.altfatterz.avro",
     "name": "Customer",
@@ -53,12 +41,27 @@
       },
       {
         "name": "birth_date",
-        "type": "long",
-        "doc": "the birth date of the customer"
+        "type": "long"
       },
       {
-        "name": "account",
-        "type": "Account"
+        "name": "accounts",
+        "type": {
+          "type": "array",
+          "items": "Account"
+        }
+      },
+      {
+        "name": "settings",
+        "type": {
+          "type": "map",
+          "values": "boolean"
+        }
+      },
+      {
+        "name": "signup_timestamp",
+        "doc": "Customer Signup Timestamp",
+        "type": "long",
+        "logicalType": "timestamp-millis"
       },
       {
         "name": "phone_number",
