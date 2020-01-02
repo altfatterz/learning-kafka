@@ -3,11 +3,15 @@ package com.github.altfatterz;
 import com.github.altfatterz.avro.Account;
 import com.github.altfatterz.avro.AccountType;
 import com.github.altfatterz.avro.Customer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class Main {
+public class AvroDemo {
+
+    static final Logger logger = LoggerFactory.getLogger(AvroDemo.class);
 
     public static void main(String[] args) {
         Customer customer = Customer.newBuilder()
@@ -30,6 +34,6 @@ public class Main {
                 .setSignupTimestamp(System.currentTimeMillis())
                 .build();
 
-        System.out.println(customer);
+        logger.info("Customer: {}", customer);
     }
 }
