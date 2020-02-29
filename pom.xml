@@ -12,6 +12,7 @@
     <modules>
         <module>kafka-basics</module>
         <module>avro-examples</module>
+        <module>kafka-streams/kafka-streams-getting-started</module>
     </modules>
 
     <build>
