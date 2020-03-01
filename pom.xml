@@ -13,6 +13,7 @@
         <module>kafka-basics</module>
         <module>avro-examples</module>
         <module>kafka-streams/kafka-streams-getting-started</module>
+        <module>kafka-streams/json-payload</module>
     </modules>
 
     <build>
