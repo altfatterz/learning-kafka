@@ -14,6 +14,7 @@
         <module>avro-examples</module>
         <module>kafka-streams/kafka-streams-getting-started</module>
         <module>kafka-streams/json-payload</module>
+        <module>kafka-streams/join-example</module>
     </modules>
 
     <build>
