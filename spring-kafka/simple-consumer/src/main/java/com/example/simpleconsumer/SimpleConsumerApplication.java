@@ -21,8 +21,19 @@ class Consumer {
 
     private final Logger logger = LoggerFactory.getLogger(Consumer.class);
 
-    @KafkaListener(topics = Config.TOPIC)
+    @KafkaListener(groupId = "messages-group", topics = Config.TOPIC)
     public void consume(String message) {
+        if (message.startsWith("fail")) {
+            throw new RuntimeException("failed processing message:" + message);
+        }
         logger.info("Consumed message -> {}", message);
     }
+
+    @KafkaListener(groupId = "messages-dlt-group", topics = Config.TOPIC_DLT)
+    public void dltConsume(String message) {
+        // not sure yet why this is not called
+        logger.info("Received from {} : {}", Config.TOPIC_DLT, message);
+    }
+
+
 }

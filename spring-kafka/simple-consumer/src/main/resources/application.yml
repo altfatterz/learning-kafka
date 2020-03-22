@@ -2,9 +2,9 @@ spring:
   kafka:
     consumer:
       bootstrap-servers: localhost:9092
-      group-id: group-id
+#      group-id: group-id
       # default is `latest`, it is used only when there is no offset information (for example when consumer group was removed)
-      auto-offset-reset: earliest
+#      auto-offset-reset: earliest
 #      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 #      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
