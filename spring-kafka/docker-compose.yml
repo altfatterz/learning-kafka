@@ -14,6 +14,8 @@ services:
     image: confluentinc/cp-kafka:5.4.0
     hostname: kafka
     container_name: kafka
+    depends_on:
+      - zookeeper
     networks:
       - single-zookeeper-and-kafka
     ports:

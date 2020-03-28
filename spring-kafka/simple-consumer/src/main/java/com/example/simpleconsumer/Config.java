@@ -1,6 +1,8 @@
 package com.example.simpleconsumer;
 
 import org.apache.kafka.clients.admin.NewTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +11,7 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.RecordInterceptor;
 import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 
@@ -18,6 +21,8 @@ public class Config {
     public static final String TOPIC = "messages";
 
     public static final String TOPIC_DLT = "messages.DLT";
+
+    private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
     // Spring Boot Apache Kafka Support
     // https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-kafka
@@ -44,10 +49,15 @@ public class Config {
     // By default SeekToCurrentErrorHandler tries 10 times and logs the failed record.
     // Here override the 3 max attempts with 2 second interval and using a recoverer sending it to a dead letter topic.
     @Bean
-    public ConcurrentKafkaListenerContainerFactory kafkaListenerContainerFactory(
+    ConcurrentKafkaListenerContainerFactory<?, ?> kafkaListenerContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
             ConsumerFactory<Object, Object> kafkaConsumerFactory,
-            KafkaTemplate<Object, Object> kafkaTemplate) {
+            KafkaTemplate<?, ?> kafkaTemplate) {
+
+        // KafkaMessageListenerContainer receives all message from all topics or partitions on a single thread.
+        // ConcurrentKafkaListenerContainer delegates to one or more KafkaMessageListenerContainer instances to
+        // provide multi-threaded consumption
+
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, kafkaConsumerFactory);
         factory.setErrorHandler(new SeekToCurrentErrorHandler(
@@ -56,5 +66,16 @@ public class Config {
         return factory;
     }
 
+
+    //  It will be invoked before calling the listener allowing inspection or modification of the record.
+    //  If the interceptor returns null, the listener is not called.
+    @Bean
+    public RecordInterceptor recordInterceptor() {
+        return consumerRecord -> {
+            logger.info("Key: {}, Value: {}", consumerRecord.key(), consumerRecord.value());
+            logger.info("Topic: {}, Partition: {}, Offset: {}", consumerRecord.topic(), consumerRecord.partition(), consumerRecord.offset());
+            return consumerRecord;
+        };
+    }
 
 }

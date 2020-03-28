@@ -70,4 +70,11 @@ $ docker-compose down
 ```
 
 Resources:
-1. .https://www.confluent.io/blog/apache-kafka-spring-boot-application/
+1. Spring for Apache Kafka Deep Dive 
+https://www.confluent.io/blog/apache-kafka-spring-boot-application/
+
+2. Spring Boot Apache Kafka Support
+https://docs.spring.io/spring-boot/docs/2.2.6.RELEASE/reference/htmlsingle/#boot-features-kafka
+
+3. Spring Apache Kafka documentation
+https://docs.spring.io/spring-kafka/reference/html/

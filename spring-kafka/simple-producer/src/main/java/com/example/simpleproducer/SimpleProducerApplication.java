@@ -27,6 +27,6 @@ class Producer {
 
     @PostMapping("/messages")
     public void sendMessage(@RequestBody String message) {
-        kafkaTemplate.send(Config.TOPIC, message);
+        kafkaTemplate.send(Config.TOPIC, message.trim());
     }
 }
