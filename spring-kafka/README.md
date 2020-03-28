@@ -171,6 +171,22 @@ $ docker-compose down
 2020-03-28 12:05:37.637  INFO 90844 --- [container-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : messages-dlt-group: partitions assigned: [messages.DLT-0]
 
 
+------------------------------------------------------------------------------------------------------------------------
+
+Transactions
+
+spring.kafka.producer.transaction-id-prefix=tx.
+
+```bash
+Caused by: java.lang.IllegalStateException: No transaction is in process; possible solutions: 
+- run the template operation within the scope of a template.executeInTransaction() operation,
+- start a transaction with @Transactional before invoking the template method, 
+- run in a transaction started by a listener container when consuming a record
+```
+
+
+
+
 Resources:
 1. Spring for Apache Kafka Deep Dive 
 https://www.confluent.io/blog/apache-kafka-spring-boot-application/
@@ -180,3 +196,9 @@ https://docs.spring.io/spring-boot/docs/2.2.6.RELEASE/reference/htmlsingle/#boot
 
 3. Spring Apache Kafka documentation
 https://docs.spring.io/spring-kafka/reference/html/
+
+4. Spring Boot integration Kafka spring-kafka in-depth exploration
+https://programming.vip/docs/spring-boot-integration-kafka-spring-kafka-in-depth-exploration.html
+
+5. Exactly-once Semantics are Possible: Here’s How Kafka Does it 
+https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/

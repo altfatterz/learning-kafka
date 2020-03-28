@@ -17,6 +17,7 @@
         <module>kafka-streams/join-example</module>
         <module>spring-kafka/simple-producer</module>
         <module>spring-kafka/simple-consumer</module>
+        <module>spring-kafka/transactional-producer</module>
     </modules>
 
     <build>
