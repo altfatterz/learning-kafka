@@ -41,7 +41,10 @@ class Consumer {
 
     private final Logger logger = LoggerFactory.getLogger(Consumer.class);
 
-    @KafkaListener(id = "messages-container", groupId = "messages-group", topics = Config.TOPIC)
+    @KafkaListener(id = "messages-container", groupId = "messages-group", topics = Config.TOPIC, concurrency = "3",
+            clientIdPrefix = "${spring.application.name}")
+//    @KafkaListener(id = "messages-container", groupId = "messages-group", topics = Config.TOPIC, concurrency = "3")
+//    @KafkaListener(id = "messages-container", groupId = "messages-group", topics = Config.TOPIC)
     public void consume(String message) {
         if (message.startsWith("fail")) {
             throw new RuntimeException("failed processing message:" + message);

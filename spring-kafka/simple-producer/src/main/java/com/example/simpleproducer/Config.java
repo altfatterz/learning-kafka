@@ -1,13 +1,9 @@
 package com.example.simpleproducer;
 
 import org.apache.kafka.clients.admin.NewTopic;
-import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 
 @Configuration
 public class Config {
@@ -20,7 +16,7 @@ public class Config {
     @Bean
     public NewTopic topic1() {
         return TopicBuilder.name(TOPIC)
-                .partitions(1)
+                .partitions(6)
                 .replicas(1)
                 .build();
     }

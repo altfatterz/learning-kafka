@@ -27,11 +27,87 @@ group-id
 6. Describe a group 
 
 ```bash
-$ kafka-consumer-groups --bootstrap-server localhost:9092 --group group-id --describe
+$ kafka-consumer-groups --bootstrap-server localhost:9092 --group messages-group --describe
 
 GROUP           TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                     HOST            CLIENT-ID
-group-id        messages        0          2               2               0               consumer-1-d3e99b2f-f4fd-4c9c-a07b-7a84ef002bc1 /172.27.0.1     consumer-1
+messages-group  messages        3          0               0               0               consumer-2-7bb8b80f-2674-4024-9089-d98901db1ee9 /172.20.0.1     consumer-2
+messages-group  messages        2          0               0               0               consumer-2-7bb8b80f-2674-4024-9089-d98901db1ee9 /172.20.0.1     consumer-2
+messages-group  messages        4          0               0               0               consumer-2-7bb8b80f-2674-4024-9089-d98901db1ee9 /172.20.0.1     consumer-2
+messages-group  messages        1          0               0               0               consumer-2-7bb8b80f-2674-4024-9089-d98901db1ee9 /172.20.0.1     consumer-2
+messages-group  messages        5          0               0               0               consumer-2-7bb8b80f-2674-4024-9089-d98901db1ee9 /172.20.0.1     consumer-2
+messages-group  messages        0          0               0               0               consumer-2-7bb8b80f-2674-4024-9089-d98901db1ee9 /172.20.0.1     consumer-2
 ```
+
+```bash
+$ kafka-consumer-groups --bootstrap-server localhost:9092 --group messages-dlt-group --describe
+
+GROUP              TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                     HOST            CLIENT-ID
+messages-dlt-group messages.DLT    0          0               0               0               consumer-1-251eb98f-7fb7-447b-bf70-c6016ce8b2b7 /172.19.0.1     consumer-1
+```
+
+Set the `concurrency` field to 3
+
+
+```bash
+$ kafka-consumer-groups --bootstrap-server localhost:9092 --group messages-group --describe
+
+GROUP           TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                     HOST            CLIENT-ID
+messages-group  messages        4          0               0               0               consumer-4-acabb6ec-fb9b-4335-8942-592dd7893c4a /172.20.0.1     consumer-4
+messages-group  messages        5          0               0               0               consumer-4-acabb6ec-fb9b-4335-8942-592dd7893c4a /172.20.0.1     consumer-4
+messages-group  messages        0          0               0               0               consumer-2-10ff4d3e-5e01-4b4b-83ea-ccaa421301dc /172.20.0.1     consumer-2
+messages-group  messages        1          0               0               0               consumer-2-10ff4d3e-5e01-4b4b-83ea-ccaa421301dc /172.20.0.1     consumer-2
+messages-group  messages        2          0               0               0               consumer-3-068d849d-e31c-468d-ae2f-532418e4d332 /172.20.0.1     consumer-3
+messages-group  messages        3          0               0               0               consumer-3-068d849d-e31c-468d-ae2f-532418e4d332 /172.20.0.1     consumer-3
+```
+
+For the `messages-dlt-group` is still 1 consumer
+
+```bash
+$ kafka-consumer-groups --bootstrap-server localhost:9092 --group messages-dlt-group --describe
+
+GROUP              TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                     HOST            CLIENT-ID
+messages-dlt-group messages.DLT    0          0               0               0               consumer-1-251eb98f-7fb7-447b-bf70-c6016ce8b2b7 /172.19.0.1     consumer-1
+```
+
+Start a new `SimpleConsumerApplication` instance
+
+```bash
+$ kafka-consumer-groups --bootstrap-server localhost:9092 --group messages-group --describe
+
+GROUP           TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                     HOST            CLIENT-ID
+messages-group  messages        5          0               0               0               consumer-4-acabb6ec-fb9b-4335-8942-592dd7893c4a /172.20.0.1     consumer-4
+messages-group  messages        1          0               0               0               consumer-2-bd1b9d91-b53d-41f4-ada2-36d8ef05569c /172.20.0.1     consumer-2
+messages-group  messages        4          0               0               0               consumer-4-15aca72e-e0bc-4cbb-8caf-063b1e057136 /172.20.0.1     consumer-4
+messages-group  messages        0          0               0               0               consumer-2-10ff4d3e-5e01-4b4b-83ea-ccaa421301dc /172.20.0.1     consumer-2
+messages-group  messages        2          0               0               0               consumer-3-04664b44-1ee2-4ce9-a245-414f12a0c594 /172.20.0.1     consumer-3
+messages-group  messages        3          0               0               0               consumer-3-068d849d-e31c-468d-ae2f-532418e4d332 /172.20.0.1     consumer-3
+```
+
+TODO Fix CLIENT-ID
+
+`groupId` - clear, with consumer groups
+`id` - lookup a `MessageListenerContainer` from `KafkaListenerEndpointRegistry`
+`clientId` - `client.id` for Kafka Consumer: https://kafka.apache.org/documentation/#consumerconfigs
+
+The id is something internal for the Spring Application Context. This should not be unique globally. 
+The groupId is indeed good option for scaling when you would like to have several competing consumers on the same topic. The clientIdPrefix is really useful to determine via monitoring system what and where is consuming.
+That's like a global identificator for your application.
+
+
+Set the `clientIdPrefix` to `"${spring.application.name}"`
+
+```bash
+$ kafka-consumer-groups --bootstrap-server localhost:9092 --group messages-group --describe
+
+GROUP           TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                       HOST            CLIENT-ID
+messages-group  messages        4          0               0               0               consumer-2-1-0bada06f-d44f-4c9b-91ab-80e8c1c7b859 /172.20.0.1     consumer-2-1
+messages-group  messages        3          0               0               0               consumer-2-0-ecca760a-f014-4bb8-b7cd-47bebac98159 /172.20.0.1     consumer-2-0
+messages-group  messages        1          0               0               0               consumer-1-1-853d07bf-6ca0-46d7-b7ee-61ef249f08dc /172.20.0.1     consumer-1-1
+messages-group  messages        2          0               0               0               consumer-1-2-8f5a7227-4353-4418-8a54-5fcc4bce8adc /172.20.0.1     consumer-1-2
+messages-group  messages        0          0               0               0               consumer-1-0-26ade0cb-3e72-47cf-8907-d66fb12ef66f /172.20.0.1     consumer-1-0
+messages-group  messages        5          0               0               0               consumer-2-2-c9dfa2b2-fb80-4a6c-9aea-214db365f20a /172.20.0.1     consumer-2-2
+```
+
 
 7. Reset offset
 
@@ -68,6 +144,12 @@ $ kafka-consumer-groups --bootstrap-server localhost:9092 --group group-id --del
 ```bash
 $ docker-compose down
 ```
+
+`messages` topic crated with 3 partitions
+
+2020-03-28 12:05:37.637  INFO 90844 --- [container-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : messages-group: partitions assigned: [messages-0, messages-1, messages-2]
+2020-03-28 12:05:37.637  INFO 90844 --- [container-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : messages-dlt-group: partitions assigned: [messages.DLT-0]
+
 
 Resources:
 1. Spring for Apache Kafka Deep Dive 
