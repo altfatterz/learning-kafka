@@ -108,6 +108,26 @@ messages-group  messages        0          0               0               0    
 messages-group  messages        5          0               0               0               consumer-2-2-c9dfa2b2-fb80-4a6c-9aea-214db365f20a /172.20.0.1     consumer-2-2
 ```
 
+`autoStartup = "false"`
+
+Expose the `KafkaListenerEndpointRegistry` through a controller and start it on both instances using:
+
+```bash
+$ http post :8081/containers/{id}
+$ http post :8082/containers/{id}
+```
+
+Exposed `MessageListenerContainer`
+
+```bash
+$ http :8081/containers
+
+[
+"dlt-messages-container",
+"messages-container",
+]
+```
+
 
 7. Reset offset
 

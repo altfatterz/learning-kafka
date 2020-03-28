@@ -10,6 +10,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @SpringBootApplication
 public class SimpleConsumerApplication {
@@ -36,13 +43,38 @@ public class SimpleConsumerApplication {
 
 }
 
+@RestController
+class ConsumerController {
+
+    private KafkaListenerEndpointRegistry registry;
+
+    public ConsumerController(KafkaListenerEndpointRegistry registry) {
+        this.registry = registry;
+    }
+
+    @PostMapping("/containers/{id}")
+    public void start(@PathVariable String id) {
+        registry.getListenerContainer(id).start();
+    }
+
+    @GetMapping("/containers")
+    public Set<String> containers() {
+        return registry.getListenerContainers().stream()
+                .map(c -> c.getListenerId() + ":" + c.isRunning())
+                .collect(Collectors.toSet());
+    }
+}
+
+
 @Component
 class Consumer {
 
     private final Logger logger = LoggerFactory.getLogger(Consumer.class);
 
     @KafkaListener(id = "messages-container", groupId = "messages-group", topics = Config.TOPIC, concurrency = "3",
-            clientIdPrefix = "${spring.application.name}")
+            clientIdPrefix = "${spring.application.name}", autoStartup = "false")
+//    @KafkaListener(id = "messages-container", groupId = "messages-group", topics = Config.TOPIC, concurrency = "3",
+//            clientIdPrefix = "${spring.application.name}")
 //    @KafkaListener(id = "messages-container", groupId = "messages-group", topics = Config.TOPIC, concurrency = "3")
 //    @KafkaListener(id = "messages-container", groupId = "messages-group", topics = Config.TOPIC)
     public void consume(String message) {
