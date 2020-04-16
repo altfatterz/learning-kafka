@@ -1,0 +1,10 @@
+spring:
+  kafka:
+    streams:
+      application-id: wordcount
+      bootstrap-servers: localhost:9092
+
+
+logging:
+  level:
+    org.springframework.kafka: DEBUG
