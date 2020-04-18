@@ -1,0 +1,11 @@
+spring:
+  kafka:
+    streams:
+      application-id: ticket-sales
+      bootstrap-servers: localhost:9092
+      properties:
+        schema.registry.url: localhost:8081
+
+logging:
+  level:
+    org.springframework.kafka: DEBUG
