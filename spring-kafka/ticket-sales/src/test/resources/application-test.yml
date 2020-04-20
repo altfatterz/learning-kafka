@@ -1,0 +1,9 @@
+spring:
+  kafka:
+    admin:
+      properties:
+        bootstrap.servers: ${spring.embedded.kafka.brokers}
+    streams:
+      bootstrap-servers: ${spring.embedded.kafka.brokers}
+      properties:
+        schema.registry.url: http://SR_DUMMY_URL:8081

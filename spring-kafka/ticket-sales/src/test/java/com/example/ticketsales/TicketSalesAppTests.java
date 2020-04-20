@@ -1,13 +1,24 @@
 package com.example.ticketsales;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.context.ActiveProfiles;
 
+@EmbeddedKafka
 @SpringBootTest
-class TicketSalesAppTests {
+@ActiveProfiles("test")
+public class TicketSalesAppTests {
 
-    //@Test
+    @Autowired
+    private EmbeddedKafkaBroker embeddedKafkaBroker;
+
+    @Test
     void contextLoads() {
+        System.out.println("Zookeeper connection: " + embeddedKafkaBroker.getZookeeperConnectionString());
+        System.out.println("Embedded broker: " + embeddedKafkaBroker.getBrokersAsString());
     }
 
 }
