@@ -4,8 +4,19 @@ spring:
       application-id: ticket-sales
       bootstrap-servers: localhost:9092
       properties:
-        schema.registry.url: localhost:8081
+        schema.registry.url: http://localhost:8081
+
+topics:
+  input:
+    name: movie-ticket-sales
+    partitions: 1
+    replicas: 1
+  output:
+    name: movie-tickets-sold
+    partitions: 1
+    replicas: 1
 
 logging:
   level:
     org.springframework.kafka: DEBUG
+#    org.apache.kafka: DEBUG
