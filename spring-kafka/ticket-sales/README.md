@@ -40,4 +40,8 @@ The Godfather	4
 ```
 
 
+`KafkaStreams` actually provides a `TopologyTestDriver` that can be used to test the Topologies built via the 
+`StreamsBuilder` without the need to have an embedded kafka.
+
+
 
