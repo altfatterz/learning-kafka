@@ -202,3 +202,6 @@ https://programming.vip/docs/spring-boot-integration-kafka-spring-kafka-in-depth
 
 5. Exactly-once Semantics are Possible: Here’s How Kafka Does it 
 https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/
+
+6. Kafka Streams Examples
+https://github.com/confluentinc/kafka-streams-examples

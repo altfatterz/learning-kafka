@@ -3,6 +3,10 @@ spring:
     streams:
       application-id: wordcount
       bootstrap-servers: localhost:9092
+      properties:
+        default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+        default.value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+
 
 logging:
   level:

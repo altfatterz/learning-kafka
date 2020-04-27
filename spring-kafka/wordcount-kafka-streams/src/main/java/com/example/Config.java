@@ -21,7 +21,7 @@ public class Config {
     @Bean
     public NewTopic inputTopic() {
         return TopicBuilder.name(INPUT_TOPIC)
-                .partitions(3)
+                .partitions(1)
                 .replicas(1)
                 .build();
     }
@@ -29,7 +29,7 @@ public class Config {
     @Bean
     public NewTopic outputTopic() {
         return TopicBuilder.name(OUTPUT_TOPIC)
-                .partitions(3)
+                .partitions(1)
                 .replicas(1)
                 .build();
     }
