@@ -30,7 +30,7 @@ public class Config {
     @Bean
     public NewTopic topic() {
         return TopicBuilder.name(TOPIC)
-                .partitions(6)
+                .partitions(3)
                 .replicas(1)
                 .build();
     }

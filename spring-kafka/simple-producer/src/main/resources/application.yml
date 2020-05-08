@@ -5,6 +5,11 @@ spring:
   kafka:
     producer:
       bootstrap-servers: localhost:9092
+      properties:
+        # wait 5 seconds for messages and then sent it out with one batch to Kafka
+        linger.ms: 5000
+    template:
+      default-topic: messages
 #      key-serializer: org.apache.kafka.common.serialization.StringSerializer
 #      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
