@@ -1,0 +1,14 @@
+spring:
+  cloud:
+    stream:
+      bindings:
+        sample-source:
+          destination: foobar
+        input:
+          destination: foobar
+        output:
+          destination: transformed
+        sample-sink:
+          destination: transformed
+
+

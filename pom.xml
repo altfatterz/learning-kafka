@@ -18,6 +18,9 @@
         <module>spring-kafka/simple-producer</module>
         <module>spring-kafka/simple-consumer</module>
         <module>spring-kafka/transactional-producer</module>
+
+        <module>spring-cloud-stream/uppercase-transformer</module>
+        <module>spring-cloud-stream/uppercase-transformer-old-way</module>
     </modules>
 
     <build>

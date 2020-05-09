@@ -1,0 +1,22 @@
+spring:
+  cloud:
+    stream:
+      function:
+        definition: sendTestData;transform;receive
+      bindings:
+        sendTestData-out-0:
+          destination: foobar
+        transform-in-0:
+          destination: foobar
+        transform-out-0:
+          destination: transformed
+        receive-in-0:
+          destination: transformed
+
+      # see DefaultPollerProperties
+      poller:
+        # call the Supplier Bean every 2 second
+        fixed-delay: 2000
+
+
+
