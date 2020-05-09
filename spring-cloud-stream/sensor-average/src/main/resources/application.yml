@@ -1,0 +1,17 @@
+spring:
+  cloud:
+    stream:
+      function:
+        definition: sendTestData;calculateAverage;receive
+      bindings:
+        sendTestData-out-0:
+          destination: sensor
+        calculateAverage-in-0:
+          destination: sensor
+        calculateAverage-out-0:
+          destination: average
+        receive-in-0:
+          destination: average
+      poller:
+        # call the Supplier Bean every 100 ms
+        fixed-delay: 100
