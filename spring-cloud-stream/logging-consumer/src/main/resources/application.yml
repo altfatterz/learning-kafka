@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    stream:
+      bindings:
+        log-in-0:
+          group: logging-consumer
+          destination: people
