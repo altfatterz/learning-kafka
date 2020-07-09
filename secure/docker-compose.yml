@@ -71,8 +71,8 @@ services:
       - $PWD/kafka-1:/etc/kafka/secrets
     command: >
       bash -c 'echo "starting keystore check";
-        until [ -f /etc/kafka/secrets/kafka-1.key ]; do
-            echo "checking for /etc/kafka/secrets/kafka-1.key";
+        until [ -f /etc/kafka/secrets/kafka.kafka-1.keystore.jks ]; do
+            echo "checking for /etc/kafka/secrets/kafka.kafka-1.keystore.jks";
             sleep 5;
         done
         echo "keystore found";
@@ -89,10 +89,10 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,SSL:SSL,DOCKER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.kafka-1.keystore.jks
-      KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka-1_keystore
-      KAFKA_SSL_KEY_CREDENTIALS: kafka-1_sslkey
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka-1_keystore_creds
+      KAFKA_SSL_KEY_CREDENTIALS: kafka-1_sslkey_creds
       KAFKA_SSL_TRUSTSTORE_FILENAME: kafka.kafka-1.truststore.jks
-      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka-1_truststore
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka-1_truststore_creds
       KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: "HTTPS"
       #KAFKA_SSL_CLIENT_AUTH: "required"
 
@@ -110,8 +110,8 @@ services:
       - $PWD/kafka-2:/etc/kafka/secrets
     command: >
       bash -c 'echo "starting keystore check";
-      until [ -f /etc/kafka/secrets/kafka-2.key ]; do
-        echo "checking for /etc/kafka/secrets/kafka-2.key";
+      until [ -f /etc/kafka/secrets/kafka.kafka-2.keystore.jks ]; do
+        echo "checking for /etc/kafka/secrets/kafka.kafka-2.keystore.jks";
             sleep 5;
         done
         echo "keystore found";
@@ -128,10 +128,10 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,SSL:SSL,DOCKER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.kafka-2.keystore.jks
-      KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka-2_keystore
-      KAFKA_SSL_KEY_CREDENTIALS: kafka-2_sslkey
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka-2_keystore_creds
+      KAFKA_SSL_KEY_CREDENTIALS: kafka-2_sslkey_creds
       KAFKA_SSL_TRUSTSTORE_FILENAME: kafka.kafka-2.truststore.jks
-      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka-2_truststore
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka-2_truststore_creds
       KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: "HTTPS"
       #KAFKA_SSL_CLIENT_AUTH: "required"
 
@@ -149,8 +149,8 @@ services:
       - $PWD/kafka-3:/etc/kafka/secrets
     command: >
       bash -c 'echo "starting keystore check";
-      until [ -f /etc/kafka/secrets/kafka-3.key ]; do
-        echo "checking for /etc/kafka/secrets/kafka-3.key";
+      until [ -f /etc/kafka/secrets/kafka.kafka-3.keystore.jks ]; do
+        echo "checking for /etc/kafka/secrets/kafka.kafka-3.keystore.jks";
             sleep 5;
         done
         echo "keystore found";
@@ -167,12 +167,25 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,SSL:SSL,DOCKER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.kafka-3.keystore.jks
-      KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka-3_keystore
-      KAFKA_SSL_KEY_CREDENTIALS: kafka-3_sslkey
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka-3_keystore_creds
+      KAFKA_SSL_KEY_CREDENTIALS: kafka-3_sslkey_creds
       KAFKA_SSL_TRUSTSTORE_FILENAME: kafka.kafka-3.truststore.jks
-      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka-3_truststore
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka-3_truststore_creds
       KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: "HTTPS"
       #KAFKA_SSL_CLIENT_AUTH: "required"
+
+  bastion:
+    image: cnfltraining/training-tools:5.5
+    container_name: bastion
+    hostname: bastion
+    volumes:
+      - $PWD:/secure
+      - $PWD/client:/etc/kafka/secrets
+    networks:
+      - confluent
+    working_dir: /secure
+    command: /bin/sh
+    tty: true
 
 volumes:
   data-zk-log-1:
