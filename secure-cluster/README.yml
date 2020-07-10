@@ -1,0 +1,71 @@
+
+Using the PLAINTEXT listener at port 19092 to create the topic:
+
+```bash
+kafka-topics \
+--bootstrap-server kafka-1:19092 \
+--create \
+--topic secure-topic \
+--partitions 1 \
+--replication-factor 3
+```
+
+The topic is created, to query it:
+
+```bash
+kafka-topics \
+--bootstrap-server kafka-1:19092 \
+--list
+```
+
+Produce to the topic:
+
+```bash
+kafka-console-producer \
+--bootstrap-server kafka-1:19093 \
+--topic secure-topic
+```
+
+We get exception.
+
+Create the `producer_ssl.properties`
+
+```
+cat << EOF > client/producer_ssl.properties
+security.protocol=SSL
+ssl.truststore.location=client/kafka.client.truststore.jks
+ssl.truststore.password=mimacom
+EOF
+```
+
+```bash
+kafka-console-producer \
+--bootstrap-server kafka-1:19093 \
+--topic secure-topic \
+--producer.config client/producer_ssl.properties
+>first message
+>second message
+>last message
+<Ctrl-C>
+```
+
+```bash
+cat << EOF > client/consumer_ssl.properties
+security.protocol=SSL
+ssl.truststore.location=client/kafka.client.truststore.jks
+ssl.truststore.password=mimacom
+EOF
+```
+
+```bash
+$ kafka-console-consumer \
+--bootstrap-server kafka-1:19093 \
+--topic secure-topic \
+--from-beginning \
+--consumer.config client/consumer_ssl.properties
+```
+
+
+
+
+
