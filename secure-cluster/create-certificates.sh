@@ -10,7 +10,7 @@ openssl req -new -x509 -keyout ca.key -out ca.crt -days 365 \
   -passin pass:mimacom \
   -passout pass:mimacom
 
-for i in kafka-1 kafka-2 kafka-3 client secure-kafka-producer secure-kafka-consumer
+for i in zk-1 zk-2 zk-3 kafka-1 kafka-2 kafka-3 client secure-kafka-producer secure-kafka-consumer
 do
 	echo "------------------------------- $i -------------------------------"
 
@@ -18,14 +18,13 @@ do
 	keytool -genkey -noprompt \
 				 -alias $i \
 				 -dname "CN=$i,OU=development,O=mimacom,L=Zurich,C=CH" \
-#         -ext san=dns:$i \
-				 -keystore $i/kafka.$i.keystore.jks \
+         -keystore $i/kafka.$i.keystore.jks \
 				 -keyalg RSA \
 				 -storepass mimacom \
 				 -keypass mimacom
 
 	# Create the certificate signing request (CSR)
-	keytool -keystore $i/kafka.$i.keystore.jks -alias $i -certreq -file $i/$i.csr -storepass mimacom -keypass mimacom
+	keytool -noprompt -keystore $i/kafka.$i.keystore.jks -alias $i -certreq -file $i/$i.csr -storepass mimacom -keypass mimacom
 
   # Sign the host certificate with the certificate authority (CA)
 	openssl x509 -req -CA ca.crt -CAkey ca.key -in $i/$i.csr -out $i/$i-ca1-signed.crt -days 9999 -CAcreateserial -passin pass:mimacom

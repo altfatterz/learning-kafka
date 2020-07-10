@@ -3,3 +3,10 @@
 data
 target
 
+*.jks
+*.crt
+*.key
+*.csr
+*.srl
+*_creds
+
