@@ -18,7 +18,7 @@ do
 	keytool -genkey -noprompt \
 				 -alias $i \
 				 -dname "CN=$i,OU=development,O=mimacom,L=Zurich,C=CH" \
-         -ext san=dns:$i \
+#         -ext san=dns:$i \
 				 -keystore $i/kafka.$i.keystore.jks \
 				 -keyalg RSA \
 				 -storepass mimacom \

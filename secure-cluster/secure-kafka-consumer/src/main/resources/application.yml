@@ -7,12 +7,14 @@ management:
       exposure:
         include: '*'
 
-#spring:
-#  kafka:
-#    consumer:
-#      bootstrap-servers:
-#    properties:
-#      security.protocol: SSL
-#    ssl:
-#      trust-store-location:
-#      trust-store-password:
+spring:
+  kafka:
+    consumer:
+      bootstrap-servers:
+    properties:
+      security.protocol: SSL
+    ssl:
+      trust-store-location:
+      trust-store-password:
+      key-store-location:
+      key-store-password:
