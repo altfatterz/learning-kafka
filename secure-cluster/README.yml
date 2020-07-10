@@ -1,3 +1,8 @@
+Testing
+
+openssl s_client -connect kafka-1:19093 -tls1
+openssl s_client -connect kafka-2:29093 -tls1
+openssl s_client -connect kafka-3:39093 -tls1
 
 Using the PLAINTEXT listener at port 19092 to create the topic:
 

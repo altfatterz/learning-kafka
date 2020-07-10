@@ -187,6 +187,24 @@ services:
     command: /bin/sh
     tty: true
 
+  secure-kafka-producer:
+    image: altfatterz/secure-kafka-producer:0.0.1-SNAPSHOT
+    container_name: secure-kafka-producer
+    hostname: secure-kafka-producer
+    volumes:
+      - $PWD:/secure-cluster
+    networks:
+      - confluent
+    ports:
+      - 8080:8080
+    environment:
+      SPRING_APPLICATION_JSON: '{
+         "spring.kafka.producer.bootstrap-servers": "kafka-1:19093",
+         "spring.kafka.properties.security.protocol" : "SSL",
+         "spring.kafka.ssl.trust-store-location": "file:///secure-cluster/secure-kafka-producer/kafka.secure-kafka-producer.truststore.jks",
+         "spring.kafka.ssl.trust-store-password": "mimacom"
+      }'
+
 volumes:
   data-zk-log-1:
   data-zk-data-1:
