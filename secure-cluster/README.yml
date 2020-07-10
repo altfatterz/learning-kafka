@@ -72,5 +72,7 @@ $ kafka-console-consumer \
 
 
 
+Starting in Confluent Platform version 5.5.0, the version of ZooKeeper that is bundled with Kafka supports TLS.
 
-
+Zookeeper SSL:
+https://juplo.de/encrypt-communication-between-kafka-and-zookeeper-with-tls/
