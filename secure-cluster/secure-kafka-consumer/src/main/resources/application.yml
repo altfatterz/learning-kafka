@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
 
 management:
   endpoints:
@@ -9,12 +9,10 @@ management:
 
 #spring:
 #  kafka:
-#    producer:
+#    consumer:
 #      bootstrap-servers:
 #    properties:
 #      security.protocol: SSL
 #    ssl:
 #      trust-store-location:
 #      trust-store-password:
-
-

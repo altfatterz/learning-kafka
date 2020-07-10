@@ -2,6 +2,10 @@ version: "3.5"
 services:
   zk-1:
     image: confluentinc/cp-zookeeper:5.5.1
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     container_name: zk-1
     hostname: zk-1
     ports:
@@ -21,6 +25,10 @@ services:
 
   zk-2:
     image: confluentinc/cp-zookeeper:5.5.1
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     container_name: zk-2
     hostname: zk-2
     ports:
@@ -40,6 +48,10 @@ services:
 
   zk-3:
     image: confluentinc/cp-zookeeper:5.5.1
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     container_name: zk-3
     hostname: zk-3
     ports:
@@ -59,6 +71,10 @@ services:
 
   kafka-1:
     image: confluentinc/cp-enterprise-kafka:5.5.1
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     container_name: kafka-1
     hostname: kafka-1
     ports:
@@ -98,6 +114,10 @@ services:
 
   kafka-2:
     image: confluentinc/cp-enterprise-kafka:5.5.1
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     container_name: kafka-2
     hostname: kafka-2
     ports:
@@ -137,6 +157,10 @@ services:
 
   kafka-3:
     image: confluentinc/cp-enterprise-kafka:5.5.1
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     container_name: kafka-3
     hostname: kafka-3
     ports:
@@ -176,6 +200,10 @@ services:
 
   bastion:
     image: cnfltraining/training-tools:5.5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     container_name: bastion
     hostname: bastion
     volumes:
@@ -189,6 +217,10 @@ services:
 
   secure-kafka-producer:
     image: altfatterz/secure-kafka-producer:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     container_name: secure-kafka-producer
     hostname: secure-kafka-producer
     volumes:
@@ -204,6 +236,29 @@ services:
          "spring.kafka.ssl.trust-store-location": "file:///secure-cluster/secure-kafka-producer/kafka.secure-kafka-producer.truststore.jks",
          "spring.kafka.ssl.trust-store-password": "mimacom"
       }'
+
+  secure-kafka-consumer:
+    image: altfatterz/secure-kafka-consumer:0.0.1-SNAPSHOT
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    container_name: secure-kafka-consumer
+    hostname: secure-kafka-consumer
+    volumes:
+      - $PWD:/secure-cluster
+    networks:
+      - confluent
+    ports:
+      - 8081:8081
+    environment:
+      SPRING_APPLICATION_JSON: '{
+         "spring.kafka.consumer.bootstrap-servers": "kafka-1:19093",
+         "spring.kafka.properties.security.protocol" : "SSL",
+         "spring.kafka.ssl.trust-store-location": "file:///secure-cluster/secure-kafka-consumer/kafka.secure-kafka-consumer.truststore.jks",
+         "spring.kafka.ssl.trust-store-password": "mimacom"
+      }'
+
 
 volumes:
   data-zk-log-1:
