@@ -39,7 +39,7 @@ Create the `producer_ssl.properties`
 cat << EOF > client/producer_ssl.properties
 security.protocol=SSL
 ssl.truststore.location=client/kafka.client.truststore.jks
-ssl.truststore.password=mimacom
+ssl.truststore.password=s3cr3t
 EOF
 ```
 
@@ -58,7 +58,7 @@ kafka-console-producer \
 cat << EOF > console-client/consumer_ssl.properties
 security.protocol=SSL
 ssl.truststore.location=console-client/kafka.console-client.truststore.jks
-ssl.truststore.password=mimacom
+ssl.truststore.password=s3cr3t
 EOF
 ```
 

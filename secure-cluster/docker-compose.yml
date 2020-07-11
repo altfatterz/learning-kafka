@@ -190,9 +190,9 @@ services:
          "spring.kafka.producer.bootstrap-servers": "kafka-1:19093,kafka-2:29093,kafka-3:39093",
          "spring.kafka.properties.security.protocol" : "SSL",
          "spring.kafka.ssl.trust-store-location": "file:///secure-cluster/secure-kafka-producer/kafka.secure-kafka-producer.truststore.jks",
-         "spring.kafka.ssl.trust-store-password": "mimacom",
+         "spring.kafka.ssl.trust-store-password": "s3cr3t",
          "spring.kafka.ssl.key-store-location": "file:///secure-cluster/secure-kafka-producer/kafka.secure-kafka-producer.keystore.jks",
-         "spring.kafka.ssl.key-store-password": "mimacom"
+         "spring.kafka.ssl.key-store-password": "s3cr3t"
       }'
 
   secure-kafka-consumer:
@@ -210,9 +210,9 @@ services:
          "spring.kafka.consumer.bootstrap-servers": "kafka-1:19093,kafka-2:29093,kafka-3:39093",
          "spring.kafka.properties.security.protocol" : "SSL",
          "spring.kafka.ssl.trust-store-location": "file:///secure-cluster/secure-kafka-consumer/kafka.secure-kafka-consumer.truststore.jks",
-         "spring.kafka.ssl.trust-store-password": "mimacom",
+         "spring.kafka.ssl.trust-store-password": "s3cr3t",
          "spring.kafka.ssl.key-store-location": "file:///secure-cluster/secure-kafka-consumer/kafka.secure-kafka-consumer.keystore.jks",
-         "spring.kafka.ssl.key-store-password": "mimacom"
+         "spring.kafka.ssl.key-store-password": "s3cr3t"
       }'
 
 
