@@ -168,7 +168,7 @@ services:
     hostname: bastion
     volumes:
       - $PWD:/secure-cluster
-      - $PWD/client:/etc/kafka/secrets
+      - $PWD/console-client:/etc/kafka/secrets
     networks:
       - confluent
     working_dir: /secure-cluster

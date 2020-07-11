@@ -10,7 +10,7 @@ openssl req -new -x509 -keyout ca.key -out ca.crt -days 365 \
   -passin pass:mimacom \
   -passout pass:mimacom
 
-for i in zk-1 zk-2 zk-3 kafka-1 kafka-2 kafka-3 client secure-kafka-producer secure-kafka-consumer
+for i in kafka-1 kafka-2 kafka-3 console-client secure-kafka-producer secure-kafka-consumer
 do
 	echo "------------------------------- $i -------------------------------"
 
