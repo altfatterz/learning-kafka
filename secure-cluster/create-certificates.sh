@@ -29,10 +29,10 @@ do
   # Sign the host certificate with the certificate authority (CA)
 	openssl x509 -req -CA ca.crt -CAkey ca.key -in $i/$i.csr -out $i/$i-ca1-signed.crt -days 9999 -CAcreateserial -passin pass:s3cr3t
 
-  # Sign and import the CA cert into the keystore
+  # Import the CA cert into the keystore
 	keytool -noprompt -keystore $i/kafka.$i.keystore.jks -alias CARoot -import -file ca.crt -storepass s3cr3t -keypass s3cr3t
 
-  # Sign and import the host certificate into the keystore
+  # We import the signed certificate into the keystore
 	keytool -noprompt -keystore $i/kafka.$i.keystore.jks -alias $i -import -file $i/$i-ca1-signed.crt -storepass s3cr3t -keypass s3cr3t
 
 	# Create truststore and import the CA cert
