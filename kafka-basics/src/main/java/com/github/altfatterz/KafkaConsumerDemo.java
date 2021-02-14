@@ -16,7 +16,7 @@ public class KafkaConsumerDemo {
 
     static final Logger logger = LoggerFactory.getLogger(KafkaConsumerDemo.class);
 
-    static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    static final String BOOTSTRAP_SERVERS = "localhost:19092";
     static final String GROUP_ID = "demo-app";
     static final String TOPIC = "demo-topic";
 

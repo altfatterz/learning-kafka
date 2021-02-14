@@ -13,7 +13,7 @@ public class KafkaProducerDemo {
 
     static final Logger logger = LoggerFactory.getLogger(KafkaProducerDemo.class);
 
-    static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    static final String BOOTSTRAP_SERVERS = "localhost:19092";
     static final String TOPIC = "demo-topic";
 
     public static void main(String[] args) {
@@ -33,8 +33,11 @@ public class KafkaProducerDemo {
         logger.info("send message asynchronously....");
         producer.send(record);
 
-        logger.info("flushing and closing the producer");
-        producer.close();
+        // Adding a shutdown hook to clean up when the application exits
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Closing producer.");
+            producer.close();
+        }));
     }
 
 }
