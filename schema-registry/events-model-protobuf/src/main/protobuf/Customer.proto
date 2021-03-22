@@ -7,5 +7,17 @@ message Customer {
   string firstName = 2;
   string lastName = 3;
   string email = 4;
-  bool active = 5;
+
+  enum PhoneType {
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+
+  message PhoneNumber {
+    string number = 1;
+    PhoneType type = 2;
+  }
+
+  repeated PhoneNumber phones = 6;
 }

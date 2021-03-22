@@ -2,7 +2,7 @@ package com.example.consumerprotobuf;
 
 import com.example.model.Customer.CustomerOuterClass;
 
-public class ConsumerProtobufApplication {
+public class ConsumerApp {
 
     public static void main(String[] args) {
 
