@@ -1,0 +1,83 @@
+---
+version: '2'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.1.0-1-ubi8
+    restart: always
+    container_name: zookeeper
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-enterprise-kafka:6.1.0-1-ubi8
+    restart: always
+    container_name: kafka
+    ports:
+      - 19092:19092
+    environment:
+      KAFKA_BROKER_ID: 101
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,CONNECTIONS_FROM_HOST://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONNECTIONS_FROM_HOST:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_METRIC_REPORTERS: "io.confluent.metrics.reporter.ConfluentMetricsReporter"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: "kafka:9092"
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:6.1.0-1-ubi8
+
+    restart: always
+    container_name: schema-registry
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka:9092'
+      KAFKA_REST_CUB_KAFKA_TIMEOUT: 180 # https://github.com/confluentinc/cp-docker-images/issues/807
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:6.1.0-1-ubi8
+    restart: always
+    container_name: control-center
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: kafka:9092
+      CONTROL_CENTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_REPLICATION: 1
+      CONTROL_CENTER_COMMAND_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_METRICS_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: 1
+      CONTROL_CENTER_STREAMS_CONSUMER_REQUEST_TIMEOUT_MS: "960032"
+      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      CONTROL_CENTER_CONNECT_CLUSTER: "connect:8083"
+      CONTROL_CENTER_KSQL_URL: "http://ksqldb-server:8088"
+      CONTROL_CENTER_UI_AUTOUPDATE_ENABLE: "false"
+
+  create-topics:
+    image: confluentinc/cp-enterprise-kafka:6.1.0-1-ubi8
+    container_name: create-topics
+    command: >
+      bash -c 'echo Waiting for Kafka to be ready... ;
+      cub kafka-ready -b kafka:9092 1 300 ;
+      echo Creating topics... ;
+      kafka-topics --bootstrap-server kafka:9092 --create --topic demo-topic-protobuf --partitions 3 --replication-factor 1 --config cleanup.policy=compact ;
+      kafka-topics --bootstrap-server kafka:9092 --create --topic _confluent-monitoring --partitions 12 --replication-factor 1 --config retention.ms=259200000 --config message.timestamp.type=LogAppendTime ;
+      true'
+
+  tools:
+    image: cnfltraining/training-tools:6.0
+    container_name: tools
+    hostname: tools
+    command: /bin/sh
+    tty: true
+

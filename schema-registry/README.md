@@ -1,3 +1,11 @@
+Start up the environment:
+
+```bash
+$ docker-compose up -d
+```
+
+
+
 Resources:
 
 Protobuf:
