@@ -1,8 +1,6 @@
-### Kafka with Docker
+#### Avro Examples
 
-Uses `confluentinc` images
-
-### Single Zookeeper and Kafka
+https://zoltanaltfatter.com/2020/01/02/schema-evolution-with-confluent-registry/
 
 ```bash
 $ docker-compose up -d
@@ -36,6 +34,5 @@ $ brew install insomnia
 
 ### Resources:
 
-https://github.com/confluentinc/examples/blob/5.3.1-post/cp-all-in-one/docker-compose.yml
 https://docs.confluent.io/current/installation/docker/image-reference.html#image-reference
 https://github.com/simplesteph/kafka-stack-docker-compose/
