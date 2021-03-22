@@ -9,35 +9,37 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>producer-protobuf</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <artifactId>events-model-protobuf</artifactId>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kafka.version>2.7.0</kafka.version>
         <confluent.version>6.1.0</confluent.version>
-        <logback.version>1.2.3</logback.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>com.github.altfatterz</groupId>
-            <artifactId>events-model-protobuf</artifactId>
-            <version>${project.version}</version>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-protobuf-serializer</artifactId>
+            <version>${confluent.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>${kafka.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
-        </dependency>
-
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.os72</groupId>
+                <artifactId>protoc-jar-maven-plugin</artifactId>
+                <version>3.11.4</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

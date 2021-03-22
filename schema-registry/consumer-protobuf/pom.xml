@@ -9,14 +9,21 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>consumer-protobuf</artifactId>
-
+    <version>0.0.1-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kafka.version>2.4.0</kafka.version>
+        <kafka.version>2.7.0</kafka.version>
+        <confluent.version>6.1.0</confluent.version>
         <logback.version>1.2.3</logback.version>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.github.altfatterz</groupId>
+            <artifactId>events-model-protobuf</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -31,5 +38,6 @@
         </dependency>
 
     </dependencies>
+
 
 </project>

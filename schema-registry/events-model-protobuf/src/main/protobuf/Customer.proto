@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option java_package = "com.example.model.Customer";
+
+message Customer {
+  int32 id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string email = 4;
+  bool active = 5;
+}
