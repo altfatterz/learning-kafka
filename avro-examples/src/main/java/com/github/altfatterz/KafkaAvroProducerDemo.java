@@ -3,7 +3,9 @@ package com.github.altfatterz;
 import com.github.altfatterz.avro.Account;
 import com.github.altfatterz.avro.AccountType;
 import com.github.altfatterz.avro.Customer;
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -32,7 +34,7 @@ public class KafkaAvroProducerDemo {
 
         // avro specific configuration
         properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
-        properties.setProperty("schema.registry.url", "http://localhost:8081");
+        properties.setProperty(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
 
         // producer
         Producer<String, Customer> producer = new KafkaProducer<>(properties);
@@ -47,8 +49,11 @@ public class KafkaAvroProducerDemo {
         logger.info("send message asynchronously....");
         producer.send(record);
 
-        logger.info("flushing and closing the producer");
-        producer.close();
+        // Adding a shutdown hook to clean up when the application exits
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Closing producer.");
+            producer.close();
+        }));
     }
 
     private static Customer newCustomer() {

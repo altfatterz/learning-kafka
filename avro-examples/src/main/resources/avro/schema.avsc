@@ -51,8 +51,10 @@
     {
       "name": "signup_timestamp",
       "doc": "Customer Signup Timestamp",
-      "type": "long",
-      "logicalType": "timestamp-millis"
+      "type": {
+        "type" : "long",
+        "logicalType": "timestamp-millis"
+      }
     },
     {
       "name": "phone_number",

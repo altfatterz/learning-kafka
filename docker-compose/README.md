@@ -5,35 +5,23 @@ Uses `confluentinc` images
 ### Single Zookeeper and Kafka
 
 ```bash
-$ docker-compose -f single-zookeeper-and-kafka.yml up
+$ docker-compose up -d
 ```
 
 ```bash
 docker ps -a
 
-CONTAINER ID        IMAGE                             COMMAND                  CREATED             STATUS              PORTS                                        NAMES
-1ea8f49bc2ae        confluentinc/cp-kafka:5.3.1       "/etc/confluent/dock…"   2 minutes ago       Up 2 minutes        0.0.0.0:9092->9092/tcp                       kafka
-3ffd6983fe4a        confluentinc/cp-zookeeper:5.3.1   "/etc/confluent/dock…"   2 minutes ago       Up 2 minutes        2888/tcp, 0.0.0.0:2181->2181/tcp, 3888/tcp   zookeeper
-```
-
-```bash
-$ docker-compose -f single-zookeeper-and-kafka.yml down
-```
-
-
-### Landoop fast-data-dev
-
-Increase you Docker memory to 4 GB (at least).
-
-```bash
-$ docker-compose -f landoop-kafka-cluster.yml up
+CONTAINER ID   IMAGE                    COMMAND                  CREATED         STATUS         PORTS                                                                                                                                                  NAMES
+f803ba38f0ba   lensesio/fast-data-dev   "/usr/bin/dumb-init …"   2 minutes ago   Up 2 minutes   0.0.0.0:2181->2181/tcp, 0.0.0.0:3030->3030/tcp, 0.0.0.0:8081-8083->8081-8083/tcp, 0.0.0.0:9092->9092/tcp, 0.0.0.0:9581-9585->9581-9585/tcp, 3031/tcp   avro-examples_kafka-cluster_1
 ```
 
 Open in browser
+
 http://localhost:3030/
 
+
 ```bash
-$ docker-compose -f landoop-kafka-cluster.yml down
+$ docker exec -it fast-data-dev bash
 ```
 
 #### Insomnia
@@ -42,7 +30,7 @@ Great HTTP client:
 https://insomnia.rest/
 
 ```bash
-$ brew cask install insomnia
+$ brew install insomnia
 ```
 
 
