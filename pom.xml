@@ -16,6 +16,9 @@
         <module>kafka-streams/json-payload</module>
         <module>kafka-streams/join-example</module>
 
+        <module>schema-registry/consumer-protobuf</module>
+        <module>schema-registry/producer-protobuf</module>
+
         <module>spring-kafka/simple-producer</module>
         <module>spring-kafka/simple-consumer</module>
         <module>spring-kafka/transactional-producer</module>
@@ -33,8 +36,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
         </plugins>
