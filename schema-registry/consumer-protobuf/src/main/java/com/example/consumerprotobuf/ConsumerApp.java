@@ -29,7 +29,7 @@ public class ConsumerApp {
 
         final Properties settings = new Properties();
 
-        settings.put(ConsumerConfig.GROUP_ID_CONFIG, "consumer-app-protobuf5");
+        settings.put(ConsumerConfig.GROUP_ID_CONFIG, "consumer-app-protobuf10");
         settings.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:19092");
         settings.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 

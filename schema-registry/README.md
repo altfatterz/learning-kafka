@@ -4,6 +4,26 @@ Start up the environment:
 $ docker-compose up -d
 ```
 
+Create a message using the `ProducerApp` and consume it using `ConsumerApp`
+
+Optionally start the `kafka-protobuf-console-consumer` consumer
+
+```bash
+$ docker exec -it tools bash
+$ kafka-protobuf-console-consumer --bootstrap-server kafka:9092 --property schema.registry.url=http://schema-registry:8081 --topic demo-topic-protobuf --from-beginning
+{"id":1,"firstName":"John","lastName":"Doe","email":"johndoe@gmail.com","phones":[{"number":"0761234678","type":"MOBILE"}]}
+```
+
+
+Check the consumer groups:
+
+```bash
+$ kafka-consumer-groups --bootstrap-server kafka:9092 --list
+```
+
+Note, the `kafka-<serialiser>-console-consumer` cli always creates a new consumer group with if you don't specify the group id using the `--group` option. 
+With code the `ConsumerConfig.GROUP_ID_CONFIG` specifies the consumer group id. 
+
 
 
 Resources:
