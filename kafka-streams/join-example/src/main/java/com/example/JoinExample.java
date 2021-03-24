@@ -1,5 +1,7 @@
 package com.example;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -16,64 +18,72 @@ import java.util.Properties;
 
 public class JoinExample {
 
-	private final static String APPLICATION_ID = "join-example";
+    private final static String APPLICATION_ID = "join-example";
+    private final static String BOOTSTRAP_SERVERS = "localhost:19092";
 
-	private final static Logger logger = LoggerFactory.getLogger(JoinExample.class);
+    private final static String TOPIC1 = "left-topic";
+    private final static String TOPIC2 = "right-topic";
+    private final static String TOPIC3 = "joined-topic";
 
-	public static void main(String[] args) {
-		logger.info("*** Starting {} Application ***", APPLICATION_ID);
+    private final static Logger logger = LoggerFactory.getLogger(JoinExample.class);
 
-		Properties config = getConfig();
-		Topology topology = getTopology();
-		KafkaStreams streams =  startApp(config, topology);
+    public static void main(String[] args) {
+        logger.info("*** Starting {} Application ***", APPLICATION_ID);
 
-		setupShutdownHook(streams);
-	}
+        Properties config = getConfig();
+        Topology topology = getTopology();
+        KafkaStreams streams = startApp(config, topology);
 
-	private static Topology getTopology(){
-		StreamsBuilder builder = new StreamsBuilder();
+        setupShutdownHook(streams);
+    }
 
-		final Serde<String> stringSerde = Serdes.String();
+    private static Topology getTopology() {
+        StreamsBuilder builder = new StreamsBuilder();
 
-		KStream<String, String> leftStream = builder.stream("left-topic",
-				Consumed.with(stringSerde, stringSerde));
-		KStream<String, String> rightStream = builder.stream("right-topic",
-				Consumed.with(stringSerde, stringSerde));
+        final Serde<String> stringSerde = Serdes.String();
 
-		leftStream
-//				.join(rightStream,
-//				.leftJoin(rightStream,
-				.outerJoin(rightStream,
-						(leftValue, rightValue) -> "[" + leftValue + ", " + rightValue + "]",
-						JoinWindows.of(Duration.ofMinutes(5)),
-						Joined.with(stringSerde, stringSerde, stringSerde)
-				)
-				.to("joined-topic", Produced.with(stringSerde, stringSerde));
+        KStream<String, String> leftStream = builder.stream(TOPIC1,
+                Consumed.with(stringSerde, stringSerde));
+        KStream<String, String> rightStream = builder.stream(TOPIC2,
+                Consumed.with(stringSerde, stringSerde));
 
-		Topology topology = builder.build();
-		logger.info(topology.describe().toString());
+        leftStream.join(rightStream,
+                (leftValue, rightValue) -> "[" + leftValue + ", " + rightValue + "]",
+                JoinWindows.of(Duration.ofMillis(100))
+        ).to(TOPIC3, Produced.with(stringSerde, stringSerde));
 
-		return topology;
-	}
+        Topology topology = builder.build();
 
-	private static Properties getConfig(){
-		Properties settings = new Properties();
-		settings.put(StreamsConfig.APPLICATION_ID_CONFIG, APPLICATION_ID);
-		settings.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:19092");
-		return settings;
-	}
+        logger.info(topology.describe().toString());
 
-	private static KafkaStreams startApp(Properties config, Topology topology){
-		KafkaStreams streams = new KafkaStreams(topology, config);
-		streams.start();
-		return streams;
-	}
+        return topology;
+    }
 
-	private static void setupShutdownHook(KafkaStreams streams){
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			logger.info("### Stopping {} application ###", APPLICATION_ID);
-			streams.close();
-		}));
-	}
+    private static Properties getConfig() {
+        Properties settings = new Properties();
+        settings.put(StreamsConfig.APPLICATION_ID_CONFIG, APPLICATION_ID);
+        settings.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+
+        // Interceptor configuration
+        settings.put(StreamsConfig.PRODUCER_PREFIX + ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,
+                "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor");
+        settings.put(StreamsConfig.CONSUMER_PREFIX + ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG,
+                "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor");
+
+        return settings;
+    }
+
+    private static KafkaStreams startApp(Properties config, Topology topology) {
+        KafkaStreams streams = new KafkaStreams(topology, config);
+        streams.start();
+        return streams;
+    }
+
+    private static void setupShutdownHook(KafkaStreams streams) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("### Stopping {} application ###", APPLICATION_ID);
+            streams.close();
+        }));
+    }
 
 }

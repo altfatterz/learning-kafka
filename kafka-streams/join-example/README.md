@@ -1,30 +1,5 @@
-Create the topics:
+See the created topics in the `docker-compose.yaml`
 
-```bash
-kafka-topics \
---create \
---bootstrap-server kafka:9092 \
---replication-factor 1 \
---partitions 1 \
---topic left-topic
-```
-
-```bash
-kafka-topics \
---create \
---bootstrap-server kafka:9092 \
---replication-factor 1 \
---partitions 1 \
---topic right-topic
-```
-
-```bash
-kafka-topics \
---create \
---bootstrap-server kafka:9092 \
---replication-factor 1 \
---partitions 1 \
---topic joined-topic
 ```
 
 Write some values into the topics and see the join topic output
