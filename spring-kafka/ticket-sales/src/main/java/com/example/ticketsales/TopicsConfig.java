@@ -18,7 +18,7 @@ public class TopicsConfig {
     // Spring Boot Apache Kafka Support
     // https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-kafka
 
-    @Bean
+    //@Bean
     public NewTopic inputTopic() {
         return TopicBuilder.name(input.getName())
                 .partitions(input.getPartitions())
@@ -26,7 +26,7 @@ public class TopicsConfig {
                 .build();
     }
 
-    @Bean
+    //@Bean
     public NewTopic outputTopic() {
         return TopicBuilder.name(output.getName())
                 .partitions(output.getPartitions())

@@ -1,0 +1,10 @@
+{
+  "namespace": "com.example.avro",
+  "type": "record",
+  "name": "TicketSale",
+  "fields": [
+    {"name": "title", "type": "string"},
+    {"name": "sale_ts", "type": "string"},
+    {"name": "ticket_total_value", "type": "int"}
+  ]
+}

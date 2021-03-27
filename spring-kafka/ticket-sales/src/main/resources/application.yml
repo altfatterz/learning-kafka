@@ -2,7 +2,8 @@ spring:
   kafka:
     streams:
       application-id: ticket-sales
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: localhost:19092
+
       properties:
         schema.registry.url: http://localhost:8081
 

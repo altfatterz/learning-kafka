@@ -4,7 +4,7 @@ https://kafka-tutorials.confluent.io/create-stateful-aggregation-count/kstreams.
 
 ```bash
 docker exec -i schema-registry kafka-avro-console-producer --topic movie-ticket-sales \
-  --bootstrap-server broker:19092 \
+  --bootstrap-server kafka:9092 \
   --property value.schema="$(< src/main/resources/avro/ticket-sale.avsc)"
 ```
 
