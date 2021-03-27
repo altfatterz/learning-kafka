@@ -34,3 +34,8 @@ $ kafka-console-consumer \
   --from-beginning \
   --topic lines-lower-topic
 ```
+
+```bash
+$ kafka-consumer-grpups --bootstrap-server kafka:9092 --list
+$ kafka-consumer-groups --bootstrap-server kafka:9092 --group lowercase-example --describe
+```

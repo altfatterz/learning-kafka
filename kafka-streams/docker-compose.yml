@@ -70,9 +70,6 @@ services:
       bash -c 'echo Waiting for Kafka to be ready... ;
       cub kafka-ready -b kafka:9092 1 300 ;
       echo Creating topics... ;
-      kafka-topics --bootstrap-server kafka:9092 --create --topic left-topic --partitions 1 --replication-factor 1 ;
-      kafka-topics --bootstrap-server kafka:9092 --create --topic right-topic --partitions 1 --replication-factor 1 ;
-      kafka-topics --bootstrap-server kafka:9092 --create --topic joined-topic --partitions 1 --replication-factor 1 ;
       kafka-topics --bootstrap-server kafka:9092 --create --topic _confluent-monitoring --partitions 12 --replication-factor 1 --config retention.ms=259200000 --config message.timestamp.type=LogAppendTime ;
       true'
 

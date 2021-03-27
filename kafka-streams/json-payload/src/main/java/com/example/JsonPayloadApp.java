@@ -24,44 +24,42 @@ public class JsonPayloadApp {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonPayloadApp.class);
 
-	private final static String APPLICATION_ID = "json-payload-example";
+    private final static String APPLICATION_ID = "json-payload-example";
+    private final static String BOOTSTRAP_SERVERS = "localhost:19092";
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
         Properties config = getConfig();
         Topology topology = getTopology();
-        logger.info(topology.describe().toString());
-        KafkaStreams streams =  startApp(config, topology);
-
+        logger.info(topology.describe().toString()); // https://zz85.github.io/kafka-streams-viz/
+        KafkaStreams streams = startApp(config, topology);
         setupShutdownHook(streams);
     }
 
+    private static Serde<TemperatureReading> getJsonSerde() {
+        Map<String, Object> serdeProps = new HashMap<>();
+        serdeProps.put("json.value.type", TemperatureReading.class);
 
-	private static Serde<TemperatureReading> getJsonSerde(){
+        final Serializer<TemperatureReading> temperatureSerializer = new KafkaJsonSerializer<>();
+        temperatureSerializer.configure(serdeProps, false);
 
-		Map<String, Object> serdeProps = new HashMap<>();
-		serdeProps.put("json.value.type", TemperatureReading.class);
+        final Deserializer<TemperatureReading> temperatureDeserializer = new KafkaJsonDeserializer<>();
+        temperatureDeserializer.configure(serdeProps, false);
 
-		final Serializer<TemperatureReading> temperatureSerializer = new KafkaJsonSerializer<>();
-		temperatureSerializer.configure(serdeProps, false);
+        return Serdes.serdeFrom(temperatureSerializer, temperatureDeserializer);
+    }
 
-		final Deserializer<TemperatureReading> temperatureDeserializer = new KafkaJsonDeserializer<>();
-		temperatureDeserializer.configure(serdeProps, false);
+    private static Properties getConfig() {
+        Properties settings = new Properties();
+        settings.put(StreamsConfig.APPLICATION_ID_CONFIG, APPLICATION_ID);
+        settings.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        return settings;
+    }
 
-		return Serdes.serdeFrom(temperatureSerializer, temperatureDeserializer);
-	}
-
-	private static Properties getConfig(){
-		Properties settings = new Properties();
-		settings.put(StreamsConfig.APPLICATION_ID_CONFIG, APPLICATION_ID);
-		settings.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:19092");
-		return settings;
-	}
-
-	private static KafkaStreams startApp(Properties config, Topology topology){
-		KafkaStreams streams = new KafkaStreams(topology, config);
-		streams.start();
-		return streams;
-	}
+    private static KafkaStreams startApp(Properties config, Topology topology) {
+        KafkaStreams streams = new KafkaStreams(topology, config);
+        streams.start();
+        return streams;
+    }
 
     private static Topology getTopology() {
         StreamsBuilder builder = new StreamsBuilder();
@@ -70,13 +68,12 @@ public class JsonPayloadApp {
         final Serde<TemperatureReading> temperatureSerde = getJsonSerde();
 
         builder.stream("temperatures-topic", Consumed.with(stringSerde, temperatureSerde))
-				.peek((key, value) -> logger.info("key: {}, value: {}", key, value))
+                .peek((key, value) -> logger.info("key: {}, value: {}", key, value))
                 .filter((key, value) -> value.temperature > 25)
-				.peek((key, value) -> logger.info("filtered: [key: {}, value: {}]", key, value))
+                .peek((key, value) -> logger.info("filtered: [key: {}, value: {}]", key, value))
                 .to("high-temperatures-topic", Produced.with(stringSerde, temperatureSerde));
 
-        Topology topology = builder.build();
-        return topology;
+        return builder.build();
     }
 
     static public class TemperatureReading {
@@ -86,15 +83,15 @@ public class JsonPayloadApp {
 
         @Override
         public String toString() {
-        	return "[station: " + station + ",temperature:" + temperature + ",timestamp:" + timestamp + "]";
-		}
+            return "[station: " + station + ",temperature:" + temperature + ",timestamp:" + timestamp + "]";
+        }
     }
 
-	private static void setupShutdownHook(KafkaStreams streams){
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			logger.info("### Stopping {} application ###", APPLICATION_ID);
-			streams.close();
-		}));
-	}
+    private static void setupShutdownHook(KafkaStreams streams) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("### Stopping {} application ###", APPLICATION_ID);
+            streams.close();
+        }));
+    }
 
 }

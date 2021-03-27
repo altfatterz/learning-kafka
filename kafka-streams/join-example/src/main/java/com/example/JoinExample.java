@@ -1,7 +1,5 @@
 package com.example;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -18,18 +16,16 @@ import java.util.Properties;
 
 public class JoinExample {
 
-    private final static String APPLICATION_ID = "join-example";
+    private static final Logger logger = LoggerFactory.getLogger(JoinExample.class);
+
+    private static final String APPLICATION_ID = "join-example";
     private final static String BOOTSTRAP_SERVERS = "localhost:19092";
 
-    private final static String TOPIC1 = "left-topic";
-    private final static String TOPIC2 = "right-topic";
-    private final static String TOPIC3 = "joined-topic";
-
-    private final static Logger logger = LoggerFactory.getLogger(JoinExample.class);
+    private static final String TOPIC1 = "left-topic";
+    private static final String TOPIC2 = "right-topic";
+    private static final String TOPIC3 = "joined-topic";
 
     public static void main(String[] args) {
-        logger.info("*** Starting {} Application ***", APPLICATION_ID);
-
         Properties config = getConfig();
         Topology topology = getTopology();
         KafkaStreams streams = startApp(config, topology);
@@ -47,29 +43,22 @@ public class JoinExample {
         KStream<String, String> rightStream = builder.stream(TOPIC2,
                 Consumed.with(stringSerde, stringSerde));
 
-        leftStream.join(rightStream,
-                (leftValue, rightValue) -> "[" + leftValue + ", " + rightValue + "]",
-                JoinWindows.of(Duration.ofMillis(100))
-        ).to(TOPIC3, Produced.with(stringSerde, stringSerde));
+        leftStream
+                .join(rightStream,
+                        (leftValue, rightValue) -> "[" + leftValue + ", " + rightValue + "]",
+                        JoinWindows.of(Duration.ofMinutes(5)),
+                        StreamJoined.with(stringSerde, stringSerde, stringSerde)
+                )
+                .peek((key, value) -> logger.info("key: {}, value: {}", key, value))
+                .to(TOPIC3, Produced.with(stringSerde, stringSerde));
 
-        Topology topology = builder.build();
-
-        logger.info(topology.describe().toString());
-
-        return topology;
+        return builder.build();
     }
 
     private static Properties getConfig() {
         Properties settings = new Properties();
         settings.put(StreamsConfig.APPLICATION_ID_CONFIG, APPLICATION_ID);
         settings.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-
-        // Interceptor configuration
-        settings.put(StreamsConfig.PRODUCER_PREFIX + ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,
-                "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor");
-        settings.put(StreamsConfig.CONSUMER_PREFIX + ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG,
-                "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor");
-
         return settings;
     }
 
@@ -81,9 +70,8 @@ public class JoinExample {
 
     private static void setupShutdownHook(KafkaStreams streams) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("### Stopping {} application ###", APPLICATION_ID);
+            System.out.printf("### Stopping %s Application ###%n", APPLICATION_ID);
             streams.close();
         }));
     }
-
 }

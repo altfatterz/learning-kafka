@@ -46,7 +46,7 @@ cat << EOF | kafka-console-producer \
 EOF
 ```
 
-Read the ouput topic:
+Read the output topic:
 
 ```bash
 kafka-console-consumer \
