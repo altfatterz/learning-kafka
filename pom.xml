@@ -30,6 +30,8 @@
 
         <module>spring-cloud-stream/uppercase-transformer</module>
         <module>spring-cloud-stream/uppercase-transformer-old-way</module>
+
+        <module>transactions/transactional-message-producer</module>
     </modules>
 
     <build>
