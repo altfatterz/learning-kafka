@@ -19,17 +19,25 @@ $ ccloud kafka cluster list
     lkc-3kj32 | kafka-cluster-on-gcp | BASIC | gcp      | europe-west6 | single-zone  | UP
 ```
 
+Set the `ClUSTER_ID` environment variable 
+
 ```bash
-$ ccloud kafka topic list --cluster lkc-3kj32
+export CLUSTER_ID=<cluster-id> 
+```
+
+```bash
+$ ccloud kafka topic list --cluster $CLUSTER_ID
      Name
 +------------+
   demo-topic
 ```
 
+Create the API Key/Secret using http://confluent.cloud
 
-Use an API key and secret in the CLI
+Store an API key/secret locally to use in the CLI.
+
 ```bash
-$ ccloud api-key store --resource lkc-3kj32
+$ ccloud api-key store --resource $CLUSTER_ID
 Key: MHW7UJ2KN6F53T5N
 
 Secret: ****************************************************************
@@ -41,22 +49,26 @@ $ ccloud api-key list
 +--------------------+-------------+-------+----------------------+---------------+-------------+----------------------+
     MHW7UJ2KN6F53T5N |             |  1160 | altfatterz@gmail.com |               | lkc-3kj32   | 2021-03-21T20:00:19Z
 ```
+
 ```bash
-$ ccloud api-key use MHW7UJ2KN6F53T5N --resource lkc-3kj32
+export KEY=<key>
+```
+
+Make an API key active for use in other commands.
+
+```bash
+$ ccloud api-key use $KEY --resource $CLUSTER_ID
 Set API Key "MHW7UJ2KN6F53T5N" as the active API key for "lkc-3kj32".
 ```
 
 Consumer:
 
 ```bash
-$ ccloud kafka topic consume -b demo-topic --cluster lkc-3kj32
+$ ccloud kafka topic consume -b demo-topic --cluster $CLUSTER_ID
 ```
 
 Producer:
 ```bash
-$ ccloud kafka topic produce demo-topic --cluster lkc-3kj32
+$ ccloud kafka topic produce demo-topic --cluster $CLUSTER_ID
 ```
-
-
-TODO include Schema Registry into the mix and use Protobuf
 

@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
+import java.util.Date;
+
 @Component
 public class Producer {
 
@@ -23,7 +25,7 @@ public class Producer {
 
     @EventListener(ApplicationStartedEvent.class)
     public void produce() {
-        ListenableFuture<SendResult<String, String>> result = kafkaTemplate.send("demo-topic", "Hello again");
+        ListenableFuture<SendResult<String, String>> result = kafkaTemplate.send("demo-topic", "Hello at " + new Date());
 
         result.addCallback(new ListenableFutureCallback<>() {
             @Override
