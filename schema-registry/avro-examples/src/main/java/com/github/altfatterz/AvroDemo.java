@@ -6,6 +6,7 @@ import com.github.altfatterz.avro.Customer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -31,7 +32,7 @@ public class AvroDemo {
                     put("e-billing-enabled", true);
                     put("push-notification-enabled", false);
                 }})
-                .setSignupTimestamp(System.currentTimeMillis())
+                .setSignupTimestamp(Instant.now())
                 .build();
 
         logger.info("Customer: {}", customer);
