@@ -13,12 +13,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-public class KafkaStreamsGettingStartedApp {
+public class StatelessStreamProcessingExample {
 
-    private static final Logger logger = LoggerFactory.getLogger(KafkaStreamsGettingStartedApp.class);
+    private static final Logger logger = LoggerFactory.getLogger(StatelessStreamProcessingExample.class);
 
-    private final static String APPLICATION_ID = "lowercase-example";
+    private final static String APPLICATION_ID = "stateless-kafka-streams-example";
     private final static String BOOTSTRAP_SERVERS = "localhost:19092";
+
+    private final static String INPUT_TOPIC = "sentences-topic";
+    private final static String OUTPUT_TOPIC = "lowercase-sentences-topic";
 
     public static void main(String[] args) {
         Properties config = getConfig();
@@ -43,10 +46,9 @@ public class KafkaStreamsGettingStartedApp {
 
     private static Topology getTopology() {
         StreamsBuilder builder = new StreamsBuilder();
-        KStream<String, String> lines = builder.stream("lines-topic", Consumed.with(Serdes.String(),
-                Serdes.String()));
+        KStream<String, String> lines = builder.stream(INPUT_TOPIC, Consumed.with(Serdes.String(), Serdes.String()));
         KStream<String, String> transformed = lines.mapValues(value -> value.toLowerCase());
-        transformed.to("lines-lower-topic", Produced.with(Serdes.String(), Serdes.String()));
+        transformed.to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.String()));
         return builder.build();
     }
 
