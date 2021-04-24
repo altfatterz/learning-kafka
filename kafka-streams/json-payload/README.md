@@ -1,36 +1,24 @@
+The topics are already created with the `docker-compose` configuration.
+
 Create Kafka topics:
 
 ```bash
-kafka-topics \
---create \
---bootstrap-server kafka:9092 \
---replication-factor 1 \
---partitions 1 \
---topic temperatures-topic
+$ kafka-topics --bootstrap-server kafka:9092 --topic temperatures-topic --create --partitions 1 --replication-factor 1 
+$ kafka-topics --bootstrap-server kafka:9092 --topic high-temperatures-topic --create --partitions 1 --replication-factor 1
 ```
-
-```bash
-kafka-topics \
---create \
---bootstrap-server kafka:9092 \
---replication-factor 1 \
---partitions 1 \
---topic high-temperatures-topic
-```
-
 
 View the created topics
 
 ```bash
-kafka-topics \
---bootstrap-server kafka:9092 \
---list
+$ kafka-topics --bootstrap-server kafka:9092 --list
 ```
 
 Populate input Kafka topic:
 
 ```bash
-cat << EOF | kafka-console-producer \
+$ docker exec -it tools bash
+
+$ cat << EOF | kafka-console-producer \
 --broker-list kafka:9092 \
 --property "parse.key=true" \
 --property "key.separator=:" \
@@ -49,9 +37,6 @@ EOF
 Read the output topic:
 
 ```bash
-kafka-console-consumer \
---bootstrap-server kafka:9092 \
---from-beginning \
---topic high-temperatures-topic
+$ kafka-console-consumer --bootstrap-server kafka:9092 --topic high-temperatures-topic --from-beginning 
 ```
 

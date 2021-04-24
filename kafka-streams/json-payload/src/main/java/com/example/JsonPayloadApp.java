@@ -27,6 +27,10 @@ public class JsonPayloadApp {
     private final static String APPLICATION_ID = "json-payload-example";
     private final static String BOOTSTRAP_SERVERS = "localhost:19092";
 
+    private final static String INPUT_TOPIC = "temperatures-topic";
+    private final static String OUTPUT_TOPIC = "high-temperatures-topic";
+
+
     public static void main(String[] args) {
         Properties config = getConfig();
         Topology topology = getTopology();
@@ -35,7 +39,7 @@ public class JsonPayloadApp {
         setupShutdownHook(streams);
     }
 
-    private static Serde<TemperatureReading> getJsonSerde() {
+    private static Serde<TemperatureReading> getTemperatureReadingSerde() {
         Map<String, Object> serdeProps = new HashMap<>();
         serdeProps.put("json.value.type", TemperatureReading.class);
 
@@ -64,14 +68,13 @@ public class JsonPayloadApp {
     private static Topology getTopology() {
         StreamsBuilder builder = new StreamsBuilder();
 
-        final Serde<String> stringSerde = Serdes.String();
-        final Serde<TemperatureReading> temperatureSerde = getJsonSerde();
+        final Serde<TemperatureReading> temperatureReadingSerde = getTemperatureReadingSerde();
 
-        builder.stream("temperatures-topic", Consumed.with(stringSerde, temperatureSerde))
-                .peek((key, value) -> logger.info("key: {}, value: {}", key, value))
+        builder.stream(INPUT_TOPIC, Consumed.with(Serdes.String(), temperatureReadingSerde))
+                .peek((key, value) -> logger.info("input with [key: {}, value: {}]", key, value))
                 .filter((key, value) -> value.temperature > 25)
                 .peek((key, value) -> logger.info("filtered: [key: {}, value: {}]", key, value))
-                .to("high-temperatures-topic", Produced.with(stringSerde, temperatureSerde));
+                .to(OUTPUT_TOPIC, Produced.with(Serdes.String(), temperatureReadingSerde));
 
         return builder.build();
     }

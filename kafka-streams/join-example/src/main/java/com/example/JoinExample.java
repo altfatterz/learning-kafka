@@ -38,10 +38,8 @@ public class JoinExample {
 
         final Serde<String> stringSerde = Serdes.String();
 
-        KStream<String, String> leftStream = builder.stream(TOPIC1,
-                Consumed.with(stringSerde, stringSerde));
-        KStream<String, String> rightStream = builder.stream(TOPIC2,
-                Consumed.with(stringSerde, stringSerde));
+        KStream<String, String> leftStream = builder.stream(TOPIC1, Consumed.with(stringSerde, stringSerde));
+        KStream<String, String> rightStream = builder.stream(TOPIC2, Consumed.with(stringSerde, stringSerde));
 
         leftStream
                 .join(rightStream,
