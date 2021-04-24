@@ -1,15 +1,22 @@
+The topics are already created with the `docker-compose` configuration.
+
+
+To create the topics:
+
 ```bash
 kafka-topics --bootstrap-server kafka:9092 --create --topic movie-ticket-sales --partitions 1 --replication-factor 1; 
 kafka-topics --bootstrap-server kafka:9092 --create --topic movie-tickets-sold -partitions 1 --replication-factor 1;
 ```
 
+To delete the topics:
+
 ```bash
-kafka-topics --bootstrap-server kafka:9092 --delete --topic movie-ticket-sales;
-kafka-topics --bootstrap-server kafka:9092 --delete --topic movie-tickets-sold;
+$ kafka-topics --bootstrap-server kafka:9092 --delete --topic movie-ticket-sales;
+$ kafka-topics --bootstrap-server kafka:9092 --delete --topic movie-tickets-sold;
 ```
 
 ```bash
-kafka-topics --bootstrap-server kafka:9092 --list
+$ kafka-topics --bootstrap-server kafka:9092 --list
 ```
 
 Producer:
@@ -28,8 +35,11 @@ docker exec -i schema-registry /usr/bin/kafka-avro-console-producer --topic movi
 ```
 
 Consumer:
+
+
 ```bash
-docker exec -i kafka /usr/bin/kafka-console-consumer --topic movie-tickets-sold --bootstrap-server kafka:9092 --from-beginning --property print.key=true --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
+$ docker exec -it tools bash
+$ kafka-console-consumer --topic movie-tickets-sold --bootstrap-server kafka:9092 --from-beginning --property print.key=true --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
 ```
 
 

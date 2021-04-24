@@ -74,6 +74,8 @@ services:
       kafka-topics --bootstrap-server kafka:9092 --create --topic sentences-topic --partitions 1 --replication-factor 1 ;
       kafka-topics --bootstrap-server kafka:9092 --create --topic lowercase-sentences-topic --partitions 1 --replication-factor 1 ;
       kafka-topics --bootstrap-server kafka:9092 --create --topic word-counts-topic --partitions 1 --replication-factor 1 ;
+      kafka-topics --bootstrap-server kafka:9092 --create --topic movie-ticket-sales --partitions 1 --replication-factor 1 ;
+      kafka-topics --bootstrap-server kafka:9092 --create --topic movie-tickets-sold -partitions 1 --replication-factor 1 ;
       true'
 
   tools:

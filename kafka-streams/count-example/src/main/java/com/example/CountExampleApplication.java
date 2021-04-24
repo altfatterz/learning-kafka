@@ -22,7 +22,7 @@ public class CountExampleApplication {
 
     private static final String APPLICATION_ID = "count-example";
     private final static String BOOTSTRAP_SERVERS = "localhost:19092";
-    private final static String SCHEMA_REGISTRY = "localhost:8081";
+    private final static String SCHEMA_REGISTRY = "http://localhost:8081";
 
     private static final String INPUT_TOPIC = "movie-ticket-sales";
     private static final String OUTPUT_TOPIC = "movie-tickets-sold";
@@ -38,7 +38,7 @@ public class CountExampleApplication {
     private static SpecificAvroSerde<TicketSale> ticketSaleSerde() {
         final SpecificAvroSerde<TicketSale> serde = new SpecificAvroSerde<>();
         Map<String, String> config = new HashMap<>();
-        config.put(SCHEMA_REGISTRY_URL_CONFIG, BOOTSTRAP_SERVERS);
+        config.put(SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY);
         serde.configure(config, false);
         return serde;
     }
@@ -46,17 +46,24 @@ public class CountExampleApplication {
     private static Topology getTopology(SpecificAvroSerde<TicketSale> ticketSaleSerde) {
         StreamsBuilder builder = new StreamsBuilder();
 
+        // two new topics were created and also two new folders (state stores) under /tmp/kafka-streams/count-example
+        // 0_0 and 0_1
+
         builder.stream(INPUT_TOPIC, Consumed.with(Serdes.String(), ticketSaleSerde))
-                .peek((key, value) -> logger.info("key: {}, value: {}", key, value))
+                .peek((key, value) -> logger.info("received record with key: {}, value: {}", key, value))
                 // Set key to title and value to ticket value
+                // creates a repartition topic since we change the key
                 .map((k, v) -> new KeyValue<>(v.getTitle(), v.getTicketTotalValue()))
-                .peek((key, value) -> logger.info("key: {}, value: {}", key, value))
+                .peek((key, value) -> logger.info("after mapping the record is with key: {}, value: {}", key, value))
                 // Group by title
                 .groupByKey(Grouped.with(Serdes.String(), Serdes.Integer()))
                 // Apply COUNT method
+                // create the changelog topic
                 .count()
                 // Write to stream specified by outputTopic
-                .toStream().to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.Long()));
+                .toStream()
+                .peek((key, value) -> logger.info("final result with key: {}, value: {}", key, value))
+                .to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.Long()));
 
         return builder.build();
     }
