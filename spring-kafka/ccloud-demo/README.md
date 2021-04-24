@@ -3,6 +3,16 @@
 
 1. Install ccloud CLI https://docs.confluent.io/ccloud-cli/current/index.html
 
+```bash
+$ ccloud version
+
+Version:     v1.27.0
+Git Ref:     482b3f24
+Build Date:  2021-04-19T03:09:55Z
+Go Version:  go1.16.3 (darwin/amd64)
+Development: false
+```
+
 2. Login 
 
 ```bash
@@ -91,14 +101,14 @@ $ ccloud kafka topic produce demo-topic --cluster $CLUSTER_ID
 14. Get the client configuration from https://confluent.cloud
 
 Go to `Cluster --> Clients` and in the `Select configuration to copy into your client code` select your client type. 
-In this example a Spring Boot configuration was used copied into the `/src/main/resources/applicaiton.yaml` 
+In this example a Spring Boot configuration was used copied into the `/src/main/resources/application.properties` 
 
 
 ### Connect via `kafka-console-producer` or `kafka-console-consumer`
 
-1. Get the client configuration from https://confluent.cloud
+1. Get the `client.properties` from https://confluent.cloud
 
-Go to `Cluster --> CLI and Tools`
+Go to `Cluster --> CLI and Tools` (Select `Java`) 
 
 2. Export the cluster host name and topic
    
@@ -109,15 +119,13 @@ export KAFKA_CLUSTER_AND_PORT=pkc-lzoyy.europe-west6.gcp.confluent.cloud:9092
 2. Start a consumer
 
 ```bash
-$ kafka-console-consumer --from-beginning --bootstrap-server pkc-lzoyy.europe-west6.gcp.confluent.cloud:9092 \
---consumer.config client.properties --topic demo-topic
+$ kafka-console-consumer --from-beginning --bootstrap-server $KAFKA_CLUSTER_AND_PORT --consumer.config client.properties --topic demo-topic
 ```
 
 3. Check the consumer groups:
 
 ```bash
-$ kafka-consumer-groups --bootstrap-server pkc-lzoyy.europe-west6.gcp.confluent.cloud:9092 \
- --command-config client.properties --list
+$ kafka-consumer-groups --bootstrap-server $KAFKA_CLUSTER_AND_PORT --command-config client.properties --list
 ```
 
 ### Connector demo
@@ -137,13 +145,13 @@ $ ccloud connector list --cluster $CLUSTER_ID
 3. Export the connector 
 
 ```bash
-export DATAGEN_CONNECTOR_ID=<datagen-connector-id>
+$ export DATAGEN_CONNECTOR_ID=<datagen-connector-id>
 ```
 
 3. Describe the running connector:
 
 ```bash
-$ ccloud connector describe lcc-vzwdn --cluster $CLUSTER_ID
+$ ccloud connector describe $DATAGEN_CONNECTOR_ID --cluster $CLUSTER_ID
 
 Connector Details
 +--------+-------------------+
@@ -199,5 +207,6 @@ $ ccloud kafka topic consume -b pageviews-topic --cluster $CLUSTER_ID
 
 ```bash
 $ ccloud connector pause $DATAGEN_CONNECTOR_ID --cluster $CLUSTER_ID
+$ ccloud connector resume $DATAGEN_CONNECTOR_ID --cluster $CLUSTER_ID
 $ ccloud connector delete $DATAGEN_CONNECTOR_ID --cluster $CLUSTER_ID
 ```
