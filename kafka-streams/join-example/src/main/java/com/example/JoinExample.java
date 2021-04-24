@@ -44,7 +44,7 @@ public class JoinExample {
         leftStream
                 .join(rightStream,
                         (leftValue, rightValue) -> "[" + leftValue + ", " + rightValue + "]",
-                        JoinWindows.of(Duration.ofMinutes(5)),
+                        JoinWindows.of(Duration.ofSeconds(5)), // to demonstrate windowing
                         StreamJoined.with(stringSerde, stringSerde, stringSerde)
                 )
                 .peek((key, value) -> logger.info("key: {}, value: {}", key, value))
