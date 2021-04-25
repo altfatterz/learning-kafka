@@ -27,6 +27,7 @@ public class TransactionalWordCount {
 
     public static void main(String[] args) {
 
+        // This ID must be unique across the different producers
         String transactionalId  = System.getenv("TRANSACTIONAL_ID");
         transactionalId = (transactionalId != null) ? transactionalId : "wordcount-1";
 
@@ -40,6 +41,10 @@ public class TransactionalWordCount {
             consumer.close();
         }));
 
+        // according to the Confluent Developer Training material this call should be within the while loop.
+        // but then we receive the following exception
+        // Exception in thread "main" org.apache.kafka.common.KafkaException: TransactionalId wordcount-1:
+        // Invalid transition attempted from state READY to state INITIALIZING
         producer.initTransactions();
 
         while (true) {
@@ -93,6 +98,8 @@ public class TransactionalWordCount {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, CONSUMER_GROUP_ID);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+
+        // only read messages from committed transactions
         props.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
