@@ -122,6 +122,7 @@ In the logs we will see:
 09:54:45.301 [kafka-producer-network-thread | producer-transactional-wordcount-1] DEBUG o.a.k.c.p.i.TransactionManager - [Producer clientId=producer-transactional-wordcount-1, transactionalId=transactional-wordcount-1] Transition from state COMMITTING_TRANSACTION to READY
 ```
 
+* Try to run two instances of the TransactionWordCount and examine the logs
 
 
 Resources
