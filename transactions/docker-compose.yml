@@ -59,8 +59,13 @@ services:
       cub kafka-ready -b kafka:9092 1 300 ;
       echo Creating topics... ;
       kafka-topics --bootstrap-server kafka:9092 --create --topic _confluent-monitoring --partitions 12 --replication-factor 1 --config retention.ms=259200000 --config message.timestamp.type=LogAppendTime ;
-      kafka-topics --bootstrap-server kafka:9092 --create --topic input-topic --partitions 1 --replication-factor 1;
+      kafka-topics --bootstrap-server kafka:9092 --create --topic input-topic --partitions 3 --replication-factor 1;
       kafka-topics --bootstrap-server kafka:9092 --create --topic output-topic --partitions 1 --replication-factor 1;
       true'
 
-
+  tools:
+    image: cnfltraining/training-tools:6.0
+    container_name: tools
+    hostname: tools
+    command: /bin/sh
+    tty: true

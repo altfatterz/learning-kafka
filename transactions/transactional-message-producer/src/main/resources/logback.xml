@@ -7,6 +7,11 @@
   </appender>
 
   <logger name="org.apache.kafka.clients.producer" level="debug" />
+  <logger name="org.apache.kafka.clients.consumer" level="debug" />
+  <logger name="org.apache.kafka.clients.consumer.internals.Fetcher" level="info" />
+  <logger name="org.apache.kafka.clients.consumer.internals.AbstractCoordinator" level="info" />
+
+
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />
