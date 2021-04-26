@@ -58,12 +58,12 @@ public class StatefulStreamProcessingExample {
         KStream<byte[], String> sentences = builder.stream(INPUT_TOPIC);
 
         sentences
-                .flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
-                .peek((key, value) -> logger.info("key: {}, value: {}", key, value))
+                .flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\s+")))
+                .peek((key, value) -> logger.info("record after flatMapValues: [key: {}, value: {}]", key, value))
                 .groupBy((key, value) -> value, Grouped.keySerde(Serdes.String()))
                 .count(Materialized.as("WordCount"))
                 .toStream()
-                .peek((key, value) -> logger.info("key: {}, value: {}", key, value))
+                .peek((key, value) -> logger.info("record to be produced [key: {}, value: {}]", key, value))
                 .to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.Long()));
 
         return builder.build();
@@ -75,5 +75,8 @@ public class StatefulStreamProcessingExample {
             streams.close();
         }));
     }
+
+    // Check the state store: /tmp/kafka-streams/stateful-kafka-streams-example
+    // Check the changelog and repartition topics created
 
 }

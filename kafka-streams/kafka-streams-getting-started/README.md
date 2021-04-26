@@ -10,9 +10,9 @@ $ kafka-topics bootstrap-server kafka:9092 --topic word-counts-topic --create --
 
 ```bash
 cat << EOF | kafka-console-producer --broker-list kafka:9092 --topic sentences-topic
-"Kafka powers the Confluent Streaming Platform"
-"Events are stored in Kafka"
-"Confluent contributes to Kafka"
+Kafka powers the Confluent Streaming Platform
+Events are stored in Kafka
+Confluent contributes to Kafka
 EOF
 ```
 
@@ -32,5 +32,6 @@ $ kafka-console-consumer --bootstrap-server kafka:9092 --topic word-counts-topic
 ```bash
 $ kafka-consumer-groups --bootstrap-server kafka:9092 --list
 $ kafka-consumer-groups --bootstrap-server kafka:9092 --group stateless-kafka-streams-example --describe
+$ kafka-consumer-groups --bootstrap-server kafka:9092 --group stateful-kafka-streams-example --describe
 ```
 
