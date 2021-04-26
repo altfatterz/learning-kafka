@@ -41,6 +41,15 @@ public class StatelessStreamProcessingExample {
         Properties settings = new Properties();
         settings.put(StreamsConfig.APPLICATION_ID_CONFIG, APPLICATION_ID);
         settings.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+
+        // check the number of tasks created
+        // [0_0], [0_1], [0_2]
+
+        // Start up another instance and see how the stream tasks are balanced
+        // Check the:  kafka-consumer-groups --bootstrap-server kafka:9092 --group stateless-kafka-streams-example --describe
+
+        // Stop the second instance modify this line and see the consumer group
+        // settings.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, 2);
         return settings;
     }
 

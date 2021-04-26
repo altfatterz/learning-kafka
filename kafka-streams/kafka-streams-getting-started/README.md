@@ -31,6 +31,6 @@ $ kafka-console-consumer --bootstrap-server kafka:9092 --topic word-counts-topic
 
 ```bash
 $ kafka-consumer-groups --bootstrap-server kafka:9092 --list
-$ kafka-consumer-groups --bootstrap-server kafka:9092 --group <GROUP_NAME> --describe
+$ kafka-consumer-groups --bootstrap-server kafka:9092 --group stateless-kafka-streams-example --describe
 ```
 
