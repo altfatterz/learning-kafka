@@ -7,6 +7,7 @@ import org.apache.kafka.streams.kstream.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -47,6 +48,7 @@ public class StatefulStreamProcessingExample {
         settings.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 
         // disable caching https://docs.confluent.io/platform/current/streams/developer-guide/memory-mgmt.html#record-caches-in-the-dsl
+        // leave the caching for windows demonstration
         settings.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
         return settings;
     }
@@ -61,9 +63,11 @@ public class StatefulStreamProcessingExample {
                 .flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\s+")))
                 .peek((key, value) -> logger.info("record after flatMapValues: [key: {}, value: {}]", key, value))
                 .groupBy((key, value) -> value, Grouped.keySerde(Serdes.String()))
+                //.windowedBy(TimeWindows.of(Duration.ofSeconds(5)))
                 .count(Materialized.as("WordCount"))
                 .toStream()
                 .peek((key, value) -> logger.info("record to be produced [key: {}, value: {}]", key, value))
+                //.map((Windowed<String> key, Long count) -> new KeyValue<>(key.toString(), count))
                 .to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.Long()));
 
         return builder.build();
@@ -79,4 +83,6 @@ public class StatefulStreamProcessingExample {
     // Check the state store: /tmp/kafka-streams/stateful-kafka-streams-example
     // Check the changelog and repartition topics created
 
+
+    // Enable the windowing
 }
