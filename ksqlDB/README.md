@@ -1,7 +1,7 @@
 Install the Kafka Connect Datagen connector
 
 ```bash
-$ docker compose exec -u root connect confluent-hub install --no-prompt confluentinc/kafka-connect-datagen:0.4.0
+$ docker exec -u root connect confluent-hub install --no-prompt confluentinc/kafka-connect-datagen:0.4.0
 $ docker compose restart connect
 ```
 
@@ -10,9 +10,15 @@ Execute the ksqlDB CLI:
 ```bash
 $ docker exec -it tools bash
 $ ksql http://ksqldb-server:8088
+$ list topics;
+$ list streams;
+$ list tables;
+$ list connectors;
+$ list queries;
+$ server
 ```
 
-Create data in the `my-pageviews-topic` and `my-users-topic` topics 
+Create data in the `pageviews-ksql-connector` and `users-ksql-connector` connectors
 
 ```bash
 $ CREATE SOURCE CONNECTOR `pageviews-ksql-connector` WITH( 
@@ -45,12 +51,23 @@ $ list connectors;
 -----------------------------------------------------------------------------------------------------------------------
 ```
 
+Check it the connectors from the `connect` REST interface:
+
+```bash
+$ docker exec -it tools bash
+$ curl connect:8083/connectors | jq
+$ curl connect:8083/connectors/pageviews-ksql-connector | jq
+$ curl connect:8083/connectors/users-ksql-connector | jq
+```
+
 Create a stream
 
 ```bash
 $ CREATE STREAM pageviews (viewtime BIGINT, userid VARCHAR, pageid VARCHAR) \
 WITH (VALUE_FORMAT = 'AVRO', KAFKA_TOPIC = 'my-pageviews-topic');
 
+$ describe pageviews;
+$ describe extended pageviews;
 $ SELECT * FROM pageviews EMIT CHANGES;
 ```
 
@@ -59,10 +76,12 @@ Create a table
 $ CREATE TABLE users (registertime BIGINT, userid VARCHAR PRIMARY KEY, gender VARCHAR, regionid VARCHAR) \
 WITH (VALUE_FORMAT = 'AVRO', KAFKA_TOPIC = 'my-users-topic');
 
+$ describe users;
+$ describe extended users;
 $ SELECT * FROM users EMIT CHANGES;
 ```
 
-Create a persistent query:
+Create a persistent query: (PAGEVIEWS_ENRICHED topic will be created)
 
 ```bash
 $ CREATE STREAM pageviews_enriched AS \
@@ -84,7 +103,7 @@ $ SELECT * FROM pageviews_enriched EMIT CHANGES;
 Customise the topic underneath:
 
 ```bash
-$ CREATE STREAM pageviews_enriched2 WITH (KAFKA_TOPIC='pageviews_enriched2', partitions = 1, replicas = 1) AS \
+$ CREATE STREAM pageviews_enriched2 WITH (KAFKA_TOPIC='pageviews_enriched', partitions = 1, replicas = 1) AS \
     SELECT pv.userid AS userid, \
            pv.viewtime, \
            pv.pageid, \
@@ -103,6 +122,8 @@ $ explain <query-id>
 $ list queries extended
 ```
 
+Persistent query with windowing example:
+
 ```bash
 $ CREATE TABLE pageviews_count_by_region WITH (KAFKA_TOPIC='pageviews_count_by_region_topic') AS \
     SELECT gender, regionid, COUNT(*) AS total \
@@ -113,38 +134,33 @@ $ CREATE TABLE pageviews_count_by_region WITH (KAFKA_TOPIC='pageviews_count_by_r
     EMIT CHANGES;
 ```
 
+Push query:
+
 ```bash
 $ SELECT * FROM pageviews_count_by_region EMIT CHANGES;
 ```
 
-
-
-Check the connector infos through the connector REST interface:
+Pull query:
 
 ```bash
-$ docker exec -it tools bash
-$ curl connect:8083/connectors
-$ curl connect:8083/connectors/pageviews-ksql-connector | jq
-$ curl connect:8083/connectors/users-ksql-connector | jq
+$ SELECT * FROM pageviews_count_by_region \ 
+WHERE KSQL_COL_0='FEMALE|+|Region_4' AND WINDOWSTART >= 1619552920000 AND WINDOWSTART <= 1619552930000;
 ```
 
-
-
+Try to drop a stream, should fail because there are running queries against it.
 
 ```bash
-$ list topics;
-$ list streams;
-$ list tables;
-$ list queries;
-$ list connectors;
-$ describe [extended] <table|stream>
-$ drop table <table-name>
-$ drop stream <stream-name>
-$ terminate <query-id>  -- you cannot drop a stream / table if there are running queries for it
+$ drop stream pageviews_enriched
 ```
 
+Terminate a query
+```bash
+$ terminate CTAS_PAGEVIEWS_COUNT_BY_REGION_5;
+```
 
-
+```bash
+$ drop stream pageviews_enriched
+```
 
 
 
