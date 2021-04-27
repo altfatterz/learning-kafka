@@ -125,5 +125,28 @@ In the logs we will see:
 * Try to run two instances of the TransactionWordCount and examine the logs
 
 
+```bash
+$ kafka-console-consumer --bootstrap-server kafka:9092 --topic  __consumer_offsets --from-beginning --formatter kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter 
+$ kafka-console-consumer --bootstrap-server kafka:9092 --topic  __consumer_offsets --from-beginning --formatter kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter | grep input-topic
+$ kafka-console-consumer --bootstrap-server kafka:9092 --topic  __consumer_offsets --from-beginning --formatter kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter --partition 12 | grep input-topic 
+
+$ kafka-console-consumer --bootstrap-server kafka:9092 --topic __transaction_state --from-beginning --formatter kafka.coordinator.transaction.TransactionLog\$TransactionLogMessageFormatter
+$ kafka-console-consumer --bootstrap-server kafka:9092 --topic __transaction_state --from-beginning --formatter kafka.coordinator.transaction.TransactionLog\$TransactionLogMessageFormatter | grep CompleteCommit
+  
+  
+  
+$ kafka-consumer-groups --bootstrap-server kafka:9092 --reset-offsets --to-earliest --group java-consumer --topic driver-positions --dry-run
+$ kafka-consumer-groups --bootstrap-server kafka:9092 --reset-offsets --to-earliest --group java-consumer --topic driver-positions --execute
+$ kafka-consumer-groups --bootstrap-server kafka:9092 --describe --group java-consumer
+```
+
+Run another instance with the same id and execute the transaction, in the __transaction_state you will see the producerEpoch is incremented and on of the instances fail with:
+
+```bash
+Exception in thread "main" org.apache.kafka.common.errors.ProducerFencedException: The producer has been rejected from the broker because it tried to use an old epoch with the transactionalId
+```
+
+
+
 Resources
 * https://www.baeldung.com/kafka-exactly-once
