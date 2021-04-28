@@ -2,7 +2,7 @@ Install the Kafka Connect Datagen connector
 
 ```bash
 $ docker exec -u root connect confluent-hub install --no-prompt confluentinc/kafka-connect-datagen:0.4.0
-$ docker compose restart connect
+$ docker-compose restart connect
 ```
 
 Execute the ksqlDB CLI:
