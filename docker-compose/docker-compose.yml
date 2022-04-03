@@ -49,5 +49,14 @@ services:
       CONTROL_CENTER_STREAMS_CONSUMER_REQUEST_TIMEOUT_MS: "960032"
       CONTROL_CENTER_UI_AUTOUPDATE_ENABLE: "false"
 
+  tools:
+    image: cnfltraining/training-tools:6.0
+    container_name: tools
+    networks:
+      - single-zookeeper-and-kafka
+    hostname: tools
+    command: /bin/sh
+    tty: true
+
 networks:
   single-zookeeper-and-kafka:
