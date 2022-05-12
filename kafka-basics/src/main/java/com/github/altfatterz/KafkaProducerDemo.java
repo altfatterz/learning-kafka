@@ -1,34 +1,35 @@
 package com.github.altfatterz;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.Date;
 import java.util.Properties;
 
 public class KafkaProducerDemo {
 
     static final Logger logger = LoggerFactory.getLogger(KafkaProducerDemo.class);
 
-    static final String BOOTSTRAP_SERVERS = "localhost:19092";
-    static final String TOPIC = "demo-topic";
+    public static void main(String[] args) throws IOException {
 
-    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Please provide the configuration file path as a command line argument");
+            System.exit(1);
+        }
 
-        // producer properties
-        Properties properties = new Properties();
-        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        // Load producer configuration settings from a local file
+        final Properties props = Util.loadConfig(args[0]);
+
+        final String topic = props.getProperty("topic");
 
         // producer
-        KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
+        KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
         // create a producer record
-        ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC, "learning kafka");
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, new Date().toString());
 
         logger.info("send message asynchronously....");
         producer.send(record);
