@@ -1,5 +1,13 @@
 #### Avro Examples
 
+Running Locally
+
+```bash
+$ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroConsumerDemo config/local-consumer.properties
+
+$ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroProducerDemo config/local-producer.properties
+```
+
 Confluent Cloud 
 
 ```bash
@@ -7,7 +15,6 @@ $ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.git
 
 java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroProducerDemo config/cloud-producer.properties
 ```
-
 
 
 https://zoltanaltfatter.com/2020/01/02/schema-evolution-with-confluent-registry/

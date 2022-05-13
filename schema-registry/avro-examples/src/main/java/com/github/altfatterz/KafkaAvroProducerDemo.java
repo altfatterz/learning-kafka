@@ -3,13 +3,9 @@ package com.github.altfatterz;
 import com.github.altfatterz.avro.Account;
 import com.github.altfatterz.avro.AccountType;
 import com.github.altfatterz.avro.Customer;
-import io.confluent.kafka.serializers.KafkaAvroSerializer;
-import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +19,6 @@ public class KafkaAvroProducerDemo {
 
     static final Logger logger = LoggerFactory.getLogger(KafkaAvroProducerDemo.class);
 
-//    static final String BOOTSTRAP_SERVERS = "localhost:9092";
-//    static final String TOPIC = "customer-topic";
-
     public static void main(String[] args) throws IOException {
 
         if (args.length != 1) {
@@ -37,15 +30,6 @@ public class KafkaAvroProducerDemo {
         final Properties props = Util.loadConfig(args[0]);
 
         final String topic = props.getProperty("topic");
-
-//        // common producer properties
-//        Properties properties = new Properties();
-//        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-//        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-//
-//        // avro specific configuration
-//        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
-//        properties.setProperty(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
 
         // producer
         Producer<String, Customer> producer = new KafkaProducer<>(props);
