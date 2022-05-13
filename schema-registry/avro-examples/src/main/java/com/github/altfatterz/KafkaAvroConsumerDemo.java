@@ -7,10 +7,11 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -18,31 +19,37 @@ public class KafkaAvroConsumerDemo {
 
     static final Logger logger = LoggerFactory.getLogger(KafkaAvroConsumerDemo.class);
 
-    static final String BOOTSTRAP_SERVERS = "localhost:9092";
-    static final String GROUP_ID = "customer-consumer-app";
-    static final String TOPIC = "customer-topic";
+    public static void main(String[] args) throws IOException {
 
-    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Please provide the configuration file path as a command line argument");
+            System.exit(1);
+        }
 
-        Properties properties = new Properties();
-        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
-        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        // Load producer configuration settings from a local file
+        final Properties props = Util.loadConfig(args[0]);
 
-        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getName());
-        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-
-        properties.setProperty(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
-        properties.setProperty(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, "true");
+        final String topic = props.getProperty("topic");
+//
+//        Properties properties = new Properties();
+//        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+//        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
+//        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+//
+//        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getName());
+//        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+//
+//        properties.setProperty(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
+//        properties.setProperty(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, "true");
 
         // create the consumer
-        KafkaConsumer<String, Customer> consumer = new KafkaConsumer<>(properties);
-        consumer.subscribe(Arrays.asList(TOPIC));
+        KafkaConsumer<String, Customer> consumer = new KafkaConsumer<>(props);
+        consumer.subscribe(Arrays.asList(topic));
 
         logger.info("waiting for data ...");
 
         while (true){
-            ConsumerRecords<String, Customer> records = consumer.poll(1000);
+            ConsumerRecords<String, Customer> records = consumer.poll(Duration.ofMillis(1000));
 
             for (ConsumerRecord<String, Customer> record : records){
                 Customer customer = record.value();

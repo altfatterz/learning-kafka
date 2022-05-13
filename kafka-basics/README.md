@@ -20,3 +20,12 @@ Resources:
 
 https://developer.confluent.io/get-started/java#build-producer
 
+
+Schema registry:
+
+https://psrc-o268o.eu-central-1.aws.confluent.cloud
+https://psrc-o268o.eu-central-1.aws.confluent.cloud
+
+https://psrc-d9vg7.europe-west3.gcp.confluent.cloud
+
+

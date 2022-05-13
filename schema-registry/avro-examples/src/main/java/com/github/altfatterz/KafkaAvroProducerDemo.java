@@ -13,6 +13,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,29 +23,39 @@ public class KafkaAvroProducerDemo {
 
     static final Logger logger = LoggerFactory.getLogger(KafkaAvroProducerDemo.class);
 
-    static final String BOOTSTRAP_SERVERS = "localhost:9092";
-    static final String TOPIC = "customer-topic";
+//    static final String BOOTSTRAP_SERVERS = "localhost:9092";
+//    static final String TOPIC = "customer-topic";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
-        // common producer properties
-        Properties properties = new Properties();
-        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        if (args.length != 1) {
+            System.out.println("Please provide the configuration file path as a command line argument");
+            System.exit(1);
+        }
 
-        // avro specific configuration
-        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
-        properties.setProperty(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
+        // Load producer configuration settings from a local file
+        final Properties props = Util.loadConfig(args[0]);
+
+        final String topic = props.getProperty("topic");
+
+//        // common producer properties
+//        Properties properties = new Properties();
+//        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+//        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+//
+//        // avro specific configuration
+//        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
+//        properties.setProperty(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
 
         // producer
-        Producer<String, Customer> producer = new KafkaProducer<>(properties);
+        Producer<String, Customer> producer = new KafkaProducer<>(props);
 
         Customer customer = newCustomer();
 
         logger.info("Customer: {}", customer);
 
         // create a producer record
-        ProducerRecord<String, Customer> record = new ProducerRecord<>(TOPIC, customer);
+        ProducerRecord<String, Customer> record = new ProducerRecord<>(topic, customer);
 
         logger.info("send message asynchronously....");
         producer.send(record);
