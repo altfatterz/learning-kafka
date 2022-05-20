@@ -32,7 +32,6 @@ services:
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.1.1-1-ubi8
-
     restart: always
     container_name: schema-registry
     ports:
@@ -61,6 +60,7 @@ services:
       CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
       CONTROL_CENTER_UI_AUTOUPDATE_ENABLE: "false"
 
+
   create-topics:
     image: confluentinc/cp-enterprise-kafka:7.1.1-1-ubi8
     container_name: create-topics
@@ -68,9 +68,8 @@ services:
       bash -c 'echo Waiting for Kafka to be ready... ;
       cub kafka-ready -b kafka:9092 1 300 ;
       echo Creating topics... ;
-      kafka-topics --bootstrap-server kafka:9092 --create --topic avro-demo --partitions 1 --replication-factor 1 --config cleanup.policy=compact ;
-      kafka-topics --bootstrap-server kafka:9092 --create --topic demo-topic-protobuf --partitions 3 --replication-factor 1 --config cleanup.policy=compact ;
-      kafka-topics --bootstrap-server kafka:9092 --create --topic _confluent-monitoring --partitions 12 --replication-factor 1 --config retention.ms=259200000 --config message.timestamp.type=LogAppendTime ;
+      kafka-topics --bootstrap-server kafka:9092 --create --topic avro-demo --partitions 1 --replication-factor 1 ;
+      kafka-topics --bootstrap-server kafka:9092 --create --topic protobuf-demo --partitions 1 --replication-factor 1 ;
       true'
 
   tools:

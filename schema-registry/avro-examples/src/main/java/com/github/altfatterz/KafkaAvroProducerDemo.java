@@ -19,7 +19,7 @@ public class KafkaAvroProducerDemo {
 
     static final Logger logger = LoggerFactory.getLogger(KafkaAvroProducerDemo.class);
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         if (args.length != 1) {
             System.out.println("Please provide the configuration file path as a command line argument");
@@ -43,6 +43,8 @@ public class KafkaAvroProducerDemo {
 
         logger.info("send message asynchronously....");
         producer.send(record);
+
+        Thread.sleep(5000);
 
         // Adding a shutdown hook to clean up when the application exits
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
