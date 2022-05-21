@@ -16,13 +16,21 @@ f7bbbb867695   confluentinc/cp-enterprise-control-center:7.1.1-1-ubi8   "/etc/co
 b0664f414562   cnfltraining/training-tools:6.0                          "/bin/sh"                About a minute ago   Up About a minute                                                        tools
 ```
 
-In Control-Center create the schema from the `resources/avro/schema.avsc` file.
-If you create a message from Control-Center the consumer cannot parse it, returns: "unknown magic byte"
+Start the producer, notice that it will connect to the Schema Registry and will create the schema.
+
+```bash
+$ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroProducerDemo config/local-producer.properties
+```
+
+Start the consumer:
 
 ```bash
 $ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroConsumerDemo config/local-consumer.properties
-$ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroProducerDemo config/local-producer.properties
-```
+````
+
+
+
+
 
 Confluent Cloud 
 

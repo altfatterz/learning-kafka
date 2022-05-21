@@ -19,7 +19,7 @@ public class KafkaConsumerDemo {
     public static void main(String[] args) throws IOException {
 
         if (args.length != 1) {
-            System.out.println("Please provide the configuration file path as a command line argument");
+            logger.info("Please provide the configuration file path as a command line argument");
             System.exit(1);
         }
 
