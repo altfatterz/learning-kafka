@@ -1,4 +1,4 @@
-package com.example;
+package com.github.altfatterz;
 
 import com.example.model.Customer.CustomerOuterClass.Customer;
 import com.example.model.Customer.CustomerOuterClass.Customer.PhoneNumber;

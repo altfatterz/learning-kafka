@@ -16,95 +16,39 @@ f7bbbb867695   confluentinc/cp-enterprise-control-center:7.1.1-1-ubi8   "/etc/co
 b0664f414562   cnfltraining/training-tools:6.0                          "/bin/sh"                About a minute ago   Up About a minute                                                        tools
 ```
 
+Build the example:
+
+```bash
+$ cd /producer-examples
+$ mvn clean install
+```
+
 Start the producer, notice that it will connect to the Schema Registry and will create the schema.
 
 ```bash
-$ java -cp target/protobuf-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroProducerDemo config/local-producer.properties
+$ cd producer-protobuf
+$ java -cp target/producer-protobuf-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaProtobufProducerDemo config/local-producer.properties
 ```
 
 Start the consumer:
 
 ```bash
-$ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroConsumerDemo config/local-consumer.properties
-````
-
-
-Produce the following message in the Control Center:
-
-```json
-{"first_name":"John","last_name":"Doe","accounts":[{"iban":"CH93 0076 2011 6238 5295 7","type":"CHECKING"},{"iban":"CH93 0076 2011 6238 5295 8","type":"SAVING"}],"settings":{"e-billing-enabled":true,"push-notification-enabled":false},"signup_timestamp":"2022-05-21T10:41:24.117Z","phone_number":null}
-```
-
-In the consumer you will see an error message:
-
-```bash
-org.apache.kafka.common.errors.SerializationException: Unknown magic byte!
-```
-
-Turns out the produced message is not serialised via Avro, is a simple JSON message and serialised via StringSerialiser.
-Try to read it out using:
-
-```bash
-$ kafka-console-consumer --bootstrap-server kafka:9092 --topic avro-demo --partition 0 --offset <check-which-offset>
-```
-
-To read via Avro use:
-
-```bash
-$ docker exec -it schema-registry bash
-$ kafka-avro-console-consumer --bootstrap-server kafka:9092 --topic avro-demo --from-beginning
-```
-
-# avro-tools
-$ java -jar avro-tools-1.11.0.jar
-```bash
-----------------
-Available tools:
-    canonical  Converts an Avro Schema to its canonical form
-          cat  Extracts samples from files
-      compile  Generates Java code for the given schema.
-       concat  Concatenates avro files without re-compressing.
-        count  Counts the records in avro files or folders
-  fingerprint  Returns the fingerprint for the schemas.
-   fragtojson  Renders a binary-encoded Avro datum as JSON.
-     fromjson  Reads JSON records and writes an Avro data file.
-     fromtext  Imports a text file into an avro data file.
-      getmeta  Prints out the metadata of an Avro data file.
-    getschema  Prints out schema of an Avro data file.
-          idl  Generates a JSON schema from an Avro IDL file
- idl2schemata  Extract JSON schemata of the types from an Avro IDL file
-       induce  Induce schema/protocol from Java class/interface via reflection.
-   jsontofrag  Renders a JSON-encoded Avro datum as binary.
-       random  Creates a file with randomly generated instances of a schema.
-      recodec  Alters the codec of a data file.
-       repair  Recovers data from a corrupt Avro Data file
-  rpcprotocol  Output the protocol of a RPC service
-   rpcreceive  Opens an RPC Server and listens for one message.
-      rpcsend  Sends a single RPC message.
-       tether  Run a tethered mapreduce job.
-       tojson  Dumps an Avro data file as JSON, record per line or pretty.
-       totext  Converts an Avro data file to a text file.
-     totrevni  Converts an Avro data file to a Trevni file.
-  trevni_meta  Dumps a Trevni file's metadata as JSON.
-trevni_random  Create a Trevni file filled with random instances of a schema.
-trevni_tojson  Dumps a Trevni file as JSON.
-```
-
-```bash
-$ java -jar avro-tools-1.11.0.jar fromjson --schema-file ./src/main/resources/avro/schema.avsc customer.json > customer.avro
-```
-
-Get back the schema:
-
-```bash
-$ java -jar avro-tools-1.11.0.jar getschema customer.avro
+$ cd consumer-protobuf
+$ java -cp target/consumer-protobuf-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaProtobufConsumerDemo config/local-consumer.properties
 ```
 
 # Confluent Cloud
 
 ```bash
-$ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroConsumerDemo config/cloud-consumer.properties
-$ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroProducerDemo config/cloud-producer.properties
+$ cd producer-protobuf
+$ java -cp target/producer-protobuf-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaProtobufProducerDemo config/cloud-producer.properties
+```
+
+Start the consumer:
+
+```bash
+$ cd consumer-protobuf
+$ java -cp target/consumer-protobuf-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaProtobufConsumerDemo config/cloud-consumer.properties
 ```
 
 ```bash
@@ -114,16 +58,102 @@ $ kafka-consumer-groups --bootstrap-server kafka:9092 --describe --group kafka-a
 $ kafka-consumer-groups --bootstrap-server kafka:9092 --group kafka-avro-local-consumer --reset-offsets --topic avro-demo:0 --to-offset 0
 $ kafka-consumer-groups --bootstrap-server kafka:9092 --group kafka-avro-local-consumer --reset-offsets --topic avro-demo:0 --to-offset 0 --execute
 $ kafka-consumer-groups --bootstrap-server kafka:9092 --delete --group kafka-avro-local-consumer
- 
+```
 
+# Schema Registry
+
+```bash
+http :8081/subjects
+[
+    "avro-demo-value",
+    "protobuf-demo-value"
+]
+```
+
+```bash
+http :8081/subjects/protobuf-demo-value/versions
+[
+  1
+]
+```
+
+```bash
+http :8081/subjects/protobuf-demo-value/versions/1
+{
+    "id": 2,
+    "schema": "syntax = \"proto3\";\n\noption java_package = \"com.example.model.Customer\";\n\nmessage Customer {\n  int32 id = 1;\n  string firstName = 2;\n  string lastName = 3;\n  string email = 4;\n  repeated .Customer.PhoneNumber phones = 6;\n\n  message PhoneNumber {\n    string number = 1;\n    .Customer.PhoneType type = 2;\n  }\n  enum PhoneType {\n    MOBILE = 0;\n    HOME = 1;\n    WORK = 2;\n  }\n}\n",
+    "schemaType": "PROTOBUF",
+    "subject": "protobuf-demo-value",
+    "version": 1
+}
+```
+
+```bash
+$ http delete :8081/subjects/protobuf-demo-value/versions/1
+```
+
+Registered schema types:
+
+```bash
+$ http :8081/schemas/types
+[
+    "JSON",
+    "PROTOBUF",
+    "AVRO"
+]
+```
+
+# kafka-protobuf-console-producer
+
+Create a `t1-p` topic
+```bash
+$ docker exec kafka kafka-topics --bootstrap-server kafka:9092 --create --topic t1-p --partitions 1 --replication-factor 1
+```
+
+```bash
+$ docker exec -it schema-registry bash
+```
+
+The command line Protobuf producer will convert the JSON object to a Protobuf message (using the schema specified in <value.schema>) 
+and then use an underlying serializer to serialize the message to the Kafka topic t1-p.
+
+```bash
+$ kafka-protobuf-console-producer --bootstrap-server kafka:9092 --topic t1-p \
+--property schema.registry.url=http://schema-registry:8081 \
+--property value.schema='syntax = "proto3"; message MyRecord { string f1 = 1; }'
+```
+
+#kafka-protobuf-console-consumer
+
+```bash
+$ kafka-protobuf-console-consumer --bootstrap-server kafka:9092 --topic t1-p --from-beginning \
+--property schema.registry.url=http://schema-registry:8081 
+```
+
+```bash
+http :8081/subjects/t1-p-value/versions/latest
+{
+    "id": 3,
+    "schema": "syntax = \"proto3\";\n\nmessage MyRecord {\n  string f1 = 1;\n}\n",
+    "schemaType": "PROTOBUF",
+    "subject": "t1-p-value",
+    "version": 1
+}
+```
+
+```bash
+http :8081/subjects/t1-p-value/versions/1/schema
+syntax = "proto3";
+
+message MyRecord {
+  string f1 = 1;
+}
 ```
 
 
-https://zoltanaltfatter.com/2020/01/02/schema-evolution-with-confluent-registry/
 
 
 
-### Resources:
+More resources:
 
-https://docs.confluent.io/current/installation/docker/image-reference.html#image-reference
-https://github.com/simplesteph/kafka-stack-docker-compose/
+https://lenses.io/blog/2022/03/protobuf-to-kafka/

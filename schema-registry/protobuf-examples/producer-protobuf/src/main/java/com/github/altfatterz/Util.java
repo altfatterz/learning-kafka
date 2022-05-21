@@ -1,4 +1,4 @@
-package com.example;
+package com.github.altfatterz;
 
 import java.io.FileInputStream;
 import java.io.IOException;
