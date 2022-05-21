@@ -19,6 +19,7 @@
 
         <module>schema-registry/avro-examples</module>
         <module>schema-registry/protobuf-examples</module>
+        <module>schema-registry/json-schema-examples</module>
 
         <module>spring-kafka/simple-producer</module>
         <module>spring-kafka/simple-consumer</module>

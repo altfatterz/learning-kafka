@@ -72,6 +72,7 @@ services:
       echo Creating topics... ;
       kafka-topics --bootstrap-server kafka:9092 --create --topic avro-demo --partitions 1 --replication-factor 1 ;
       kafka-topics --bootstrap-server kafka:9092 --create --topic protobuf-demo --partitions 1 --replication-factor 1 ;
+      kafka-topics --bootstrap-server kafka:9092 --create --topic json-schema-demo --partitions 1 --replication-factor 1 ;
       true'
 
   tools:

@@ -34,6 +34,12 @@ public class KafkaAvroProducerDemo {
         // producer
         Producer<String, Customer> producer = new KafkaProducer<>(props);
 
+        // Adding a shutdown hook to clean up when the application exits
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Closing producer.");
+            producer.close();
+        }));
+
         Customer customer = newCustomer();
 
         logger.info("Customer: {}", customer);
@@ -46,11 +52,6 @@ public class KafkaAvroProducerDemo {
 
         Thread.sleep(5000);
 
-        // Adding a shutdown hook to clean up when the application exits
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Closing producer.");
-            producer.close();
-        }));
     }
 
     private static Customer newCustomer() {
