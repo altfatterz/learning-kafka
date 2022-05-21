@@ -17,10 +17,8 @@
         <module>kafka-streams/join-example</module>
         <module>kafka-streams/count-example</module>
 
-        <module>schema-registry/consumer-protobuf</module>
-        <module>schema-registry/producer-protobuf</module>
-        <module>schema-registry/events-model-protobuf</module>
         <module>schema-registry/avro-examples</module>
+        <module>schema-registry/protobuf-examples</module>
 
         <module>spring-kafka/simple-producer</module>
         <module>spring-kafka/simple-consumer</module>

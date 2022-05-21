@@ -3,7 +3,6 @@ package com.example.consumerprotobuf;
 import com.example.model.Customer.CustomerOuterClass.Customer;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializerConfig;
-import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializerConfig;
 import io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -13,39 +12,33 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-public class ConsumerApp {
+public class KafkaProtobufConsumerDemo {
 
-    private static final String KAFKA_TOPIC = "demo-topic-protobuf";
-    private static final Logger logger = LoggerFactory.getLogger(ConsumerApp.class);
+    private static final Logger logger = LoggerFactory.getLogger(KafkaProtobufConsumerDemo.class);
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws IOException {
 
-        logger.info("Starting Java Protobuf consumer.");
+        if (args.length != 1) {
+            logger.info("Please provide the configuration file path as a command line argument");
+            System.exit(1);
+        }
 
-        final Properties settings = new Properties();
+        // Load producer configuration settings from a local file
+        final Properties props = Util.loadConfig(args[0]);
 
-        settings.put(ConsumerConfig.GROUP_ID_CONFIG, "consumer-app-protobuf10");
-        settings.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:19092");
-        settings.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        final String topic = props.getProperty("topic");
 
-        settings.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        settings.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaProtobufDeserializer.class);
-
-        settings.put(KafkaProtobufDeserializerConfig.SPECIFIC_PROTOBUF_VALUE_TYPE, Customer.class.getName());
-        settings.put(KafkaProtobufDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
-
-        settings.put(ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG, List.of(MonitoringConsumerInterceptor.class));
-
-        final KafkaConsumer<String, Customer> consumer = new KafkaConsumer<>(settings);
+        final KafkaConsumer<String, Customer> consumer = new KafkaConsumer<>(props);
 
         try {
             // Subscribe to our topic
-            consumer.subscribe(Arrays.asList(KAFKA_TOPIC));
+            consumer.subscribe(Arrays.asList(topic));
             while (true) {
                 final ConsumerRecords<String, Customer> records =
                         consumer.poll(Duration.ofMillis(100));

@@ -23,7 +23,9 @@ public class FileProducerProtobufApp {
                         .build())
                 .build();
 
-        try (FileOutputStream output = new FileOutputStream("schema-registry/producer-protobuf/customer.proto")) {
+        String path = "schema-registry/protobuf-examples/producer-protobuf/customer.proto";
+
+        try (FileOutputStream output = new FileOutputStream(path)) {
             customer.writeDelimitedTo(output);
         } catch (IOException e) {
             e.printStackTrace();
@@ -31,7 +33,7 @@ public class FileProducerProtobufApp {
 
         System.out.println("Successfully wrote customer.V1.proto");
 
-        try (FileInputStream input = new FileInputStream("schema-registry/producer-protobuf/customer.proto")) {
+        try (FileInputStream input = new FileInputStream(path)) {
             while (true) {
                 Customer c = Customer.parseDelimitedFrom(input);
                 if (c == null) break;
