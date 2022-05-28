@@ -10,4 +10,7 @@
     <appender-ref ref="STDOUT" />
   </root>
 
+  <!-- logging ProducerBatch -->
+  <logger name="org.apache.kafka.clients.producer.internals" level="TRACE" />
+
 </configuration>

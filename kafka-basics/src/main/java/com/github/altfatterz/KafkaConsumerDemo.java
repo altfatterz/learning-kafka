@@ -38,6 +38,8 @@ public class KafkaConsumerDemo {
         while (true) {
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(200));
 
+            logger.info("Fetched nr of records:" + records.count());
+
             for (ConsumerRecord<String, String> record : records) {
                 logger.info("Key: {}, Value:{}, Partition: {}, Offset: {}", record.key(),
                         record.value(), record.partition(), record.offset());

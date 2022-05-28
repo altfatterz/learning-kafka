@@ -4,8 +4,6 @@ services:
     image: confluentinc/cp-zookeeper:7.1.1-1-ubi8
     hostname: zookeeper
     container_name: zookeeper
-    networks:
-      - single-zookeeper-and-kafka
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -14,8 +12,8 @@ services:
     image: confluentinc/cp-enterprise-kafka:7.1.1-1-ubi8
     hostname: kafka
     container_name: kafka
-    networks:
-      - single-zookeeper-and-kafka
+    depends_on:
+      - zookeeper
     ports:
       - "19092:19092"
     environment:
@@ -31,8 +29,8 @@ services:
     image: confluentinc/cp-enterprise-control-center:7.1.1-1-ubi8
     restart: always
     container_name: control-center
-    networks:
-      - single-zookeeper-and-kafka
+    depends_on:
+      - kafka
     ports:
       - "9021:9021"
     environment:
@@ -50,11 +48,18 @@ services:
   tools:
     image: cnfltraining/training-tools:6.0
     container_name: tools
-    networks:
-      - single-zookeeper-and-kafka
     hostname: tools
     command: /bin/sh
     tty: true
 
-networks:
-  single-zookeeper-and-kafka:
+  create-topics:
+    image: confluentinc/cp-enterprise-kafka:7.1.1-1-ubi8
+    container_name: create-topics
+    depends_on:
+      - kafka
+    command: >
+      bash -c 'echo Waiting for Kafka to be ready... ;
+      cub kafka-ready -b kafka:9092 1 300 ;
+      echo Creating topics... ;
+      kafka-topics --bootstrap-server kafka:9092 --create --topic test-topic --partitions 3 --replication-factor 1 ;
+      true'

@@ -1,5 +1,6 @@
 package com.github.altfatterz;
 
+import com.github.javafaker.Faker;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -13,7 +14,7 @@ public class KafkaProducerDemo {
 
     static final Logger logger = LoggerFactory.getLogger(KafkaProducerDemo.class);
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         if (args.length != 1) {
             logger.info("Please provide the configuration file path as a command line argument");
@@ -34,11 +35,17 @@ public class KafkaProducerDemo {
             producer.close();
         }));
 
-        // create a producer record
-        ProducerRecord<String, String> record = new ProducerRecord<>(topic, new Date().toString());
-
         logger.info("send message asynchronously....");
-        producer.send(record);
+
+        Faker faker = new Faker();
+
+        while (true) {
+            ProducerRecord<String, String> record = new ProducerRecord<>(topic, faker.chuckNorris().fact());
+            producer.send(record);
+
+            // Play here with this setting in combination with the linger.ms
+            Thread.sleep(10);
+        }
 
     }
 
