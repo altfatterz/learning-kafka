@@ -104,6 +104,18 @@ services:
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor
       CONNECT_CONSUMER_INTERCEPTOR_CLASSES: io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor
 
+  postgres:
+    image: postgres:14.3-alpine
+    restart: always
+    container_name: postgres
+    hostname: postgres
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
+    volumes:
+      - ./postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - 5432:5432
+
   create-topics:
     image: confluentinc/cp-enterprise-kafka:7.1.1-1-ubi8
     container_name: create-topics

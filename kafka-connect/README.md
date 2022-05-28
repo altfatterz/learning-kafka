@@ -192,6 +192,16 @@ kafka-avro-console-consumer \
 ```
 
 
+# Sink
+
+```bash
+$ psql -h localhost -p 5432 -d postgres -U postgres
+Password for user postgres: mysecretpassword
+```
+
+
+
+
 Resources:
 
 * Introducing `Confluent Hub`:https://www.confluent.io/blog/introducing-confluent-hub/
