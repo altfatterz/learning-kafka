@@ -49,18 +49,18 @@ public class CountExampleApplication {
         // two new topics were created and also two new folders (state stores) under /tmp/kafka-streams/count-example
         // 0_0 and 0_1
 
+        // initially the keys are null, but we still need to set the SerDe for keys
         builder.stream(INPUT_TOPIC, Consumed.with(Serdes.String(), ticketSaleSerde))
                 .peek((key, value) -> logger.info("received record with key: {}, value: {}", key, value))
                 // Set key to title and value to ticket value
                 // creates a repartition topic since we change the key
                 .map((k, v) -> new KeyValue<>(v.getTitle(), v.getTicketTotalValue()))
                 .peek((key, value) -> logger.info("after mapping the record is with key: {}, value: {}", key, value))
-                // Group by title
+                // group by title
                 .groupByKey(Grouped.with(Serdes.String(), Serdes.Integer()))
-                // Apply COUNT method
-                // create the changelog topic
+                // apply COUNT method, creates the changelog topic
                 .count()
-                // Write to stream specified by outputTopic
+                // since we cannot write a Ktable to a topic we need to convert it to a stream first
                 .toStream()
                 .peek((key, value) -> logger.info("final result with key: {}, value: {}", key, value))
                 .to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.Long()));
