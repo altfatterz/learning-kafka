@@ -44,7 +44,7 @@ public class KafkaProducerDemo {
             producer.send(record);
 
             // Play here with this setting in combination with the linger.ms
-            Thread.sleep(10);
+            Thread.sleep(100);
         }
 
     }

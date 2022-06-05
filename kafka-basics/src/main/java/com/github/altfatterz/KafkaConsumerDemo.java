@@ -41,8 +41,8 @@ public class KafkaConsumerDemo {
             logger.info("Fetched nr of records:" + records.count());
 
             for (ConsumerRecord<String, String> record : records) {
-                logger.info("Key: {}, Value:{}, Partition: {}, Offset: {}", record.key(),
-                        record.value(), record.partition(), record.offset());
+                logger.info("Key: {},  Partition: {}, Offset: {}, Value:{},", record.key(), record.partition(),
+                        record.offset(), record.value() );
             }
         }
     }
