@@ -29,6 +29,11 @@ $ docker exec tools kafka-console-consumer --topic movie-tickets-sold --bootstra
 You should not see anything yet, since we didn't start the stream processing application. After starting it, the output:
 
 ```bash
+$ mvn clean install
+$ java -cp target/count-example-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.example.CountExampleApplication config/local.properties
+```
+
+```bash
 Die Hard	1
 Die Hard	2
 The Godfather	1
