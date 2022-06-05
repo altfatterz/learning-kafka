@@ -10,6 +10,7 @@ import org.apache.kafka.streams.kstream.Produced;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -20,37 +21,44 @@ public class CountExampleApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(CountExampleApplication.class);
 
-    private static final String APPLICATION_ID = "count-example";
-    private final static String BOOTSTRAP_SERVERS = "localhost:19092";
-    private final static String SCHEMA_REGISTRY = "http://localhost:8081";
+    public static void main(String[] args) throws IOException {
 
-    private static final String INPUT_TOPIC = "movie-ticket-sales";
-    private static final String OUTPUT_TOPIC = "movie-tickets-sold";
+        if (args.length != 1) {
+            logger.info("Please provide the configuration file path as a command line argument");
+            System.exit(1);
+        }
 
-    public static void main(String[] args) {
-        Properties config = getConfig();
-        Topology topology = getTopology(ticketSaleSerde());
-        KafkaStreams streams = startApp(config, topology);
+        // Load producer configuration settings from a local file
+        final Properties props = Util.loadConfig(args[0]);
 
-        setupShutdownHook(streams);
+        final String APPLICATION_ID = props.getProperty("applicationId");
+        final String SCHEMA_REGISTRY_URL = props.getProperty("schema.registry.url");
+        final String INPUT_TOPIC = props.getProperty("input-topic");
+        final String OUTPUT_TOPIC = props.getProperty("output-topic");
+
+
+        Topology topology = getTopology(INPUT_TOPIC, OUTPUT_TOPIC, ticketSaleSerde(SCHEMA_REGISTRY_URL));
+        KafkaStreams streams = startApp(props, topology);
+
+        setupShutdownHook(APPLICATION_ID, streams);
     }
 
-    private static SpecificAvroSerde<TicketSale> ticketSaleSerde() {
+    private static SpecificAvroSerde<TicketSale> ticketSaleSerde(String schemaRegistryURL) {
         final SpecificAvroSerde<TicketSale> serde = new SpecificAvroSerde<>();
         Map<String, String> config = new HashMap<>();
-        config.put(SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY);
+        config.put(SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
         serde.configure(config, false);
         return serde;
     }
 
-    private static Topology getTopology(SpecificAvroSerde<TicketSale> ticketSaleSerde) {
+    private static Topology getTopology(String inputTopic, String outputTopic, SpecificAvroSerde<TicketSale> ticketSaleSerde) {
         StreamsBuilder builder = new StreamsBuilder();
 
         // two new topics were created and also two new folders (state stores) under /tmp/kafka-streams/count-example
         // 0_0 and 0_1
 
         // initially the keys are null, but we still need to set the SerDe for keys
-        builder.stream(INPUT_TOPIC, Consumed.with(Serdes.String(), ticketSaleSerde))
+        builder.stream(inputTopic, Consumed.with(Serdes.String(), ticketSaleSerde))
                 .peek((key, value) -> logger.info("received record with key: {}, value: {}", key, value))
                 // Set key to title and value to ticket value
                 // creates a repartition topic since we change the key
@@ -63,23 +71,12 @@ public class CountExampleApplication {
                 // since we cannot write a Ktable to a topic we need to convert it to a stream first
                 .toStream()
                 .peek((key, value) -> logger.info("final result with key: {}, value: {}", key, value))
-                .to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.Long()));
+                .to(outputTopic, Produced.with(Serdes.String(), Serdes.Long()));
 
         return builder.build();
     }
 
-    public static Properties getConfig() {
-        Properties props = new Properties();
 
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, APPLICATION_ID);
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-        props.put(SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY);
-        props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
-
-        return props;
-    }
 
     private static KafkaStreams startApp(Properties config, Topology topology) {
         KafkaStreams streams = new KafkaStreams(topology, config);
@@ -87,9 +84,9 @@ public class CountExampleApplication {
         return streams;
     }
 
-    private static void setupShutdownHook(KafkaStreams streams) {
+    private static void setupShutdownHook(String applicationId, KafkaStreams streams) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.printf("### Stopping %s Application ###%n", APPLICATION_ID);
+            logger.info("### Stopping %s Application ###%n", applicationId);
             streams.close();
         }));
     }
