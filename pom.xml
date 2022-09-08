@@ -32,6 +32,8 @@
         <module>spring-cloud-stream/uppercase-transformer-old-way</module>
 
         <module>transactions/transactional-message-producer</module>
+
+        <module>confluent-for-kubernetes/nginx-ingress-k3d/monitoring-demo</module>
     </modules>
 
     <build>
