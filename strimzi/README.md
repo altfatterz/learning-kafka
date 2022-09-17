@@ -1,8 +1,9 @@
 Create k8s cluster and namespace
 
 ```bash
-$ k3d cluster create strimzi
+$ k3d cluster create mycluster --agents=3
 $ kubectl cluster-info
+$ kubectl taint nodes k3d-mycluster-server-0 key1=value1:NoSchedule
 $ kubectl create ns kafka
 ```
 
@@ -55,6 +56,50 @@ kafkaconnects.kafka.strimzi.io          2022-09-16T15:14:05Z
 kafkamirrormaker2s.kafka.strimzi.io     2022-09-16T15:14:05Z
 kafkas.kafka.strimzi.io                 2022-09-16T15:14:05Z
 kafkamirrormakers.kafka.strimzi.io      2022-09-16T15:14:05Z
+```
+
+```bash
+$ watch kubectl get pods -n kafka
+
+NAME                                       READY   STATUS    RESTARTS   AGE
+strimzi-cluster-operator-854758757-rc2fv   0/1     Running   0          31s
+```
+
+Create 1 zookeeper node and 3 kafka brokers:
+
+```bash
+$ kubectl apply -n kafka -f kafka-ephemeral-multiple.yaml
+```
+
+```bash
+$ kubectl get pods -n kafka -o wide
+
+NAME                                          READY   STATUS    RESTARTS   AGE     IP          NODE                    NOMINATED NODE   READINESS GATES
+strimzi-cluster-operator-854758757-4n4vw      1/1     Running   0          8m23s   10.42.3.4   k3d-mycluster-agent-1   <none>           <none>
+my-cluster-zookeeper-0                        1/1     Running   0          78s     10.42.1.6   k3d-mycluster-agent-2   <none>           <none>
+my-cluster-kafka-1                            1/1     Running   0          54s     10.42.3.6   k3d-mycluster-agent-1   <none>           <none>
+my-cluster-kafka-0                            1/1     Running   0          54s     10.42.1.7   k3d-mycluster-agent-2   <none>           <none>
+my-cluster-kafka-2                            1/1     Running   0          54s     10.42.2.9   k3d-mycluster-agent-0   <none>           <none>
+my-cluster-entity-operator-54f8746cb8-85nbt   1/3     Running   0          11s     10.42.3.7   k3d-mycluster-agent-1   <none>           <none>
+```
+
+After the services are up and running, create a topic:
+
+```bash
+$ kubectl apply -n kafka -f kafka-topic.yaml
+```
+
+Test connection:
+
+Producer:
+
+```bash
+$ kubectl -n kafka run kafka-producer -ti --image=bitnami/kafka:3.2.1 --rm=true --restart=Never -- kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic
+```
+
+Consumer:
+```bash
+$ kubectl -n kafka run kafka-consumer -ti --image=bitnami/kafka:3.2.1 --rm=true --restart=Never -- kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
 ```
 
 
