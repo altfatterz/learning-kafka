@@ -115,7 +115,7 @@ $ kubectl exec -it my-cluster-kafka-1 -n kafka -- ls /var/lib/kafka/data/kafka-l
 $ kubectl exec -it my-cluster-kafka-2 -n kafka -- ls /var/lib/kafka/data/kafka-log2
 ```
 
-Persistent volume
+# Persistent volume
 
 Local Path provisioner in k3d cluster used by the default storage class
 [https://k3d.io/v5.4.6/usage/k3s/?h=storage#local-path-provisioner-in-k3d](https://k3d.io/v5.4.6/usage/k3s/?h=storage#local-path-provisioner-in-k3d)
@@ -135,6 +135,49 @@ $ watch kubectl get pvc -n kafka
 $ kubectl apply -n kafka -f kafka-persistent-claim.yaml
 ```
 
+# Kafka with Metrics:
+
+Strimzi uses the [Prometheus JMX Exporter](https://github.com/prometheus/jmx_exporter) to expose metrics through an HTTP endpoint, 
+which can be scraped by the Prometheus server.
+
+```bash
+$ kubectl apply -f kafka-with-jmx-prometheus-exporter.yaml -n kafka
+```
+
+```bash
+$ kubectl port-forward pod/my-cluster-kafka-0 9404:9404 -n kafka
+```
+
+```bash
+$ curl http://localhost:9404/metrics
+```
+
+# Prometheus
+
+[**Prometheus Operator**](https://github.com/prometheus-operator/prometheus-operator)
+
+
+
+
+
 Resources
 
 1. [https://strimzi.io/docs/operators/latest/full/configuring.html](https://strimzi.io/docs/operators/latest/full/configuring.html)
+
+
+
+Hello everybody! I would like to expose some metrics using the Prometheus JMX Exporter. I am following the https://strimzi.io/docs/operators/latest/full/deploying.html#ref-metrics-prometheus-metrics-config-str and I am using the latest Strimzi (0.31.0).
+Here is my config. 
+
+
+To my understanding the broker service should expose the 9404 port to access the metrics via 9404/metrics endpoint, but I don't see it being exposed:
+
+```bash
+$ kubectl get svc -n kafka
+my-cluster-zookeeper-client   ClusterIP   10.43.203.145   <none>        2181/TCP                              31m
+my-cluster-zookeeper-nodes    ClusterIP   None            <none>        2181/TCP,2888/TCP,3888/TCP            31m
+my-cluster-kafka-brokers      ClusterIP   None            <none>        9090/TCP,9091/TCP,9092/TCP,9093/TCP   30m
+my-cluster-kafka-bootstrap    ClusterIP   10.43.180.111   <none>        9091/TCP,9092/TCP,9093/TCP            30m
+```
+What do I miss? 
+
