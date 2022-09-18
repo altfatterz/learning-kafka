@@ -58,6 +58,21 @@ kafkas.kafka.strimzi.io                 2022-09-16T15:14:05Z
 kafkamirrormakers.kafka.strimzi.io      2022-09-16T15:14:05Z
 ```
 
+Get the new resources:
+```bash
+$ kubectl api-resources | grep kafka
+
+kafkabridges                      kb           kafka.strimzi.io/v1beta2               true         KafkaBridge
+kafkaconnectors                   kctr         kafka.strimzi.io/v1beta2               true         KafkaConnector
+kafkaconnects                     kc           kafka.strimzi.io/v1beta2               true         KafkaConnect
+kafkamirrormaker2s                kmm2         kafka.strimzi.io/v1beta2               true         KafkaMirrorMaker2
+kafkamirrormakers                 kmm          kafka.strimzi.io/v1beta2               true         KafkaMirrorMaker
+kafkarebalances                   kr           kafka.strimzi.io/v1beta2               true         KafkaRebalance
+kafkas                            k            kafka.strimzi.io/v1beta2               true         Kafka
+kafkatopics                       kt           kafka.strimzi.io/v1beta2               true         KafkaTopic
+kafkausers                        ku           kafka.strimzi.io/v1beta2               true         KafkaUser
+```
+
 ```bash
 $ watch kubectl get pods -n kafka
 
@@ -152,32 +167,69 @@ $ kubectl port-forward pod/my-cluster-kafka-0 9404:9404 -n kafka
 $ curl http://localhost:9404/metrics
 ```
 
+# Kafka Connect
+
+`KafkaConnect` and `KafkaConnector` resources [https://strimzi.io/docs/operators/latest/deploying.html#kafka-connect-str](https://strimzi.io/docs/operators/latest/deploying.html#kafka-connect-str)
+
+```bash
+$ kubectl apply -f kafka-connect-with-source-connector.yaml -n kafka
+```
+First `my-connect-cluster-connect-build` job is create to create a custom image and upload it to the
+`ttl.sh/altfatterz-strimzi-kafka-connect-3.2.1:2h` (valid for 2 hours)
+
+Check the logs what is doing:
+
+```bash
+$ stern my-connect-cluster-connect-build -n kafka
+```
+
+Then a `my-connect-cluster-connect-7d6b9b7c8c-5z5xb` pod is created which is the actual Connect Instance with the File Source Connector installed on it.
+
+Next create the `my-topic` via
+
+```bash
+$ kubectl apply -f kafka-topic.yaml -n kafka
+```
+
+Start a consumer
+```bash
+$ kubectl -n kafka run kafka-consumer -ti --image=bitnami/kafka:3.2.1 --rm=true --restart=Never -- kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
+```
+
+And then configure the File Source Connector using:
+
+```bash
+$ kubectl apply -f kafka-source-connector.yaml -n kafka
+```
+
+In the consumer logs you should see the messages from the topic
+
+```bash
+{"schema":{"type":"string","optional":false},"payload":"This product contains the dnsinfo.h header file, that provides a way to retrieve the system DNS configuration on MacOS."}
+{"schema":{"type":"string","optional":false},"payload":"This private header is also used by Apple's open source"}
+{"schema":{"type":"string","optional":false},"payload":" mDNSResponder (https://opensource.apple.com/tarballs/mDNSResponder/)."}
+{"schema":{"type":"string","optional":false},"payload":""}
+{"schema":{"type":"string","optional":false},"payload":" * LICENSE:"}
+{"schema":{"type":"string","optional":false},"payload":"    * license/LICENSE.dnsinfo.txt (Apple Public Source License 2.0)"}
+{"schema":{"type":"string","optional":false},"payload":"  * HOMEPAGE:"}
+```
+
+```bash
+$ kubectl api-resources | grep connect
+
+kafkaconnectors                   kctr         kafka.strimzi.io/v1beta2               true         KafkaConnector
+kafkaconnects                     kc           kafka.strimzi.io/v1beta2               true         KafkaConnect
+```
+
+
+
+
 # Prometheus
 
 [**Prometheus Operator**](https://github.com/prometheus-operator/prometheus-operator)
 
 
-
-
-
 Resources
 
 1. [https://strimzi.io/docs/operators/latest/full/configuring.html](https://strimzi.io/docs/operators/latest/full/configuring.html)
-
-
-
-Hello everybody! I would like to expose some metrics using the Prometheus JMX Exporter. I am following the https://strimzi.io/docs/operators/latest/full/deploying.html#ref-metrics-prometheus-metrics-config-str and I am using the latest Strimzi (0.31.0).
-Here is my config. 
-
-
-To my understanding the broker service should expose the 9404 port to access the metrics via 9404/metrics endpoint, but I don't see it being exposed:
-
-```bash
-$ kubectl get svc -n kafka
-my-cluster-zookeeper-client   ClusterIP   10.43.203.145   <none>        2181/TCP                              31m
-my-cluster-zookeeper-nodes    ClusterIP   None            <none>        2181/TCP,2888/TCP,3888/TCP            31m
-my-cluster-kafka-brokers      ClusterIP   None            <none>        9090/TCP,9091/TCP,9092/TCP,9093/TCP   30m
-my-cluster-kafka-bootstrap    ClusterIP   10.43.180.111   <none>        9091/TCP,9092/TCP,9093/TCP            30m
-```
-What do I miss? 
-
+2. [https://github.com/rmarting/strimzi-demo](https://github.com/rmarting/strimzi-demo)
