@@ -1,7 +1,7 @@
 Create k8s cluster and namespace
 
 ```bash
-$ k3d cluster create mycluster --agents=3
+$ k3d cluster create mycluster --agents 3 -v $HOME/temp/strimzi:/var/lib/rancher/k3s/storage@all 
 $ kubectl cluster-info
 $ kubectl taint nodes k3d-mycluster-server-0 key1=value1:NoSchedule
 $ kubectl create ns kafka
@@ -89,6 +89,11 @@ After the services are up and running, create a topic:
 $ kubectl apply -n kafka -f kafka-topic.yaml
 ```
 
+Verify
+```bash
+$ kubectl -n kafka run kafka-topics -ti --image=bitnami/kafka:3.2.1 --rm=true --restart=Never -- kafka-topics.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --list
+```
+
 Test connection:
 
 Producer:
@@ -102,7 +107,34 @@ Consumer:
 $ kubectl -n kafka run kafka-consumer -ti --image=bitnami/kafka:3.2.1 --rm=true --restart=Never -- kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
 ```
 
+The ephemeral volume is used by the Kafka brokers as log directories mounted into the following path:
 
+```bash
+$ kubectl exec -it my-cluster-kafka-0 -n kafka -- ls /var/lib/kafka/data/kafka-log0
+$ kubectl exec -it my-cluster-kafka-1 -n kafka -- ls /var/lib/kafka/data/kafka-log1
+$ kubectl exec -it my-cluster-kafka-2 -n kafka -- ls /var/lib/kafka/data/kafka-log2
+```
 
+Persistent volume
 
+Local Path provisioner in k3d cluster used by the default storage class
+[https://k3d.io/v5.4.6/usage/k3s/?h=storage#local-path-provisioner-in-k3d](https://k3d.io/v5.4.6/usage/k3s/?h=storage#local-path-provisioner-in-k3d)
 
+```bash
+$ kubectl get sc 
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  55m
+```
+
+```bash
+$ watch kubectl get pv
+$ watch kubectl get pvc -n kafka
+```
+
+```bash
+$ kubectl apply -n kafka -f kafka-persistent-claim.yaml
+```
+
+Resources
+
+1. [https://strimzi.io/docs/operators/latest/full/configuring.html](https://strimzi.io/docs/operators/latest/full/configuring.html)
