@@ -189,6 +189,7 @@ Next create the `my-topic` via
 
 ```bash
 $ kubectl apply -f kafka-topic.yaml -n kafka
+$ kubectl get kt -n kafka
 ```
 
 Start a consumer
@@ -222,11 +223,9 @@ kafkaconnects                     kc           kafka.strimzi.io/v1beta2         
 ```
 
 
-
-
 # Prometheus
 
-## Install the Prometheus Operator:
+## Install the [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator)
 
 ```bash
 $ curl -s https://raw.githubusercontent.com/coreos/prometheus-operator/master/bundle.yaml \
@@ -234,18 +233,51 @@ $ curl -s https://raw.githubusercontent.com/coreos/prometheus-operator/master/bu
  > prometheus-operator-deployment.yaml
 ```
 
+The API resources installed:
+
+```bash
+$ kubectl api-resources | grep coreos
+alertmanagerconfigs               amcfg        monitoring.coreos.com/v1alpha1         true         AlertmanagerConfig
+alertmanagers                     am           monitoring.coreos.com/v1               true         Alertmanager
+podmonitors                       pmon         monitoring.coreos.com/v1               true         PodMonitor
+probes                            prb          monitoring.coreos.com/v1               true         Probe
+prometheuses                      prom         monitoring.coreos.com/v1               true         Prometheus
+prometheusrules                   promrule     monitoring.coreos.com/v1               true         PrometheusRule
+servicemonitors                   smon         monitoring.coreos.com/v1               true         ServiceMonitor
+thanosrulers                      ruler        monitoring.coreos.com/v1               true         ThanosRuler
+```
+
 ```bash
 $ kubectl create -f prometheus-operator-deployment.yaml -n kafka
 ```
 You should have the prometheus operator running in the `kafka` namespace
 
-## Deploy Prometheus
+## Deploy Prometheus 
 
+```bash
+$ kubectl apply -f prometheus-additional.yaml -n kafka 
+$ kubectl apply -f strimzi-pod-monitor.yaml -n kafka
+$ kubectl apply -f prometheus-rules.yaml -n kafka
+$ kubectl apply -f prometheus.yaml -n kafka
+```
+ 
+Prometheus should have started within a pod.
 
+Access Prometheus UI and verify configured targets:
+```bash
+$ kubectl port-forward svc/prometheus-operated 9090:9090 -n kafka
+```
 
+Created resources:
 
+Resources created:
 
-[**Prometheus Operator**](https://github.com/prometheus-operator/prometheus-operator)
+```bash
+$ kubectl get prom -n kafka
+$ kubectl get promrule -n kafka
+$ kubectl get pmon -n kafka
+```
+
 
 
 Resources
