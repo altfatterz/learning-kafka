@@ -278,6 +278,21 @@ $ kubectl get promrule -n kafka
 $ kubectl get pmon -n kafka
 ```
 
+# Grafana
+
+```bash
+$ kubectl apply -f grafana.yaml -n kafka
+```
+
+```bash
+$ kubectl port-forward svc/grafana -n kafka 3000:3000
+```
+
+http://localhost:3000 
+credentials: admin/admin
+
+Add Prometheus as datasource with URL http://prometheus-operated:9090
+
 
 
 Resources
