@@ -226,6 +226,25 @@ kafkaconnects                     kc           kafka.strimzi.io/v1beta2         
 
 # Prometheus
 
+## Install the Prometheus Operator:
+
+```bash
+$ curl -s https://raw.githubusercontent.com/coreos/prometheus-operator/master/bundle.yaml \
+ | sed -e '/[[:space:]]*namespace: [a-zA-Z0-9-]*$/s/namespace:[[:space:]]*[a-zA-Z0-9-]*$/namespace: kafka/' \
+ > prometheus-operator-deployment.yaml
+```
+
+```bash
+$ kubectl create -f prometheus-operator-deployment.yaml -n kafka
+```
+You should have the prometheus operator running in the `kafka` namespace
+
+## Deploy Prometheus
+
+
+
+
+
 [**Prometheus Operator**](https://github.com/prometheus-operator/prometheus-operator)
 
 
@@ -233,3 +252,5 @@ Resources
 
 1. [https://strimzi.io/docs/operators/latest/full/configuring.html](https://strimzi.io/docs/operators/latest/full/configuring.html)
 2. [https://github.com/rmarting/strimzi-demo](https://github.com/rmarting/strimzi-demo)
+3. [https://dzone.com/articles/grafana-and-prometheus-setup-with-strimzi-aka-kafk](https://dzone.com/articles/grafana-and-prometheus-setup-with-strimzi-aka-kafk)
+4. [https://strimzi.io/docs/operators/latest/deploying.html#assembly-metrics-str](https://strimzi.io/docs/operators/latest/deploying.html#assembly-metrics-str)
