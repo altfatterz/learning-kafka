@@ -257,7 +257,7 @@ You should have the prometheus operator running in the `kafka` namespace
 ```bash
 $ kubectl apply -f prometheus-additional.yaml -n kafka 
 $ kubectl apply -f strimzi-pod-monitor.yaml -n kafka
-$ kubectl apply -f prometheus-rules.yaml -n kafka
+$ kubectl apply -f prometheus-rules.yaml -n kafka (optional)
 $ kubectl apply -f prometheus.yaml -n kafka
 ```
  
