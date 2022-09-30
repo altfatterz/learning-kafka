@@ -1,0 +1,53 @@
+---
+version: '3.5'
+
+networks:
+  confluent-dev:
+    name: confluent-dev
+
+services:
+  zk1:
+    image: localbuild/ubi8
+    hostname: zk1.dev.confluent
+    container_name: zk1.dev.confluent
+    networks:
+      - confluent-dev
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+  kafka-0:
+    image: localbuild/ubi8
+    hostname: kafka-0.dev.confluent
+    container_name: kafka-0.dev.confluent
+    privileged: true
+    networks:
+      - confluent-dev
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    depends_on:
+      - zk1
+
+  kafka-1:
+    image: localbuild/ubi8
+    hostname: kafka-1.dev.confluent
+    container_name: kafka-1.dev.confluent
+    privileged: true
+    networks:
+       - confluent-dev
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    depends_on:
+      - zk1
+
+  kafka-2:
+    image: localbuild/ubi8
+    hostname: kafka-2.dev.confluent
+    container_name: kafka-2.dev.confluent
+    privileged: true
+    networks:
+      - confluent-dev
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    depends_on:
+      - zk1
