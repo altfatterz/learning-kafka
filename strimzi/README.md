@@ -8,9 +8,7 @@ $ kubectl create ns kafka
 ```
 
 ```bash
-$ curl -L http://strimzi.io/install/latest \
-  | sed 's/namespace: .*/namespace: kafka/' \
-  | kubectl apply -f - -n kafka  
+$ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 ```
 
 Output:
@@ -295,9 +293,63 @@ Add Prometheus as datasource with URL http://prometheus-operated:9090
 
 
 
+### Nodeport 
+
+```bash
+$ k3d cluster create mycluster -p "8080-8082:30080-30082@agent:0" --agents 1
+$ docker ps -a
+1fd35518a5cc   ghcr.io/k3d-io/k3d-proxy:5.4.6   "/bin/sh -c nginx-pr…"   2 hours ago   Up 2 hours   80/tcp, 0.0.0.0:54725->6443/tcp, 0.0.0.0:8080->30080/tcp, 0.0.0.0:8081->30081/tcp   k3d-mycluster-serverlb
+```
+
+```bash
+$ kubectl taint nodes k3d-mycluster-server-0 key1=value1:NoSchedule
+$ kubectl create ns kafka
+$ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
+$ kubectl apply -f kafka-nodeport.yaml -n kafka
+```
+
+```bash
+$ docker run -it --rm quay.io/strimzi/kafka:0.31.1-kafka-3.2.1 sh
+$ bin/kafka-topics.sh --bootstrap-server 172.28.0.4:30081 --list
+```
+
+https://strimzi.io/docs/operators/in-development/configuring.html#property-listener-config-preferredNodePortAddressType-reference
+
+
+```bash
+$ kubectl -n kafka exec my-cluster-kafka-0 -c kafka -it -- cat /tmp/strimzi.properties | grep advertised
+advertised.listeners=CONTROLPLANE-9090://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9095://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9095,EXTERNAL-9096://172.18.0.3:30081
+
+$ kubectl -n kafka exec my-cluster-kafka-0 -c kafka -it -- cat /opt/kafka/custom-config/server.config | grep advertised
+advertised.listeners=CONTROLPLANE-9090://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9095://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9095,EXTERNAL-9096://${STRIMZI_NODEPORT_DEFAULT_ADDRESS}:30081
+```
+
+
+### Configure image
+
+By default, is using image `quay.io/strimzi/kafka:0.31.1-kafka-3.2.1` which is a redhat linux (`cat/etc/os-release`command) 
+
+
+### Minikube
+
+```bash
+$ brew install minikube
+$ minikube version
+minikube version: v1.27.0
+# if error occues when starting the minikube use bleow command to clean the minikube
+$ minikube delete --all --purge
+$ minikube start --driver=hyperkit --container-runtime=docker --memory 8192 --cpus 4 --docker-opt=bip=172.17.42.1/16 --no-kubernetes
+$ eval $(minikube docker-env)
+$ minikube ssh
+$ minikube image
+$ minikube ip
+```
+
 Resources
 
 1. [https://strimzi.io/docs/operators/latest/full/configuring.html](https://strimzi.io/docs/operators/latest/full/configuring.html)
 2. [https://github.com/rmarting/strimzi-demo](https://github.com/rmarting/strimzi-demo)
 3. [https://dzone.com/articles/grafana-and-prometheus-setup-with-strimzi-aka-kafk](https://dzone.com/articles/grafana-and-prometheus-setup-with-strimzi-aka-kafk)
 4. [https://strimzi.io/docs/operators/latest/deploying.html#assembly-metrics-str](https://strimzi.io/docs/operators/latest/deploying.html#assembly-metrics-str)
+5. [https://medium.com/rahasak/replace-docker-desktop-with-minikube-and-hyperkit-on-macos-783ce4fb39e3](https://medium.com/rahasak/replace-docker-desktop-with-minikube-and-hyperkit-on-macos-783ce4fb39e3)
+6. [https://itnext.io/goodbye-docker-desktop-hello-minikube-3649f2a1c469](https://itnext.io/goodbye-docker-desktop-hello-minikube-3649f2a1c469)
