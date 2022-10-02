@@ -1,5 +1,20 @@
 Create k8s cluster and namespace
 
+### Minikube
+
+```bash
+$ brew install minikube
+$ minikube version
+minikube version: v1.27.0
+# if error occurs when starting the minikube use command to clean the minikube
+$ minikube delete --all --purge
+$ minikube start --driver=hyperkit --container-runtime=docker --memory 8192 --cpus 4 --no-kubernetes
+$ eval $(minikube docker-env)
+$ minikube ssh
+$ minikube image
+$ minikube ip
+```
+
 ```bash
 $ k3d cluster create mycluster --agents 3 -v $HOME/temp/strimzi:/var/lib/rancher/k3s/storage@all 
 $ kubectl cluster-info
@@ -297,8 +312,22 @@ Add Prometheus as datasource with URL http://prometheus-operated:9090
 
 ```bash
 $ k3d cluster create mycluster -p "8080-8082:30080-30082@agent:0" --agents 1
+```
+
+```bash
+$ kubectl get nodes -o wide
+NAME                     STATUS   ROLES                  AGE   VERSION        INTERNAL-IP   EXTERNAL-IP   OS-IMAGE   KERNEL-VERSION   CONTAINER-RUNTIME
+k3d-mycluster-server-0   Ready    control-plane,master   46s   v1.24.4+k3s1   172.19.0.2    <none>        K3s dev    5.10.57          containerd://1.6.6-k3s1
+k3d-mycluster-agent-0    Ready    <none>                 38s   v1.24.4+k3s1   172.19.0.3    <none>        K3s dev    5.10.57          containerd://1.6.6-k3s1
+```
+
+```bash
 $ docker ps -a
-1fd35518a5cc   ghcr.io/k3d-io/k3d-proxy:5.4.6   "/bin/sh -c nginx-pr…"   2 hours ago   Up 2 hours   80/tcp, 0.0.0.0:54725->6443/tcp, 0.0.0.0:8080->30080/tcp, 0.0.0.0:8081->30081/tcp   k3d-mycluster-serverlb
+
+CONTAINER ID   IMAGE                            COMMAND                  CREATED              STATUS              PORTS                                                                                                        NAMES
+98a5e9976fc9   ghcr.io/k3d-io/k3d-proxy:5.4.6   "/bin/sh -c nginx-pr…"   About a minute ago   Up About a minute   80/tcp, 0.0.0.0:49677->6443/tcp, 0.0.0.0:8080->30080/tcp, 0.0.0.0:8081->30081/tcp, 0.0.0.0:8082->30082/tcp   k3d-mycluster-serverlb
+c5156492cb3e   rancher/k3s:v1.24.4-k3s1         "/bin/k3s agent"         About a minute ago   Up About a minute                                                                                                                k3d-mycluster-agent-0
+0313455ef96b   rancher/k3s:v1.24.4-k3s1         "/bin/k3s server --t…"   About a minute ago   Up About a minute
 ```
 
 ```bash
@@ -330,20 +359,7 @@ advertised.listeners=CONTROLPLANE-9090://my-cluster-kafka-0.my-cluster-kafka-bro
 By default, is using image `quay.io/strimzi/kafka:0.31.1-kafka-3.2.1` which is a redhat linux (`cat/etc/os-release`command) 
 
 
-### Minikube
 
-```bash
-$ brew install minikube
-$ minikube version
-minikube version: v1.27.0
-# if error occues when starting the minikube use bleow command to clean the minikube
-$ minikube delete --all --purge
-$ minikube start --driver=hyperkit --container-runtime=docker --memory 8192 --cpus 4 --no-kubernetes
-$ eval $(minikube docker-env)
-$ minikube ssh
-$ minikube image
-$ minikube ip
-```
 
 Resources
 
@@ -353,3 +369,4 @@ Resources
 4. [https://strimzi.io/docs/operators/latest/deploying.html#assembly-metrics-str](https://strimzi.io/docs/operators/latest/deploying.html#assembly-metrics-str)
 5. [https://medium.com/rahasak/replace-docker-desktop-with-minikube-and-hyperkit-on-macos-783ce4fb39e3](https://medium.com/rahasak/replace-docker-desktop-with-minikube-and-hyperkit-on-macos-783ce4fb39e3)
 6. [https://itnext.io/goodbye-docker-desktop-hello-minikube-3649f2a1c469](https://itnext.io/goodbye-docker-desktop-hello-minikube-3649f2a1c469)
+7. [https://itnext.io/goodbye-docker-desktop-hello-minikube-3649f2a1c469](https://itnext.io/goodbye-docker-desktop-hello-minikube-3649f2a1c469)
