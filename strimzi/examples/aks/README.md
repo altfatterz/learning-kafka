@@ -67,3 +67,10 @@ $ kafka-topics --bootstrap-server <external-ip>:9094 --list
 $ kafka-console-producer --bootstrap-server 20.91.172.51:9094 --topic my-topic
 $ kafka-console-consumer --bootstrap-server 20.91.172.51:9094 --topic my-topic --from-beginning
 ```
+
+
+### Cleanup
+
+```bash
+$ az group delete -g $RG
+```
