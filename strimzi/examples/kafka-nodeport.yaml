@@ -4,17 +4,17 @@ metadata:
   name: my-cluster
 spec:
   kafka:
-    version: 3.2.1
+    version: 3.2.3
     replicas: 1
     listeners:
       - name: plain
-        port: 9095
+        port: 9092
         type: internal
         tls: false
-      - name: external
-        port: 9096
-        type: nodeport
-        tls: false
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
         configuration:
           preferredNodePortAddressType: Hostname
           bootstrap:
