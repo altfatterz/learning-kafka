@@ -338,7 +338,7 @@ $ minikube version
 minikube version: v1.27.0
 # if error occues when starting the minikube use bleow command to clean the minikube
 $ minikube delete --all --purge
-$ minikube start --driver=hyperkit --container-runtime=docker --memory 8192 --cpus 4 --docker-opt=bip=172.17.42.1/16 --no-kubernetes
+$ minikube start --driver=hyperkit --container-runtime=docker --memory 8192 --cpus 4 --no-kubernetes
 $ eval $(minikube docker-env)
 $ minikube ssh
 $ minikube image
