@@ -64,12 +64,12 @@ External access:
 $ kubectl apply -f kafka-loadbalancer.yaml -n kafka
 $ # get the external ip from the `<cluster-name>-kafka-external-bootstrap` service
 $ kafka-topics --bootstrap-server <external-ip>:9094 --list 
-$ kafka-console-producer --bootstrap-server 20.91.172.51:9094 --topic my-topic
-$ kafka-console-consumer --bootstrap-server 20.91.172.51:9094 --topic my-topic --from-beginning
+$ kafka-console-producer --bootstrap-server <external-ip>:9094 --topic my-topic
+$ kafka-console-consumer --bootstrap-server <external-ip>:9094 --topic my-topic --from-beginning
 ```
 
 
-### Cleanup
+### Cleanup 
 
 ```bash
 $ az group delete -g $RG

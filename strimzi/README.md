@@ -308,57 +308,8 @@ Add Prometheus as datasource with URL http://prometheus-operated:9090
 
 
 
-### Nodeport 
 
-```bash
-$ k3d cluster create mycluster -p "8080-8082:30080-30082@agent:0" --agents 1
-```
-
-```bash
-$ kubectl get nodes -o wide
-NAME                     STATUS   ROLES                  AGE   VERSION        INTERNAL-IP   EXTERNAL-IP   OS-IMAGE   KERNEL-VERSION   CONTAINER-RUNTIME
-k3d-mycluster-server-0   Ready    control-plane,master   46s   v1.24.4+k3s1   172.19.0.2    <none>        K3s dev    5.10.57          containerd://1.6.6-k3s1
-k3d-mycluster-agent-0    Ready    <none>                 38s   v1.24.4+k3s1   172.19.0.3    <none>        K3s dev    5.10.57          containerd://1.6.6-k3s1
-```
-
-```bash
-$ docker ps -a
-
-CONTAINER ID   IMAGE                            COMMAND                  CREATED              STATUS              PORTS                                                                                                        NAMES
-98a5e9976fc9   ghcr.io/k3d-io/k3d-proxy:5.4.6   "/bin/sh -c nginx-pr…"   About a minute ago   Up About a minute   80/tcp, 0.0.0.0:49677->6443/tcp, 0.0.0.0:8080->30080/tcp, 0.0.0.0:8081->30081/tcp, 0.0.0.0:8082->30082/tcp   k3d-mycluster-serverlb
-c5156492cb3e   rancher/k3s:v1.24.4-k3s1         "/bin/k3s agent"         About a minute ago   Up About a minute                                                                                                                k3d-mycluster-agent-0
-0313455ef96b   rancher/k3s:v1.24.4-k3s1         "/bin/k3s server --t…"   About a minute ago   Up About a minute
-```
-
-```bash
-$ kubectl taint nodes k3d-mycluster-server-0 key1=value1:NoSchedule
-$ kubectl create ns kafka
-$ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
-$ kubectl apply -f kafka-nodeport.yaml -n kafka
-```
-
-```bash
-$ docker run -it --rm quay.io/strimzi/kafka:0.31.1-kafka-3.2.1 sh
-$ bin/kafka-topics.sh --bootstrap-server 172.28.0.4:30081 --list
-```
-
-https://strimzi.io/docs/operators/in-development/configuring.html#property-listener-config-preferredNodePortAddressType-reference
-
-
-```bash
-$ kubectl -n kafka exec my-cluster-kafka-0 -c kafka -it -- cat /tmp/strimzi.properties | grep advertised
-advertised.listeners=CONTROLPLANE-9090://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9095://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9095,EXTERNAL-9096://172.18.0.3:30081
-
-$ kubectl -n kafka exec my-cluster-kafka-0 -c kafka -it -- cat /opt/kafka/custom-config/server.config | grep advertised
-advertised.listeners=CONTROLPLANE-9090://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9095://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9095,EXTERNAL-9096://${STRIMZI_NODEPORT_DEFAULT_ADDRESS}:30081
-```
-
-
-### Configure image
-
-By default, is using image `quay.io/strimzi/kafka:0.31.1-kafka-3.2.1` which is a redhat linux (`cat/etc/os-release`command) 
-
-
+By default, is using image `quay.io/strimzi/kafka:0.31.1-kafka-3.2.1` which is a redhat linux (`cat/etc/os-release`command)
 
 
 Resources
