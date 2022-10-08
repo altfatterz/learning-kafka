@@ -13,6 +13,8 @@ minikube version: v1.27.0
 # add more memory and cpu using the `--memory` and `--cpu` options
 # with `--driver` option you can set the prefered driver on macOS is `hyperkit` on windows is `hyperv` 
 $ minikube start --driver=hyperkit --container-runtime=docker --memory 8192 --cpus 4 --no-kubernetes
+$ minikube node list
+minikube	192.168.205.11
 ```
 
 ### 2. Point your terminal’s docker-cli to the Docker Engine inside minikube. 
