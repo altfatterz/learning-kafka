@@ -22,17 +22,17 @@ spec:
             - broker: 0
               nodePort: 30081
               # modify it according to value `minikube ip`
-              advertisedHost: 192.168.205.5
+              advertisedHost: 192.168.205.11
               advertisedPort: 8081
             - broker: 1
               nodePort: 30082
               # modify it according to value `minikube ip`
-              advertisedHost: 192.168.205.5
+              advertisedHost: 192.168.205.11
               advertisedPort: 8082
             - broker: 2
               nodePort: 30083
               # modify it according to value `minikube ip`
-              advertisedHost: 192.168.205.5
+              advertisedHost: 192.168.205.11
               advertisedPort: 8083
     config:
       offsets.topic.replication.factor: 1
