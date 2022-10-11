@@ -102,7 +102,7 @@ Connected to <a-node-ip>
 Verify that from your host you can connect using [`kcat`](https://github.com/edenhill/kcat) (formerly `kafkacat`)
 
 ```bash
-  $ kcat -L -b $(minikube ip):8080 
+$ kcat -L -b $(minikube ip):8080 
 ```
 
 Produce:
