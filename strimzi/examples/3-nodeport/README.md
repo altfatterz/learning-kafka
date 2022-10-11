@@ -32,6 +32,7 @@ k3d-mycluster-agent-2    Ready    <none>                 31s   v1.24.4+k3s1   17
 ### 3. Install the Strimzi operator:
 
 ```bash
+$ kubectl create ns kafka
 $ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 ```
 
@@ -101,7 +102,7 @@ Connected to <a-node-ip>
 Verify that from your host you can connect using [`kcat`](https://github.com/edenhill/kcat) (formerly `kafkacat`)
 
 ```bash
-$ kcat -L -b $(minikube ip):8080 
+  $ kcat -L -b $(minikube ip):8080 
 ```
 
 Produce:
