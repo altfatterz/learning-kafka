@@ -1,3 +1,5 @@
+Here we focus on how to encrypt the communication of data exchange.
+
 ### 1. Create a k8s cluster using k3d
 
 ```bash
@@ -75,6 +77,23 @@ my-cluster-entity-user-operator-config    1      3m15s
 $ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
 ```
 
+Examine the certificate using `Keystore Explorer` or `openssl x509 -text -in ca.crt`
+
+```bash
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            57:33:27:88:f5:28:e0:20:17:cd:f9:fe:62:81:44:24:fc:50:01:6b
+    Signature Algorithm: sha512WithRSAEncryption
+        Issuer: O=io.strimzi, CN=cluster-ca v0
+        Validity
+            Not Before: Oct 11 20:21:42 2022 GMT
+            Not After : Oct 11 20:21:42 2023 GMT
+        Subject: O=io.strimzi, CN=cluster-ca v0
+        ...
+```
+
 ### 7. Try again, setting now the `ssl.ca.location`
 
 ```bash
@@ -111,7 +130,7 @@ $ kubectl cp ca.p12 producer-consumer:/tmp -n kafka
 $ kubectl cp security-config.properties producer-consumer:/tmp -n kafka
 ```
 
-next try to run a producer within the interactive pod:
+Next try to run a producer and then a consumer within the interactive pod with security configuration:
 
 ```bash
 $ /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic --producer.config=/tmp/security-config.properties
@@ -125,3 +144,77 @@ one
 two
 three
 ```
+
+Within the interactive pod we can verify what certificate is presented:
+
+```bash
+$ openssl s_client -connect my-cluster-kafka-bootstrap:9093
+
+CONNECTED(00000003)
+Can't use SSL_get_servername
+depth=1 O = io.strimzi, CN = cluster-ca v0
+verify error:num=19:self signed certificate in certificate chain
+verify return:1
+depth=1 O = io.strimzi, CN = cluster-ca v0
+verify return:1
+depth=0 O = io.strimzi, CN = my-cluster-kafka
+verify return:1
+---
+Certificate chain
+ 0 s:O = io.strimzi, CN = my-cluster-kafka
+   i:O = io.strimzi, CN = cluster-ca v0
+ 1 s:O = io.strimzi, CN = cluster-ca v0
+   i:O = io.strimzi, CN = cluster-ca v0
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+...
+-----END CERTIFICATE-----
+subject=O = io.strimzi, CN = my-cluster-kafka
+
+issuer=O = io.strimzi, CN = cluster-ca v0
+
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 3322 bytes and written 369 bytes
+Verification error: self signed certificate in certificate chain
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Server public key is 2048 bit
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 19 (self signed certificate in certificate chain)
+---
+---
+Post-Handshake New Session Ticket arrived:
+SSL-Session:
+    Protocol  : TLSv1.3
+    Cipher    : TLS_AES_256_GCM_SHA384
+    Session-ID: F50CF825CD3AC02030A35CDFFFB828B6DB1A7F9BB9FA6B50D3BCF90C29373A64
+    Session-ID-ctx:
+    Resumption PSK: 47C87572987221ABA9E708B7A312719DC680838058323DB04E737094A6BCF1D6B75F9757E6FD32DDFF3189D188DBD7E4
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    TLS session ticket lifetime hint: 86400 (seconds)
+    TLS session ticket:
+    0000 - b7 e1 ef 70 f4 04 77 70-db 11 bf 71 14 3a 3f 27   ...p..wp...q.:?'
+    0010 - 09 28 34 37 0e 30 97 08-6e fc 75 2f ef ec 68 ec   .(47.0..n.u/..h.
+
+    Start Time: 1665521790
+    Timeout   : 7200 (sec)
+    Verify return code: 19 (self signed certificate in certificate chain)
+    Extended master secret: no
+    Max Early Data: 0
+---
+```
+
+Resources:
+- https://strimzi.io/docs/operators/latest/configuring.html#assembly-securing-access-str
