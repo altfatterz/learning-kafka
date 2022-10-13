@@ -133,6 +133,7 @@ $ kubectl cp security-config.properties producer-consumer:/tmp -n kafka
 Next try to run a producer and then a consumer within the interactive pod with security configuration:
 
 ```bash
+$ kubectl exec -it producer-consumer -- sh
 $ /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic --producer.config=/tmp/security-config.properties
 >one
 >two
