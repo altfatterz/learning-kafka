@@ -20,6 +20,7 @@ spec:
         type: ingress
         tls: true
         configuration:
+          class: nginx
           bootstrap:
             # modify it according to value `minikube ip`
             host: bootstrap.192.168.205.14.nip.io
