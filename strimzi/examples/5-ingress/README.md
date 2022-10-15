@@ -27,6 +27,8 @@ $ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 
 ### 4. Create the Kafka cluster
 
+Modify the `host` to value `minikube ip`
+
 ```bash
 $ kubectl apply -f kafka-ingress.yaml -n kafka
 ```
@@ -54,15 +56,15 @@ $ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\
 ```bash
 $ kafka-console-producer --bootstrap-server bootstrap.192.168.205.14.nip.io:443 \
 --producer-property security.protocol=SSL \
---producer-property ssl.truststore.password=aO0M18RW5Oe1 \
+--producer-property ssl.truststore.password=<change-me> \
 --producer-property ssl.truststore.location=./ca.p12 \
 --topic my-topic
-```
-
+````
+`
 ```bash
 $ kafka-console-consumer --bootstrap-server bootstrap.192.168.205.14.nip.io:443 \
 --consumer-property security.protocol=SSL \
---consumer-property ssl.truststore.password=aO0M18RW5Oe1 \
+--consumer-property ssl.truststore.password=<change-me> \
 --consumer-property ssl.truststore.location=./ca.p12 \
 --topic my-topic \
 --from-beginning
@@ -84,3 +86,39 @@ bar
 baz 
 ```
 
+### 7. Examine the certificate
+
+Run it from your host:
+
+```bash
+$ openssl s_client -connect bootstrap.192.168.205.14.nip.io:443 -servername bootstrap.192.168.205.14.nip.io
+CONNECTED(00000005)
+depth=1 O = io.strimzi, CN = cluster-ca v0
+verify error:num=19:self signed certificate in certificate chain
+verify return:0
+---
+Certificate chain
+ 0 s:/O=io.strimzi/CN=my-cluster-kafka
+   i:/O=io.strimzi/CN=cluster-ca v0
+ 1 s:/O=io.strimzi/CN=cluster-ca v0
+   i:/O=io.strimzi/CN=cluster-ca v0
+... 
+```
+
+Note that if you don't specify the `-servername` then it will return the ingress controller certificate
+
+```bash
+$ openssl s_client -connect bootstrap.192.168.205.14.nip.io:443
+CONNECTED(00000005)
+depth=0 O = Acme Co, CN = Kubernetes Ingress Controller Fake Certificate
+verify error:num=20:unable to get local issuer certificate
+verify return:1
+depth=0 O = Acme Co, CN = Kubernetes Ingress Controller Fake Certificate
+verify error:num=21:unable to verify the first certificate
+verify return:1
+---
+Certificate chain
+ 0 s:/O=Acme Co/CN=Kubernetes Ingress Controller Fake Certificate
+   i:/O=Acme Co/CN=Kubernetes Ingress Controller Fake Certificate
+... 
+```
