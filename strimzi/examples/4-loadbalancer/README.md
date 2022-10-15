@@ -1,21 +1,25 @@
-
+!!!! demo does not work yet !!!
 
 ```bash
-$ k3d cluster create mycluster -p "9094:80@agent:0,1,2" --agents 3 --k3s-arg "--disable=traefik@server:0" --wait
-$ kubectl get pods --all-namespaces
-
-NAMESPACE     NAME                                      READY   STATUS    RESTARTS   AGE
-kube-system   local-path-provisioner-7b7dc8d6f5-7czl8   1/1     Running   0          47s
-kube-system   coredns-b96499967-xpzn8                   1/1     Running   0          47s
-kube-system   metrics-server-668d979685-586wd           1/1     Running   0          47s
+$ k3d cluster create mycluster -p "9096:80@agent:0,1" --agents 2
+$ k3d cluster create mycluster --agents 2 --no-lb --k3s-arg "--disable=traefik@server:0" 
+$ kubectl taint nodes k3d-mycluster-server-0 key1=value1:NoSchedule
 ```
 
-### 3. Deploy [metallb](https://github.com/metallb/metallb)
+In a separate terminal monitor the resources using:
+
+```bash
+$ kubectl get all --all-namespaces
+```
+
+### 3. Deploy [metallb](https://metallb.universe.tf/installation/)
 
 ```bash
 $ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.10.2/manifests/namespace.yaml
 $ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.10.2/manifests/metallb.yaml
+```
 
+```bash
 $ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.5/config/manifests/metallb-native.yaml
 ```
 
@@ -53,7 +57,12 @@ metallb-system   speaker-zjrwp                             1/1     Running   0  
 metallb-system   speaker-slk9b                             1/1     Running   0          34s
 ```
 
+### 3. Install the Strimzi operator
 
+```bash
+$ kubectl create ns kafka
+$ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
+```
 
 ### 5. Deploy Kafka with Loadbalancer config:
 

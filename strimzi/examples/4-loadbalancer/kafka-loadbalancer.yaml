@@ -5,14 +5,14 @@ metadata:
 spec:
   kafka:
     version: 3.2.3
-    replicas: 3
+    replicas: 2
     listeners:
       - name: plain
         port: 9092
         type: internal
         tls: false
       - name: external
-        port: 9094
+        port: 9096
         type: loadbalancer
         tls: false
     config:
