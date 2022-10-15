@@ -67,7 +67,7 @@ $ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\
 $ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.password}' | base64 -d > ca.password
 ```
 
-### 9. Try to connect:
+### 9. Try to connect using kafka-console-producer / kafka-console-consumer
 
 ```bash
 $ kafka-console-producer --bootstrap-server bootstrap.192.168.205.14.nip.io:443 \
@@ -106,6 +106,23 @@ $ kafka-console-consumer --bootstrap-server bootstrap.192.168.205.14.nip.io:443 
 --consumer-property ssl.keystore.location=./user.p12 \
 --topic my-topic \
 --from-beginning
+```
+
+### 10. Try to connect using `kcat`
+
+```bash
+# extract the ca certificate in PEM format
+$ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
+# extract the my-user certificate in PEM format
+$ kubectl get secret my-user -n kafka -o jsonpath='{.data.user\.crt}' | base64 -d > user.crt
+$ kubectl get secret my-user -n kafka -o jsonpath='{.data.user\.key}' | base64 -d > user.key
+# produce
+$ echo "foo\nbar\nbaz" | kcat -P -b bootstrap.192.168.205.14.nip.io:443 -t my-topic -X security.protocol=SSL -X ssl.ca.location=./ca.crt -X ssl.certificate.location=./user.crt -X ssl.key.location=./user.key 
+# consume 
+$ kcat -C -b bootstrap.192.168.205.14.nip.io:443 -t my-topic -X security.protocol=SSL -X ssl.ca.location=./ca.crt -X ssl.certificate.location=./user.crt -X ssl.key.location=./user.key 
+foo
+bar
+baz 
 ```
 
 
