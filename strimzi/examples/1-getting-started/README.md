@@ -49,13 +49,12 @@ $ kubectl get nodes -o wide
 $ docker ps
 # taint the server node that no workloads are scheduled on it
 $ kubectl taint nodes k3d-mycluster-server-0 key1=value1:NoSchedule
-# create the `kafka` namespace
-$ kubectl create ns kafka
 ```
 
 ### 4. Install the [Strimzi](https://strimzi.io/) operator
 
 ```bash
+$ kubectl create ns kafka
 $ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 ```
 
