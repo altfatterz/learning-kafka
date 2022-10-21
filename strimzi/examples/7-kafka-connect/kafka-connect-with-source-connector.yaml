@@ -8,7 +8,7 @@ metadata:
 #  # needing to call the Connect REST API directly
     strimzi.io/use-connector-resources: "true"
 spec:
-  version: 3.2.1
+  version: 3.2.3
   replicas: 1
   bootstrapServers: my-cluster-kafka-bootstrap:9092
   config:
@@ -23,12 +23,12 @@ spec:
   build:
     output:
       type: docker
-      # This image will last only for 2 hours
-      image: ttl.sh/altfatterz-strimzi-kafka-connect-3.2.1:2h
+      # This image will last only for 2 hours, use a different name
+      image: ttl.sh/altfatterz-strimzi-kafka-connect-3.2.3:2h
     plugins:
       - name: kafka-connect-file
         artifacts:
           - type: maven
             group: org.apache.kafka
             artifact: connect-file
-            version: 3.2.1
+            version: 3.2.3

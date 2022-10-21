@@ -182,58 +182,6 @@ $ curl http://localhost:9404/metrics
 
 # Kafka Connect
 
-`KafkaConnect` and `KafkaConnector` resources [https://strimzi.io/docs/operators/latest/deploying.html#kafka-connect-str](https://strimzi.io/docs/operators/latest/deploying.html#kafka-connect-str)
-
-```bash
-$ kubectl apply -f kafka-connect-with-source-connector.yaml -n kafka
-```
-First `my-connect-cluster-connect-build` job is create to create a custom image and upload it to the
-`ttl.sh/altfatterz-strimzi-kafka-connect-3.2.1:2h` (valid for 2 hours)
-
-Check the logs what is doing:
-
-```bash
-$ stern my-connect-cluster-connect-build -n kafka
-```
-
-Then a `my-connect-cluster-connect-7d6b9b7c8c-5z5xb` pod is created which is the actual Connect Instance with the File Source Connector installed on it.
-
-Next create the `my-topic` via
-
-```bash
-$ kubectl apply -f kafka-topic.yaml -n kafka
-$ kubectl get kt -n kafka
-```
-
-Start a consumer
-```bash
-$ kubectl -n kafka run kafka-consumer -ti --image=bitnami/kafka:3.2.1 --rm=true --restart=Never -- kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
-```
-
-And then configure the File Source Connector using:
-
-```bash
-$ kubectl apply -f kafka-source-connector.yaml -n kafka
-```
-
-In the consumer logs you should see the messages from the topic
-
-```bash
-{"schema":{"type":"string","optional":false},"payload":"This product contains the dnsinfo.h header file, that provides a way to retrieve the system DNS configuration on MacOS."}
-{"schema":{"type":"string","optional":false},"payload":"This private header is also used by Apple's open source"}
-{"schema":{"type":"string","optional":false},"payload":" mDNSResponder (https://opensource.apple.com/tarballs/mDNSResponder/)."}
-{"schema":{"type":"string","optional":false},"payload":""}
-{"schema":{"type":"string","optional":false},"payload":" * LICENSE:"}
-{"schema":{"type":"string","optional":false},"payload":"    * license/LICENSE.dnsinfo.txt (Apple Public Source License 2.0)"}
-{"schema":{"type":"string","optional":false},"payload":"  * HOMEPAGE:"}
-```
-
-```bash
-$ kubectl api-resources | grep connect
-
-kafkaconnectors                   kctr         kafka.strimzi.io/v1beta2               true         KafkaConnector
-kafkaconnects                     kc           kafka.strimzi.io/v1beta2               true         KafkaConnect
-```
 
 
 # Prometheus
