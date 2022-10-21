@@ -7,10 +7,7 @@ The `Cluster Operator` manages Kafka Connect clusters deployed using the `KafkaC
 ```bash
 # delete your previous cluster if you haven't done it.
 $ k3d cluster delete mycluster
-# Start a k8s cluster this time wwith with 3 agent nodes, 1 server node (control-plane), 
-# we disable the loadbalancer in front of the server nodes and add a volume mapping (used for the PVCs demo from last time)
-# we create a port mapping the port 30080-30083 range to from the 3 agent nodes to 8080-8083 on the host 
-$ k3d cluster create mycluster -p "8080-8083:30080-30083@agent:0,1,2" --agents 3 -v /data:/var/lib/rancher/k3s/storage@all
+$ k3d cluster create mycluster --agents 1
 # taint the server node that no workloads are scheduled on it
 $ kubectl taint nodes k3d-mycluster-server-0 key1=value1:NoSchedule
 # create the `kafka` namespace
