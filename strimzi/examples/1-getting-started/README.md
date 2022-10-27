@@ -126,6 +126,9 @@ my-cluster-kafka-0                            1/1     Running   0          54s  
 my-cluster-entity-operator-54f8746cb8-85nbt   1/3     Running   0          11s     10.42.0.9   k3d-mycluster-agent-0   <none>           <none>
 ```
 
+By default, is using image `quay.io/strimzi/kafka:0.31.1-kafka-3.2.3` which is a redhat linux (`cat/etc/os-release`command)
+
+
 Also view the services which were created:
 
 ```bash
