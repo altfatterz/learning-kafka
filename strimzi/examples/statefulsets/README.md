@@ -127,7 +127,19 @@ nginx-statefulset-1   1/1     Running   0          28m   10.42.0.27   k3d-myclus
 nginx-statefulset-2   1/1     Running   0          28m   10.42.0.29   k3d-mycluster-server-0   <none>           <none>
 ```
 
-PersistentVolumes mounted to the Pods of a StatefulSet are not deleted when the StatefulSet's Pods are deleted.
+### PVCs and PVs
+
+A `PersistentVolume` (PV) is a piece of storage in the cluster that either 
+- has been manually provisioned by an administrator
+- or dynamically provisioned by Kubernetes using a StorageClass.
+
+Many cluster environments have a default StorageClass installed. 
+When a StorageClass is not specified in the PersistentVolumeClaim, the cluster's default StorageClass is used instead.
+
+A `PersistentVolumeClaim` (PVC) is a request for storage by a user that can be fulfilled by a PV.
+
+These objects are independent from Pod lifecycles and preserve data through restarting, rescheduling, and even deleting Pods.
+
 
 ```bash
 $ kubectl get pvc -o wide
@@ -136,6 +148,11 @@ www-nginx-statefulset-0   Bound    pvc-c42898e9-640a-4358-a18b-a173f9de74da   1G
 www-nginx-statefulset-1   Bound    pvc-a8b8631f-39d1-464c-8896-2c18a8524d02   1Gi        RWO            local-path     29m   Filesystem
 www-nginx-statefulset-2   Bound    pvc-8403d052-da13-4df2-876c-9c0ae09b3142   1Gi        RWO            local-path     29m   Filesystem
 ```
+
+Deleting or scaling a StatefulSet down does not delete the volumes associated with the StatefulSet. This setting is for your safety because your data is more valuable than automatically purging all related StatefulSet resources.
+
+However depending on the storage class and reclaim policy, deleting the PersistentVolumeClaims may cause the associated volumes to also be deleted.
+Never assume you'll be able to access data if its volume claims are deleted.
 
 ```bash
 $ kubectl get pv -o wide
