@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # this name should match with the spec.serviceName of the StatefulSet
+  name: headless-nginx
+  labels:
+    app: nginx
+spec:
+  ports:
+    - port: 80
+      name: web
+  # no clusterIP will be created
+  clusterIP: None
+  selector:
+    app: nginx
+---
+# The whole point of using StatefulSets is so that we can reference a specific pod by a predictable name
+#  instead of having them abstracted away by a normal (non-headless) Service
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  # the hostname for any member pod of this StatefulSet will be:
+  # <StatefulSet.name>-<ordinal index> where <ordinal-index> is a number starting from 0
+  name: nginx-statefulset
+spec:
+  # StatefulSet requires a Kubernetes Headless Service instead of a standard Kubernetes service
+  # in order for it to be accessed.
+  serviceName: headless-nginx
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx  # has to match .spec.template.metadata.labels
+  template:
+    metadata:
+      labels:
+        app: nginx # has to match .spec.selector.matchLabels
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.23.2-alpine
+          ports:
+            - containerPort: 80
+              name: web
+          volumeMounts:
+            # PVC names will be using: <volumeMount.name>-<StatefulSet.name>-<ordinal index>
+            - name: www
+              mountPath: /usr/share/nginx/html
+  # volumeClaimTemplates will provide stable storage using PersistentVolumes provisioned by a PersistentVolume Provisioner.
+  volumeClaimTemplates:
+    - metadata:
+        name: www
+      spec:
+        # has to be ReadWriteOnce otherwise the PVC is pending
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
