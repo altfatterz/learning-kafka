@@ -51,7 +51,6 @@ environment variable in the Cluster Operator configuration.
 In this `strimzi.yaml` file the `STRIMZI_FEATURE_GATES` was configured to `-UseStrimziPodSets`
 
 ```bash
-$ kubectl create ns kafka
 $ kubectl create -f strimzi.yaml
 ```
 
@@ -131,11 +130,31 @@ $ watch kubectl get pvc
 $ watch kubectl get pv
 ```
 
-Deploy a Kafka 3 node cluster (3 node Zookeeper) with `persistent-claim` persistence configured.
+Create a `StorageClass` where we configure the `Retain` ClaimPolicy to avoid makes sure the dynamically provisioned PVs 
+are not deleted when the PVCs are deleted. 
 
 ```bash
-$ kubectl apply -f kafka-persistent-claim.yaml
+$ kubectl apply -f local-path-retain-sc.yaml 
 ```
+
+Deploy a Kafka 3 node cluster (3 node Zookeeper) with `JBOD` persistence configured.
+
+```bash
+$ kubectl apply -f kafka-jbod-persistent-claim.yaml
+```
+
+Note that JBOD is supported only for Kafka, not for Zookeper.
+
+- You can configure Strimzi to use JBOD, a data storage configuration of multiple disks or volumes. 
+- JBOD is one approach to providing increased data storage for Kafka brokers. It can also improve performance.
+- JBOD storage is supported for Kafka only not ZooKeeper.
+
+Data storage considerations: 
+- Block storage is required (XFS, ext4), file storage like NFS does not work with Kafka.
+- Use separate disks for Apache Kafka and ZooKeeper.
+- Solid-state drives (SSDs), though not essential, can improve the performance of Kafka in large clusters where data is sent to and received from multiple topics asynchronously.
+- SSDs are particularly effective with ZooKeeper, which requires fast, low latency data access.
+- You do not need to provision replicated storage because Kafka and ZooKeeper both have built-in data replication.
 
 Check what resources have been created:
 
@@ -193,26 +212,40 @@ my-cluster-entity-operator-6df799fffd-xjzmj   3/3     Running   0          4m23s
 ```bash
 $ kubectl get pvc 
 NAME                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-data-my-cluster-zookeeper-1   Bound    pvc-f69d1db8-fa67-4f01-afc6-ca1e83697b38   1Gi        RWO            local-path     7m33s
-data-my-cluster-zookeeper-2   Bound    pvc-d50ec5f8-79c9-40d9-adc6-04445699b52f   1Gi        RWO            local-path     7m33s
-data-my-cluster-zookeeper-0   Bound    pvc-f388ec54-f51e-4089-8f10-8cdac794ddbd   1Gi        RWO            local-path     7m33s
-data-my-cluster-kafka-0       Bound    pvc-e6d44d2c-f186-4247-9283-fea9db981dfc   1Gi        RWO            local-path     5m58s
-data-my-cluster-kafka-2       Bound    pvc-d1d3738f-eb83-49cd-ae8d-3335bea73f13   1Gi        RWO            local-path     5m58s
-data-my-cluster-kafka-1       Bound    pvc-5585b693-d254-435d-abf5-0d17f1035487   1Gi        RWO            local-path     5m58s
+data-my-cluster-zookeeper-2   Bound    pvc-614ba371-b837-42e3-b60a-778bc3c573de   1Gi        RWO            local-path-retain-sc   44m
+data-my-cluster-zookeeper-0   Bound    pvc-a64b8fb1-1f31-4f5f-a611-98105177c8c1   1Gi        RWO            local-path-retain-sc   44m
+data-my-cluster-zookeeper-1   Bound    pvc-c810cc19-58bf-4553-979c-0d8e8a5d8a87   1Gi        RWO            local-path-retain-sc   44m
+data-0-my-cluster-kafka-0     Bound    pvc-f1727646-86eb-44f0-abad-c2d16bf3b5b1   1Gi        RWO            local-path-retain-sc   42m
+data-0-my-cluster-kafka-1     Bound    pvc-46191e05-b719-4738-8d01-bc373228edc3   1Gi        RWO            local-path-retain-sc   42m
+data-1-my-cluster-kafka-0     Bound    pvc-c9f91cea-ca3e-4d69-b4f2-4e29c563a3fc   1Gi        RWO            local-path-retain-sc   42m
+data-0-my-cluster-kafka-2     Bound    pvc-b72086bb-df47-43bc-aa3c-01ec35fd6b29   1Gi        RWO            local-path-retain-sc   42m
+data-1-my-cluster-kafka-1     Bound    pvc-d13fac0c-d209-4b3c-a0e7-7c6b848fb1b9   1Gi        RWO            local-path-retain-sc   42m
+data-1-my-cluster-kafka-2     Bound    pvc-a78e1e3f-410e-440f-a5c8-e58ad2f31c72   1Gi        RWO            local-path-retain-sc   42m
 ```
 
 6. PVs:
  
 ```bash
 $ kubectl get pv
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                               STORAGECLASS   REASON   AGE
-pvc-f388ec54-f51e-4089-8f10-8cdac794ddbd   1Gi        RWO            Delete           Bound    kafka/data-my-cluster-zookeeper-0   local-path              7m40s
-pvc-f69d1db8-fa67-4f01-afc6-ca1e83697b38   1Gi        RWO            Delete           Bound    kafka/data-my-cluster-zookeeper-1   local-path              7m39s
-pvc-d50ec5f8-79c9-40d9-adc6-04445699b52f   1Gi        RWO            Delete           Bound    kafka/data-my-cluster-zookeeper-2   local-path              7m39s
-pvc-e6d44d2c-f186-4247-9283-fea9db981dfc   1Gi        RWO            Delete           Bound    kafka/data-my-cluster-kafka-0       local-path              6m8s
-pvc-5585b693-d254-435d-abf5-0d17f1035487   1Gi        RWO            Delete           Bound    kafka/data-my-cluster-kafka-1       local-path              6m7s
-pvc-d1d3738f-eb83-49cd-ae8d-3335bea73f13   1Gi        RWO            Delete           Bound    kafka/data-my-cluster-kafka-2       local-path              6m6s
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                               STORAGECLASS           REASON   AGE
+pvc-614ba371-b837-42e3-b60a-778bc3c573de   1Gi        RWO            Retain           Bound    kafka/data-my-cluster-zookeeper-2   local-path-retain-sc            5m18s
+pvc-c810cc19-58bf-4553-979c-0d8e8a5d8a87   1Gi        RWO            Retain           Bound    kafka/data-my-cluster-zookeeper-1   local-path-retain-sc            5m17s
+pvc-a64b8fb1-1f31-4f5f-a611-98105177c8c1   1Gi        RWO            Retain           Bound    kafka/data-my-cluster-zookeeper-0   local-path-retain-sc            5m17s
+pvc-46191e05-b719-4738-8d01-bc373228edc3   1Gi        RWO            Delete           Bound    kafka/data-0-my-cluster-kafka-1     local-path-retain-sc            3m9s
+pvc-f1727646-86eb-44f0-abad-c2d16bf3b5b1   1Gi        RWO            Delete           Bound    kafka/data-0-my-cluster-kafka-0     local-path-retain-sc            3m6s
+pvc-c9f91cea-ca3e-4d69-b4f2-4e29c563a3fc   1Gi        RWO            Delete           Bound    kafka/data-1-my-cluster-kafka-0     local-path-retain-sc            3m5s
+pvc-b72086bb-df47-43bc-aa3c-01ec35fd6b29   1Gi        RWO            Delete           Bound    kafka/data-0-my-cluster-kafka-2     local-path-retain-sc            3m4s
+pvc-a78e1e3f-410e-440f-a5c8-e58ad2f31c72   1Gi        RWO            Delete           Bound    kafka/data-1-my-cluster-kafka-2     local-path-retain-sc            3m3s
+pvc-d13fac0c-d209-4b3c-a0e7-7c6b848fb1b9   1Gi        RWO            Delete           Bound    kafka/data-1-my-cluster-kafka-1     local-path-retain-sc            3m
 ```
+The persistent volume is used by the Kafka brokers as log directories mounted into the following path:
+
+```bash
+$ kubectl exec -it my-cluster-kafka-0 -- sh
+$ ls -l /var/lib/kafka/data-0/kafka-log0
+$ ls -l /var/lib/kafka/data-1/kafka-log0
+```
+
 
 
 Resources:
