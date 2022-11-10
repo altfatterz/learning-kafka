@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "brokers": [
+    {
+      "broker": 0,
+      "logDirs": [
+        {
+          "logDir": "/var/lib/kafka/data-0/kafka-log0",
+          "error": null,
+          "partitions": [
+            {
+              "partition": "my-topic-0",
+              "size": 44272440,
+              "offsetLag": 0,
+              "isFuture": false
+            },
+            {
+              "partition": "my-topic-1",
+              "size": 27627470,
+              "offsetLag": 0,
+              "isFuture": false
+            }
+          ]
+        },
+        {
+          "logDir": "/var/lib/kafka/data-1/kafka-log0",
+          "error": null,
+          "partitions": [
+            {
+              "partition": "my-topic-2",
+              "size": 41876769,
+              "offsetLag": 0,
+              "isFuture": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "broker": 1,
+      "logDirs": [
+        {
+          "logDir": "/var/lib/kafka/data-1/kafka-log1",
+          "error": null,
+          "partitions": [
+            {
+              "partition": "my-topic-0",
+              "size": 44163548,
+              "offsetLag": 0,
+              "isFuture": false
+            },
+            {
+              "partition": "my-topic-2",
+              "size": 41798989,
+              "offsetLag": 0,
+              "isFuture": false
+            }
+          ]
+        },
+        {
+          "logDir": "/var/lib/kafka/data-0/kafka-log1",
+          "error": null,
+          "partitions": [
+            {
+              "partition": "my-topic-1",
+              "size": 27565246,
+              "offsetLag": 0,
+              "isFuture": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "broker": 2,
+      "logDirs": [
+        {
+          "logDir": "/var/lib/kafka/data-0/kafka-log2",
+          "error": null,
+          "partitions": [
+            {
+              "partition": "my-topic-1",
+              "size": 27611914,
+              "offsetLag": 0,
+              "isFuture": false
+            }
+          ]
+        },
+        {
+          "logDir": "/var/lib/kafka/data-1/kafka-log2",
+          "error": null,
+          "partitions": [
+            {
+              "partition": "my-topic-0",
+              "size": 44241328,
+              "offsetLag": 0,
+              "isFuture": false
+            },
+            {
+              "partition": "my-topic-2",
+              "size": 41845657,
+              "offsetLag": 0,
+              "isFuture": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

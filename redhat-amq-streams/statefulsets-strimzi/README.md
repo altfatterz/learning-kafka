@@ -148,6 +148,9 @@ Note that JBOD is supported only for Kafka, not for Zookeper.
 - You can configure Strimzi to use JBOD, a data storage configuration of multiple disks or volumes. 
 - JBOD is one approach to providing increased data storage for Kafka brokers. It can also improve performance.
 - JBOD storage is supported for Kafka only not ZooKeeper.
+- Storage size for persisten volumes can be
+  - increased (but not decreased) 
+  - additional volumes may be added to the JBOD storage
 
 Data storage considerations: 
 - Block storage is required (XFS, ext4), file storage like NFS does not work with Kafka.
@@ -161,12 +164,22 @@ Check what resources have been created:
 1. StatefulSets:
 
 ```bash
+$ kubectl get sts
 NAME                   READY   AGE
 my-cluster-zookeeper   3/3     5m6s
 my-cluster-kafka       3/3     3m31s
 ```
 
-2. Secrets:
+2. Services
+```bash
+$ kubectl get services
+my-cluster-zookeeper-client   ClusterIP   10.43.185.183   <none>        2181/TCP                              2m57s
+my-cluster-zookeeper-nodes    ClusterIP   None            <none>        2181/TCP,2888/TCP,3888/TCP            2m57s
+my-cluster-kafka-brokers      ClusterIP   None            <none>        9090/TCP,9091/TCP,9092/TCP,9093/TCP   2m28s
+my-cluster-kafka-bootstrap    ClusterIP   10.43.81.95     <none>        9091/TCP,9092/TCP,9093/TCP            2m28s
+```
+
+4. Secrets:
 
 ```bash
 $ kubectl get secrets
@@ -246,16 +259,104 @@ $ ls -l /var/lib/kafka/data-0/kafka-log0
 $ ls -l /var/lib/kafka/data-1/kafka-log0
 ```
 
+Delete all PVCs
+```bash
+$ kubectl delete pvc `kubectl get pvc -o json | jq -r '.items[].metadata.name'`
+```
+
 # Adding volumes to JBOD storage
+
+Let’s see how we can move a partition to use a certain JBOD volume.
+
+Let's start an interactive pod:
+
+```bash
+$ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.32.0-kafka-3.2.3 my-pod -- /bin/sh -c "sleep 3600"
+```
+
+```bash
+$ kubectl exec -it my-pod /bin/bash -- bin/kafka-log-dirs.sh --describe --bootstrap-server my-cluster-kafka-bootstrap:9092 --broker-list 0,1,2 --topic-list my-topic 
+```
+
+Let's create some data:
+```bash
+$ kubectl exec -it my-pod /bin/bash -- bin/kafka-producer-perf-test.sh --topic my-topic --throughput -1 --num-records 3000000 --record-size 1024 --producer-props acks=all -bootstrap-server=my-cluster-kafka-bootstrap:9092 
+```
+
+Next add a new JBOD volume:
+
+```bash
+        - id: 2
+          type: persistent-claim
+          size: 1Gi
+          # Boolean value to specify whether the PVC is deleted when the cluster is uninstalled.
+          deleteClaim: false
+          class: local-path-retain-sc
+```
+
+Run the `kafka-log-dirs` command again:
+
+```bash
+$ kubectl exec -it my-pod /bin/bash -- bin/kafka-log-dirs.sh --describe --bootstrap-server my-cluster-kafka-bootstrap:9092 --broker-list 0,1,2 --topic-list my-topic 
+```
+
+```bash
+$ kubectl cp topics.json my-pod:/tmp/topics.json
+```
+
+```bash
+$ kubectl cp reassignment.json my-pod:/tmp/reassignment.json
+```
+
+Execute:
+
+```bash
+$ kubectl exec -it my-pod /bin/bash -- bin/kafka-reassign-partitions.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 \
+--reassignment-json-file /tmp/reassignment.json \
+--execute
+```
+
+Verify:
+
+```bash
+kubectl exec -it my-pod /bin/bash -- bin/kafka-reassign-partitions.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 \
+--reassignment-json-file /tmp/reassignment.json \
+--verify
+
+
+Status of partition reassignment:
+Reassignment of partition my-topic-0 is complete.
+Reassignment of partition my-topic-1 is complete.
+Reassignment of partition my-topic-2 is complete.
+Reassignment of replica my-topic-0-0 completed successfully.
+Reassignment of replica my-topic-0-1 completed successfully.
+Reassignment of replica my-topic-0-2 completed successfully.
+Clearing broker-level throttles on brokers 0,1,2
+Clearing topic-level throttles on topic my-topic
+```
+
+Kafka Topics command:
+
+
+```bash
+$ kubectl exec -it my-pod /bin/bash -- bin/kafka-topics.sh --describe --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic
+
+Topic: my-topic	TopicId: 6J9xIO6fRmSog5k3IF97WQ	PartitionCount: 3	ReplicationFactor: 3	Configs: min.insync.replicas=1,segment.bytes=1073741824,retention.ms=7200000,message.format.version=3.0-IV1
+	Topic: my-topic	Partition: 0	Leader: 1	Replicas: 1,2,0	Isr: 1,2,0
+	Topic: my-topic	Partition: 1	Leader: 0	Replicas: 0,1,2	Isr: 0,1,2
+	Topic: my-topic	Partition: 2	Leader: 2	Replicas: 2,0,1	Isr: 2,0,1
+```
+
+- To utilise a newly added JBOD volume it’s probably more convenient to perform a global rebalance 
+using `KafkaRebalance` once the volume has been added.
 
 ```bash
 $ /opt/kafka/bin/kafka-reassign-partitions.sh 
 ```
 # Remove volumes to JBOD storage
 
-# Scaling Custers
-
-
+# Scaling clusters
+- 
 
 
 

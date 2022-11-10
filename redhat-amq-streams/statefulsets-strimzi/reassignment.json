@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "partitions": [
+    {
+      "topic": "my-topic",
+      "partition": 0,
+      "replicas": [
+        1,
+        2,
+        0
+      ],
+      "log_dirs": [
+        "/var/lib/kafka/data-2/kafka-log1",
+        "/var/lib/kafka/data-2/kafka-log2",
+        "/var/lib/kafka/data-2/kafka-log0"
+      ]
+    },
+    {
+      "topic": "my-topic",
+      "partition": 1,
+      "replicas": [
+        0,
+        1,
+        2
+      ],
+      "log_dirs": [
+        "any",
+        "any",
+        "any"
+      ]
+    },
+    {
+      "topic": "my-topic",
+      "partition": 2,
+      "replicas": [
+        2,
+        0,
+        1
+      ],
+      "log_dirs": [
+        "any",
+        "any",
+        "any"
+      ]
+    }
+  ]
+}
