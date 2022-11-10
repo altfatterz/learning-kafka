@@ -246,10 +246,21 @@ $ ls -l /var/lib/kafka/data-0/kafka-log0
 $ ls -l /var/lib/kafka/data-1/kafka-log0
 ```
 
+# Adding volumes to JBOD storage
+
+```bash
+$ /opt/kafka/bin/kafka-reassign-partitions.sh 
+```
+# Remove volumes to JBOD storage
+
+# Scaling Custers
+
+
+
 
 
 Resources:
 
 1. StatefulSet Removal [https://github.com/strimzi/proposals/blob/main/031-statefulset-removal.md](https://github.com/strimzi/proposals/blob/main/031-statefulset-removal.md)
 2. UseStrimziPodSets feature gate [https://strimzi.io/docs/operators/in-development/configuring.html#ref-operator-use-strimzi-pod-sets-feature-gate-str](https://strimzi.io/docs/operators/in-development/configuring.html#ref-operator-use-strimzi-pod-sets-feature-gate-str)
-3. 
+3. Reassigning partitions in Apache Kafka Cluster [https://strimzi.io/blog/2022/09/16/reassign-partitions/](https://strimzi.io/blog/2022/09/16/reassign-partitions/)

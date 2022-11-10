@@ -35,6 +35,12 @@ spec:
           # Boolean value to specify whether the PVC is deleted when the cluster is uninstalled.
           deleteClaim: false
           class: local-path-retain-sc
+        - id: 2
+          type: persistent-claim
+          size: 1Gi
+          # Boolean value to specify whether the PVC is deleted when the cluster is uninstalled.
+          deleteClaim: false
+          class: local-path-retain-sc
   zookeeper:
     replicas: 3
     storage:
