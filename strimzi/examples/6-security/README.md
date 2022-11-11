@@ -77,7 +77,7 @@ $ kafka-console-producer --bootstrap-server bootstrap.192.168.205.14.nip.io:443 
 --producer-property ssl.keystore.password=YzGuVmQwjZjM \
 --producer-property ssl.keystore.location=./user.p12 \
 --topic my-topic
-````
+```
 
 With the following consumer you will get the below error message, since we enable also authorization
 `

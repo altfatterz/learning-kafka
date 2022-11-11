@@ -119,7 +119,7 @@ $ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\
 Run an interactive pod:
 
 ```bash
-$ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.31.1-kafka-3.2.3 producer-consumer -n kafka -- /bin/sh -c "sleep 3600"
+$ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.32.0-kafka-3.2.3 producer-consumer -n kafka -- /bin/sh -c "sleep 3600"
 ```
 
 and copy the ca.p12 and config file into it.

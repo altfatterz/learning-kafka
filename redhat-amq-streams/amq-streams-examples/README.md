@@ -32,7 +32,7 @@ Podman version: 4.2.0
 ```
 
 ```bash
-$ crc config set memory 24000
+$ crc config set memory 20480
 $ crc config set cpus 4
 $ crc config set enable-cluster-monitoring true 
 ```
@@ -70,7 +70,6 @@ To login as an admin, run 'oc login -u kubeadmin -p zS7fT-MKsVU-LCbCK-gnFRW http
 
 Useful commands:
 ```bash
-$ oc status
 $ oc whomai
 $ oc config get-contexts
 ```
@@ -84,16 +83,19 @@ Opening the OpenShift Web Console in the default browser...
 
 Install the `Red Hat Integration AMQ Streams operator` operator and the `Apicurio Registry Operator`
 
+
+
 ```bash
 $ oc get pods -n openshift-operators
 NAME                                                     READY   STATUS    RESTARTS   AGE
-amq-streams-cluster-operator-v2.0.1-3-848469f88b-s22vd   1/1     Running   1          5d8h
+amq-streams-cluster-operator-v2.2.0-2-785bc7f5fc-gdmf4   1/1     Running   0          2m45s
 apicurio-registry-operator-65b74cc7f8-gzlpr              1/1     Running   1          3m38s
 ```
 
 Create a Kafka cluster:
 
 ```bash
+$ oc new-project kafka
 $ oc apply -f kafka.yaml
 ```
 
@@ -108,6 +110,82 @@ my-cluster-zookeeper-1                       1/1     Running   0          4m10s
 my-cluster-zookeeper-2                       1/1     Running   0          4m10s
 ```
 
+### Encryption
+
+Extracting bootstrap information:
+
+```bash
+$ export KAFKA_BOOTSTRAP=`oc get routes my-cluster-kafka-external-bootstrap -o=jsonpath='{.status.ingress[0].host}{"\n"}'`
+```
+
+Check the served certificate
+
+```bash
+$ openssl s_client -connect $KAFKA_BOOTSTRAP:443
+$ openssl s_client -connect $KAFKA_BOOTSTRAP:443 -servername $KAFKA_BOOTSTRAP
+```
+
+Extracting the public certificate:
+
+```bash
+$ oc get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
+```
+
+# List topics with `kcat`
+
+```bash
+$ kcat -L -b $KAFKA_BOOTSTRAP:443 -X security.protocol=SSL -X ssl.ca.location=ca.crt
+```
+
+# Try with kafka-console-producer / kafka-console-consumer
+
+Extract the `ca.p12` from the Cluster CA secret
+
+```bash
+$ oc get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.p12}' | base64 -d > ca.p12
+$ oc get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.password}' | base64 -d > ca.password
+```
+
+List the certificates in the CA PKCS12 keystore
+```bash
+$ keytool -list -v -keystore ca.p12 -storepass `cat ca.password`
+```
+
+Producer:
+
+```bash
+$ kafka-console-producer --bootstrap-server $KAFKA_BOOTSTRAP:443 \
+--producer-property security.protocol=SSL \
+--producer-property ssl.truststore.password=`cat ca.password` \
+--producer-property ssl.truststore.location=./ca.p12 \
+--topic my-topic
+```
+
+Consumer:
+
+```bash
+$ kafka-console-consumer --bootstrap-server $KAFKA_BOOTSTRAP:443 \
+--consumer-property security.protocol=SSL \
+--consumer-property ssl.truststore.location=./ca.p12 \
+--consumer-property ssl.truststore.password=`cat ca.password` \
+--topic my-topic \
+--from-beginning
+```
+
+
+
+
+
+
+```bash
+$ crc status
+CRC VM:          Running
+OpenShift:       Running (v4.11.7)
+RAM Usage:       11.61GB of 21.03GB
+Disk Usage:      16.43GB of 32.74GB (Inside the CRC VM)
+Cache Usage:     64.46GB
+Cache Directory: /Users/altfatterz/.crc/cache
+```
 
 Cleanup
 ```bash
@@ -119,3 +197,4 @@ Resources:
 
 1. OpenShift Local or Single Node OpenShift: [https://www.opensourcerers.org/2022/09/13/openshift-local-or-single-node-openshift/](https://www.opensourcerers.org/2022/09/13/openshift-local-or-single-node-openshift/)
 2. Openshift Local (formerly Red Hat CodeReady Containers) [https://developers.redhat.com/products/openshift-local/overview](https://developers.redhat.com/products/openshift-local/overview)
+3. Getting Started with AMQ Streams on OpenShift [https://access.redhat.com/documentation/en-us/red_hat_amq_streams/2.2/html/getting_started_with_amq_streams_on_openshift/index](https://access.redhat.com/documentation/en-us/red_hat_amq_streams/2.2/html/getting_started_with_amq_streams_on_openshift/index)
