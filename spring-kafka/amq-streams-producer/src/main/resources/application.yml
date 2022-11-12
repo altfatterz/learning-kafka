@@ -1,0 +1,12 @@
+spring:
+  kafka:
+    bootstrap-servers: my-cluster-kafka-external-bootstrap-kafka.apps-crc.testing:443
+    security:
+      protocol: SSL
+    ssl:
+      trust-store-location: "classpath:ca.p12"
+      trust-store-password: bVgnmB5HWAFi
+
+logging:
+  level:
+    org.springframework.kafka: DEBUG

@@ -21,6 +21,8 @@
         <module>schema-registry/protobuf-examples</module>
         <module>schema-registry/json-schema-examples</module>
 
+        <module>spring-kafka/amq-streams-consumer</module>
+        <module>spring-kafka/amq-streams-producer</module>
         <module>spring-kafka/simple-producer</module>
         <module>spring-kafka/simple-consumer</module>
         <module>spring-kafka/transactional-producer</module>

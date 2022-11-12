@@ -58,8 +58,8 @@ Log in as user:
   Password: developer
 
 Use the 'oc' command line interface:
-  $ eval $(crc oc-env)
-  $ oc login -u developer https://api.crc.testing:6443
+$ eval $(crc oc-env)
+$ oc login -u developer https://api.crc.testing:6443
 ```
 
 ```bash

@@ -1,0 +1,8 @@
+apiVersion: registry.apicur.io/v1
+kind: ApicurioRegistry
+metadata:
+  name: apicurio-registry
+  namespace: kafka
+spec:
+  configuration:
+    persistence: "mem"
