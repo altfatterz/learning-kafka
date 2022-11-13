@@ -172,10 +172,17 @@ $ kafka-console-consumer --bootstrap-server $KAFKA_BOOTSTRAP:443 \
 --from-beginning
 ```
 
+# Install Apicurio Registry with the Apicurio Registry Operator
 
+Create an instance
+```bash
+$ oc apply -f apicurio-registry.yaml
+```
 
-
-
+Expose the UI
+```bash
+$ oc port-forward svc/apicurio-registry-service 8080:8080
+```
 
 ```bash
 $ crc status
