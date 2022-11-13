@@ -8,7 +8,7 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class Config {
 
-    public static final String TOPIC = "facts";
+    public static final String TOPIC = "stock-trades";
 
     // Spring Boot Apache Kafka Support
     // https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-kafka

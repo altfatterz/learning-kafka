@@ -1,5 +1,6 @@
 package com.example;
 
+import com.example.avro.StockTrade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -21,9 +22,10 @@ class Consumer {
 
 	private final Logger logger = LoggerFactory.getLogger(Consumer.class);
 
-	@KafkaListener(id = "messages-container", topics = Config.TOPIC)
-	public void consume(String message) {
-		logger.info("Consumed message -> {}", message);
+	@KafkaListener(topics = Config.TOPIC)
+	public void consume(StockTrade stockTrade) {
+		logger.info("StockTrade: side={}, symbol={}, quantity= {}, price={}",
+				stockTrade.getSide(), stockTrade.getSymbol(), stockTrade.getQuantity(), stockTrade.getPrice());
 	}
 
 }

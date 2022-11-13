@@ -1,17 +1,20 @@
 spring:
   kafka:
     bootstrap-servers: my-cluster-kafka-external-bootstrap-kafka.apps-crc.testing:443
-    security:
-      protocol: SSL
+    security.protocol: SSL
     ssl:
       trust-store-location: "classpath:ca.p12"
       trust-store-password: bVgnmB5HWAFi
     consumer:
-      group-id: group-id
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.apicurio.registry.serde.avro.AvroKafkaDeserializer
+      group-id: new-group-id
+    properties:
+      apicurio.registry.use-specific-avro-reader: true
+      apicurio.registry.url: http://localhost:8080/apis/registry/v2
+
       # default is `latest`, it is used only when there is no offset information (for example when consumer group was removed)
-#      auto-offset-reset: earliest
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # auto-offset-reset: earliest
 
 #logging:
 #  level:
