@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-deploy
+  template:
+    metadata:
+      labels:
+        app: nginx-deploy
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.23.2-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: "/var/www/html"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          persistentVolumeClaim:
+            claimName: www-nginx-deployment
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: www-nginx-deployment
+spec:
+  accessModes:
+    # Mount a volume as read-write by a single node
+    # More pods on a single node can still use the same volume.
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-deploy
+spec:
+  ports:
+    - port: 80
+      name: web
+  selector:
+    app: nginx-deploy
