@@ -107,6 +107,20 @@ Address 2: 10.42.0.29 nginx-statefulset-2.headless-nginx.default.svc.cluster.loc
 Address 3: 10.42.1.26 nginx-statefulset-0.headless-nginx.default.svc.cluster.local
 ```
 
+
+To get the Fully Qualified Domain Name (FQDN) of each Pod
+
+```bash
+$ for i in 0 1 2; do kubectl exec nginx-statefulset-$i -- hostname -f; done
+nginx-statefulset-0.headless-nginx.default.svc.cluster.local
+nginx-statefulset-1.headless-nginx.default.svc.cluster.local
+nginx-statefulset-2.headless-nginx.default.svc.cluster.local
+```
+
+The A records in Kubernetes DNS resolve the FQDNs to the Pods' IP addresses. 
+If Kubernetes reschedules the Pods, it will update the A records with the Pods' new IP addresses, but the A records names will not change.
+
+
 ### Scaling a StatefulSet
 
 ```bash
@@ -234,6 +248,19 @@ There is also `OnDelete` but is legacy and is not recommended.
 
 `OrderedReady` - is the default for StatefulSets. It tells the StatefulSet controller to respect the ordering guarantees demonstrated above.
 `Parallel` - tells the StatefulSet controller to launch or terminate all Pods in parallel, and not to wait for Pods to become Running and Ready
+
+
+### Notes about StatefulSets
+
+## advantages
+- Kubernetes handles the creation of Pods
+- for any disruption the Pods will be started even when the Strimzi operator is not running
+- StatefulSets are used by many Kubernetes users, they are well tested and we can rely on them.
+
+## disadvantages
+- we cannot remove any broker we want from the Kafka cluster
+- generating the Pods from the template also means they are all configured the same way
+- harder to use different configuration for each broker.
 
 Resources:
 1. [https://kubernetes.io/docs/tutorials/stateful-application/basic-stateful-set/](https://kubernetes.io/docs/tutorials/stateful-application/basic-stateful-set/)
