@@ -155,6 +155,7 @@ $ kubectl delete -f kafka-cruise-control.yaml
 $ kubectl delete pvc `kubectl get pvc -o json | jq -r '.items[].metadata.name'`
 $ kubectl delete pv `kubectl get pv -o json | jq -r '.items[].metadata.name'`
 $ kubectl delete kt my-topic
+$ kubectl delete cm my-rebalance
 ```
 
 
