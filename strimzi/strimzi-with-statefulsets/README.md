@@ -143,12 +143,28 @@ Deploy a Kafka 3 node cluster (3 node Zookeeper) with `JBOD` persistence configu
 $ kubectl apply -f kafka-jbod-persistent-claim.yaml
 ```
 
-Note that JBOD is supported only for Kafka, not for Zookeper.
+When writing / reading to disks there are two main factors which can limit performance
+- the bandwith of the broker node on which the Kafka broker runs
+- performance of the disk itself
+
+If the bandwith of the broker node is much bigger than the performance of the disk by adding more disks you can increase 
+the overall writing / reading performance by better utilizing the capacity of the broker node.
+You also have to make sure the partitions are distributed across the disks to better utilize them.
+
+If the bandwith of a broker node is already saturated by a single disk by adding more disks you don't increase the overall performance.
+If will still use the same capacity of the borker node just share it between multiple disks.
+
+In both cases though you can increase the capacity of the broker. Every infrastructure has a limit how a single disk volume can be.
+Adding more disks you can increase the capacity of the broker. 
+
+Another note is that a single partition can only be on a single volume. 
+So none of the partitions can be bigger than the size of single disk. 
+
 
 - You can configure Strimzi to use JBOD, a data storage configuration of multiple disks or volumes. 
 - JBOD is one approach to providing increased data storage for Kafka brokers. It can also improve performance.
 - JBOD storage is supported for Kafka only not ZooKeeper.
-- Storage size for persisten volumes can be
+- Storage size for persistent volumes can be
   - increased (but not decreased) 
   - additional volumes may be added to the JBOD storage
 
@@ -251,12 +267,16 @@ pvc-b72086bb-df47-43bc-aa3c-01ec35fd6b29   1Gi        RWO            Delete     
 pvc-a78e1e3f-410e-440f-a5c8-e58ad2f31c72   1Gi        RWO            Delete           Bound    kafka/data-1-my-cluster-kafka-2     local-path-retain-sc            3m3s
 pvc-d13fac0c-d209-4b3c-a0e7-7c6b848fb1b9   1Gi        RWO            Delete           Bound    kafka/data-1-my-cluster-kafka-1     local-path-retain-sc            3m
 ```
+
 The persistent volume is used by the Kafka brokers as log directories mounted into the following path:
 
 ```bash
-$ kubectl exec -it my-cluster-kafka-0 -- sh
-$ ls -l /var/lib/kafka/data-0/kafka-log0
-$ ls -l /var/lib/kafka/data-1/kafka-log0
+for i in 0 1 2; do kubectl exec my-cluster-kafka-$i -- ls -l /var/lib/kafka/; done
+```
+
+```bash
+for i in 0 1 2; do kubectl exec my-cluster-kafka-$i -- ls -l /var/lib/kafka/data-0; done
+for i in 0 1 2; do kubectl exec my-cluster-kafka-$i -- ls -l /var/lib/kafka/data-1; done
 ```
 
 Delete all PVCs
@@ -264,51 +284,108 @@ Delete all PVCs
 $ kubectl delete pvc `kubectl get pvc -o json | jq -r '.items[].metadata.name'`
 ```
 
-# Adding volumes to JBOD storage
+Notice that the PVs are still kept. Using the `Retain` policy is important not to accidentally use data.
 
-Let’s see how we can move a partition to use a certain JBOD volume.
-
-Let's start an interactive pod:
-
+Delete all PVs
 ```bash
-$ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.32.0-kafka-3.2.3 my-pod -- /bin/sh -c "sleep 3600"
+$ kubectl delete pv `kubectl get pv -o json | jq -r '.items[].metadata.name'`
 ```
 
+# Adding volumes to JBOD storage
+
+First lets create a topic:
+
 ```bash
-$ kubectl exec -it my-pod /bin/bash -- bin/kafka-log-dirs.sh --describe --bootstrap-server my-cluster-kafka-bootstrap:9092 --broker-list 0,1,2 --topic-list my-topic 
+$ kubectl apply -f my-topic.yaml
+$ kubectl get kt -o yaml
 ```
 
 Let's create some data:
 ```bash
-$ kubectl exec -it my-pod /bin/bash -- bin/kafka-producer-perf-test.sh --topic my-topic --throughput -1 --num-records 3000000 --record-size 1024 --producer-props acks=all -bootstrap-server=my-cluster-kafka-bootstrap:9092 
+$ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.32.0-kafka-3.3.1 my-pod -- /bin/sh -c "sleep 14400"
+$ kubectl exec -it my-pod -- sh 
+$ bin/kafka-producer-perf-test.sh \
+--topic my-topic \
+--throughput -1 \
+--num-records 10000 \
+--record-size 8000 \
+--producer-props acks=all bootstrap.servers=my-cluster-kafka-bootstrap:9092
+
+
+10000 records sent, 198.440260 records/sec (1.51 MB/sec), 14352.42 ms avg latency, 24735.00 ms max latency, 16580 ms 50th, 23221 ms 95th, 24331 ms 99th, 24701 ms 99.9th. 
 ```
 
-Next add a new JBOD volume:
+Let see where are the data located:
 
 ```bash
+$ kubectl exec -it my-pod /bin/bash -- bin/kafka-log-dirs.sh --describe --bootstrap-server my-cluster-kafka-bootstrap:9092 --broker-list 0,1,2 --topic-list my-topic |  grep '^{' | jq 
+```
+
+Let’s see if we can increase performance by moving a partition to use another JBOD volume.
+
+Add a new JBOD volume:
+
+```yaml
         - id: 2
           type: persistent-claim
           size: 1Gi
-          # Boolean value to specify whether the PVC is deleted when the cluster is uninstalled.
-          deleteClaim: false
           class: local-path-retain-sc
+```
+
+```bash
+$ kubectl apply -f kafka-jbod-persistent-claim.yaml
 ```
 
 Run the `kafka-log-dirs` command again:
 
 ```bash
-$ kubectl exec -it my-pod /bin/bash -- bin/kafka-log-dirs.sh --describe --bootstrap-server my-cluster-kafka-bootstrap:9092 --broker-list 0,1,2 --topic-list my-topic 
+$ kubectl exec -it my-pod /bin/bash -- bin/kafka-log-dirs.sh --describe --bootstrap-server my-cluster-kafka-bootstrap:9092 --broker-list 0,1,2 --topic-list my-topic |  grep '^{' | jq  
 ```
+
+There is a new `logDir` but there are no partitions there yet. 
+
+Let's run the performance test again:
+
+```bash
+$ kubectl exec -it my-pod -- sh
+bin/kafka-producer-perf-test.sh \
+--topic my-topic \
+--throughput -1 \
+--num-records 10000 \
+--record-size 8000 \
+--producer-props acks=all bootstrap.servers=my-cluster-kafka-bootstrap:9092
+```
+
+We will notice that the new disk is not used. We need to move a partition to another disk.
+
+We are going to use the `kafka-reassign-partitions` command.
+
+The tool has three modes of operation:
+1. --execute: This initiates a reassignment that you describe using a JSON file.
+2. --generate: Generates a reassignment file used in the --execute step
+3. --verify: checks whether reassignment started has completed
 
 ```bash
 $ kubectl cp topics.json my-pod:/tmp/topics.json
+$ kubectl exec -it my-pod /bin/bash -- bin/kafka-reassign-partitions.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 \
+--topics-to-move-json-file /tmp/topics.json \
+--broker-list 0,1,2 \
+--generate
+
+Current partition replica assignment
+{"version":1,"partitions":[{"topic":"my-topic","partition":0,"replicas":[2,0,1],"log_dirs":["any","any","any"]},{"topic":"my-topic","partition":1,"replicas":[1,2,0],"log_dirs":["any","any","any"]},{"topic":"my-topic","partition":2,"replicas":[0,1,2],"log_dirs":["any","any","any"]}]}
+
+Proposed partition reassignment configuration
+{"version":1,"partitions":[{"topic":"my-topic","partition":0,"replicas":[1,0,2],"log_dirs":["any","any","any"]},{"topic":"my-topic","partition":1,"replicas":[2,1,0],"log_dirs":["any","any","any"]},{"topic":"my-topic","partition":2,"replicas":[0,2,1],"log_dirs":["any","any","any"]}]}
 ```
+
+Modify the generated `reassignment.json` file which partiton to put where.
 
 ```bash
 $ kubectl cp reassignment.json my-pod:/tmp/reassignment.json
 ```
 
-Execute:
+Execute the reassignment:
 
 ```bash
 $ kubectl exec -it my-pod /bin/bash -- bin/kafka-reassign-partitions.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 \
@@ -323,20 +400,36 @@ kubectl exec -it my-pod /bin/bash -- bin/kafka-reassign-partitions.sh --bootstra
 --reassignment-json-file /tmp/reassignment.json \
 --verify
 
-
 Status of partition reassignment:
-Reassignment of partition my-topic-0 is complete.
-Reassignment of partition my-topic-1 is complete.
-Reassignment of partition my-topic-2 is complete.
-Reassignment of replica my-topic-0-0 completed successfully.
-Reassignment of replica my-topic-0-1 completed successfully.
-Reassignment of replica my-topic-0-2 completed successfully.
+Reassignment of partition my-topic-0 is completed.
+Reassignment of partition my-topic-1 is completed.
+Reassignment of partition my-topic-2 is completed.
+Reassignment of replica my-topic-2-0 completed successfully.
+Reassignment of replica my-topic-1-1 completed successfully.
+Reassignment of replica my-topic-2-2 completed successfully.
 Clearing broker-level throttles on brokers 0,1,2
 Clearing topic-level throttles on topic my-topic
 ```
 
-Kafka Topics command:
+Run the `kafka-log-dirs` command again:
 
+```bash
+$ kubectl exec -it my-pod /bin/bash -- bin/kafka-log-dirs.sh --describe --bootstrap-server my-cluster-kafka-bootstrap:9092 --broker-list 0,1,2 --topic-list my-topic |  grep '^{' | jq  
+```
+
+Let's start the `kafka-producer-perf-test` tool again
+
+```bash
+$ kubectl exec -it my-pod -- sh
+$ bin/kafka-producer-perf-test.sh \
+--topic my-topic \
+--throughput -1 \
+--num-records 10000 \
+--record-size 8000 \
+--producer-props acks=all bootstrap.servers=my-cluster-kafka-bootstrap:9092
+```
+
+## kafka-topics command:
 
 ```bash
 $ kubectl exec -it my-pod /bin/bash -- bin/kafka-topics.sh --describe --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic
