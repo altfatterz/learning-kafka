@@ -2,15 +2,11 @@
 $ kubectl apply -f kafka-cruise-control.yaml
 ```
 
-Create a topic
+Wait until the `Entity Operator` is up and running and create a topic:
 
 ```bash
 $ kubectl apply -f my-topic.yaml
-```
-
-Create `KafkaRebalance` resource with `rebalanceDisk` set to true to enable intra-broker disk balancing
-```bash
-$ kubectl apply -f kafka-rebalance-full.yaml
+$ k get kt
 ```
 
 Populate:
@@ -20,17 +16,37 @@ $ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.32.0-kafka-3.3.1 m
 $ kubectl exec -it my-pod -- sh 
 $ bin/kafka-producer-perf-test.sh \
 --topic my-topic \
---throughput -1 \
---num-records 100000 \
---record-size 8000 \
+--throughput 500 \
+--num-records 500000 \
+--record-size 1024 \
 --producer-props acks=all bootstrap.servers=my-cluster-kafka-bootstrap:9092
 ```
 
-Add another JBOD disk:
+Check the data:
+
+Let see where are the data located:
+
+```bash
+$ kubectl exec -it my-pod /bin/bash -- bin/kafka-log-dirs.sh --describe --bootstrap-server my-cluster-kafka-bootstrap:9092 --broker-list 0,1,2 --topic-list my-topic |  grep '^{' | jq 
+```
+
+Add another JBOD disk: (modify the `kafka-cruise-control` file)
 
 ```bash
 $ kubectl apply -f kafka-cruise-control.yaml
 ```
+Note that the brokers are restarted, one after another (0, 1, 2)
+
+
+Wait until `Cruise Control` is up and running:
+
+Note that Cruise Control does not perform `inter-broker` and `intra-broker` balancing at the same time.
+
+Create `KafkaRebalance` resource with `rebalanceDisk` set to true to enable intra-broker disk balancing
+```bash
+$ kubectl apply -f kafka-rebalance-full.yaml
+```
+
 
 Wait until the Kafka brokers are restarted.
 
@@ -122,3 +138,26 @@ $ kubectl exec -it my-pod /bin/bash -- bin/kafka-log-dirs.sh --describe --bootst
 ```
 
 You can see that each of the disks have now partition data.
+
+
+Once started, a cluster rebalance operation might take some time to complete and affect the overall performance of the Kafka cluster.
+If you want to stop a cluster rebalance operation that is in progress, apply the stop annotation to the KafkaRebalance custom resource.
+This instructs Cruise Control to finish the current batch of partition reassignments and then stop the rebalance.
+```bash
+$ kubectl annotate kr my-rebalance strimzi.io/rebalance=stop
+```
+
+
+## Cleanup
+
+```bash
+$ kubectl delete -f kafka-cruise-control.yaml
+$ kubectl delete pvc `kubectl get pvc -o json | jq -r '.items[].metadata.name'`
+$ kubectl delete pv `kubectl get pv -o json | jq -r '.items[].metadata.name'`
+$ kubectl delete kt my-topic
+```
+
+
+
+More details here: [https://strimzi.io/docs/operators/latest/full/configuring.html#cruise-control-concepts-str](https://strimzi.io/docs/operators/latest/full/configuring.html#cruise-control-concepts-str)
+

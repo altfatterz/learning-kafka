@@ -453,6 +453,7 @@ using `KafkaRebalance` once the volume has been added.
 
 ```bash
 $ kubectl delete -f kafka-jbod-persistent-claim.yaml
+$ kubectl delete kt my-topic
 $ kubectl delete pvc `kubectl get pvc -o json | jq -r '.items[].metadata.name'`
 $ kubectl delete pv `kubectl get pv -o json | jq -r '.items[].metadata.name'`
 ```

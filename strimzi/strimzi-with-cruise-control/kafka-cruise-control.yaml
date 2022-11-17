@@ -32,10 +32,9 @@ spec:
           type: persistent-claim
           size: 1Gi
           # enable it later
-#        - id: 2
-#          type: persistent-claim
-#          size: 1Gi
-#          class: local-path-retain-sc
+        - id: 2
+          type: persistent-claim
+          size: 1Gi
   zookeeper:
     replicas: 3
     storage:
