@@ -1,20 +1,36 @@
 ### RedHat AMQ Streams
 
 # 2.0
-- AMQ Streams version 2.0 is based on Strimzi 0.26.x.
+- AMQ Streams version 2.0 is based on [Strimzi 0.26.x](https://www.youtube.com/watch?v=886Nw_ECREQ)
 - The AMQ Streams 2.0.1 patch release is now available.
 - AMQ Streams 2.0 is supported on OpenShift Container Platform 4.6 to 4.9
 - AMQ Streams now supports Apache Kafka version 3.0.0.
+- Strimzi 0.26.x
+  - Apache Kafka 2.8.1, 3.0.0
+    - Kafka Connect Build - `maven` type connector
+    - JMX can be now exposed in Zookeeper (`jmxOptions` field)
+    - Secure connection between Cruise Control and Cluster Operator
+    - Anomaly detection feature can be enabled in Cruise Control configuration
 
 # 2.1
-- AMQ Streams version 2.1 is based on Strimzi 0.28.x.
+- AMQ Streams version 2.1 is based on [Strimzi 0.28.x](https://www.youtube.com/watch?v=PZKbrDUU1zo)
 - AMQ Streams 2.1 is supported on OpenShift Container Platform 4.6 to 4.10.
 - AMQ Streams now supports Apache Kafka version 3.1.0.
 - You must upgrade the Cluster Operator to AMQ Streams version 2.1 before you can upgrade brokers and client applications to Kafka 3.1.0.
+- Strimzi 0.28.x
+  - introduces `StrimziPodSets` to use instead of `StatefulSets`
+  - allow new features, like stretched kafka cluster across kubernetes clusters, different configurations for each broker
+  - introduces custom authentication beside (mTLS, SCRAM-SHA-512, OAuth Authentication)
+  - `KafkaRebalance` - can be used to balance the data between different disks of the same broker 
 
 # 2.2
-- AMQ Streams 2.2 on OpenShift is based on Kafka 3.2.3 and Strimzi 0.29.x.
+- AMQ Streams 2.2 on OpenShift is based on Kafka 3.2.3 and [Strimzi 0.29.x](https://www.youtube.com/watch?v=lUsIoFTZr00).
 - AMQ Streams 2.2 is supported on OpenShift Container Platform 4.6 to 4.11.
+- Strimzi 0.29.x
+  - `KafkaRebalance` modes:
+    - `full` - default which rebalances the whole cluster (used in previous releases by default)
+    - `add-brokers` - adds new brokers to a cluster after scale-up (faster than rebalancing the whole cluster)
+    - `remove-brokers` - removes brokers from the cluster before scale-down (moves all topics from the removed nodes to the rest of the Kafka cluster)
 
 
 ### Local setup

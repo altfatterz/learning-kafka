@@ -443,14 +443,19 @@ Topic: my-topic	TopicId: 6J9xIO6fRmSog5k3IF97WQ	PartitionCount: 3	ReplicationFac
 - To utilise a newly added JBOD volume it’s probably more convenient to perform a global rebalance 
 using `KafkaRebalance` once the volume has been added.
 
-```bash
-$ /opt/kafka/bin/kafka-reassign-partitions.sh 
-```
+
 # Remove volumes to JBOD storage
 
 # Scaling clusters
-- 
 
+
+## Cleanup
+
+```bash
+$ kubectl delete -f kafka-jbod-persistent-claim.yaml
+$ kubectl delete pvc `kubectl get pvc -o json | jq -r '.items[].metadata.name'`
+$ kubectl delete pv `kubectl get pv -o json | jq -r '.items[].metadata.name'`
+```
 
 
 Resources:
