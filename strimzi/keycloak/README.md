@@ -61,7 +61,7 @@ deployment "packageserver" successfully rolled out
 You can verify that the OLM components have been successfully deployed by running
 
 ```bash
-$ kubectl -n olm get deployments
+$ watch kubectl -n olm get deployments
 catalog-operator   1/1     1            1           5m24s
 olm-operator       1/1     1            1           5m24s
 packageserver      2/2     2            2           5m4s
@@ -76,6 +76,8 @@ operatorgroup.operators.coreos.com/operatorgroup created
 subscription.operators.coreos.com/my-keycloak-operator created
 ```
 
+Reference keycloack operator: [https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/20.0.1/kubernetes/keycloaks.k8s.keycloak.org-v1.yml](https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/20.0.1/kubernetes/keycloaks.k8s.keycloak.org-v1.yml)
+
 It created a job and the `keycloak-operator` is installed in the `my-keycloak-operator` namespace and is usable from this namespace only.
 
 ```bash
@@ -84,13 +86,13 @@ my-keycloak-operator   keycloak-operator-64db49949b-98rdn                       
 ```
 
 ```bash
-$ kubectl get csv -n my-keycloak-operator
+$ watch kubectl get csv -n my-keycloak-operator
 NAME                        DISPLAY             VERSION   REPLACES                    PHASE
 keycloak-operator.v20.0.1   Keycloak Operator   20.0.1    keycloak-operator.v20.0.0   Succeeded
 ```
 
 ```bash
-$ kubeclt get crd | grep keycloak
+$ kubectl get crd | grep keycloak
 keycloakrealmimports.k8s.keycloak.org         2022-11-18T20:25:58Z
 keycloaks.k8s.keycloak.org                    2022-11-18T20:25:58Z
 ```
@@ -136,7 +138,7 @@ $ kubectl apply -f keycloak.yaml
 ```
 
 ```bash
-$ kubectl get pods -n my-keycloak-operator
+$ watch kubectl get pods -n my-keycloak-operator
 NAME                                 READY   STATUS    RESTARTS   AGE
 keycloak-operator-64db49949b-98rdn   1/1     Running   0          48m
 postgresql-db-0                      1/1     Running   0          19m
@@ -174,6 +176,8 @@ https://localhost:8443/admin/master/console/
 "Loading the admin console" spinning
 
 trying to load the resource: https://test.keycloak.org/realms/master/protocol/openid-connect/3p-cookies/step1.html
+
+Issue here described: [https://github.com/keycloak/keycloak/discussions/11237](https://github.com/keycloak/keycloak/discussions/11237)
 
 
 
