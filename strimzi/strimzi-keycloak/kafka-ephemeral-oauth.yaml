@@ -1,0 +1,48 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: my-cluster
+spec:
+  kafka:
+    version: 3.3.1
+    replicas: 1
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
+        authentication:
+          type: oauth
+          clientId: kafka-broker
+          clientSecret:
+            key: secret
+            secretName: broker-oauth-secret
+          # By default, issuer is checked using the value configured by validIssuerUri
+          validIssuerUri: https://f245-178-238-175-199.eu.ngrok.io/realms/kafka
+          # we use fast local JWT token validation
+          # jwksEndpointUri: https://<auth-server-address>/auth/realms/tls/protocol/openid-connect/certs
+          # OAuth 2.0 introspection endpoint configuration
+          introspectionEndpointUri: https://f245-178-238-175-199.eu.ngrok.io/realms/kafka/protocol/openid-connect/token/introspect
+          # for Kafka ACL authorization we need to identify the user by their username during authentication
+          userNameClaim: preferred_username
+          # Session re-authentication: https://strimzi.io/docs/operators/latest/full/configuring.html#str
+          maxSecondsWithoutReauthentication: 3600
+    config:
+      offsets.topic.replication.factor: 1
+      transaction.state.log.replication.factor: 1
+      transaction.state.log.min.isr: 1
+      default.replication.factor: 1
+      min.insync.replicas: 1
+    storage:
+      type: ephemeral
+  zookeeper:
+    replicas: 1
+    storage:
+      type: ephemeral
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
