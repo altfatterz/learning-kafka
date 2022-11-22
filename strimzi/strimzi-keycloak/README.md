@@ -1,26 +1,6 @@
 ```bash
-$ https://www.keycloak.org/server/containers
-```
-
-```bash
-$ ngrok http https://localhost:8443
-```
-
-Use the URL created to setup the 
-
-```bash
-$ docker build . -t mykeycloak
-```
-
-```bash
-$ docker run -p 8443:8443 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=NM9UQuWeC^c62HN mykeycloak start --optimized
-```
-
-This works: <ngrok-url>/admin
-
-```bash
 # Start a k8s cluster with 1 agent node, 1 server node (control-plane), we disable the loadbalancer in front of the server nodes
-$ k3d cluster create my-k8s-cluster --agents 3 --no-lb
+$ k3d cluster create my-k8s-cluster --agents 1 --no-lb
 # view our k8s cluster 
 $ k3d cluster list
 # kubectl is automatically will be set to the context
@@ -57,6 +37,15 @@ CURRENT   NAME                 CLUSTER              AUTHINFO                   N
 *         k3d-my-k8s-cluster   k3d-my-k8s-cluster   admin@k3d-my-k8s-cluster   kafka
 ```
 
+### Install Keycloak
+
+```bash
+$ helm install keycloak codecentric/keycloakx --values ./values.yaml
+export POD_NAME=$(kubectl get pods --namespace kafka -l "app.kubernetes.io/name=keycloakx,app.kubernetes.io/instance=keycloak" -o name)
+echo "Visit http://127.0.0.1:8080 to use your application"
+kubectl --namespace kafka port-forward "$POD_NAME" 8080
+```
+
 ### Install Strimzi
 
 In this `strimzi.yaml` file the `STRIMZI_FEATURE_GATES` was configured to `-UseStrimziPodSets`
@@ -65,29 +54,22 @@ In this `strimzi.yaml` file the `STRIMZI_FEATURE_GATES` was configured to `-UseS
 $ kubectl create -f strimzi.yaml
 ```
 
-## Create secrets
+
+### Create the `broker-oauth-secret` secret
 
 ```bash
-export KAFKA_BROKER_CLIENT_SECRET=4enKLCyBL9mrdUTg9ijJQuzGGbqTTnUn
-export KAFKA_PRODUCER_CLIENT_SECRET=qZjG3Wk1GUiQJiT7qsVG3hjQgo7z8ckv
-export KAFKA_CONSUMER_CLIENT_SECRET=YIcOh1UqoqLiQAJ3m4GbvEGYgjMPWMya
-
-```
-
-Create the `broker-oauth-secret` secret
-
-```bash
-kubectl delete secret  broker-oauth-secret
+export KAFKA_BROKER_CLIENT_SECRET=zZLTLWwGYIxTzVkEekCb77YNwLpY70sY
+kubectl delete secret broker-oauth-secret
 kubectl create secret generic broker-oauth-secret --from-literal=secret=$KAFKA_BROKER_CLIENT_SECRET 
 ```
 
 ### Install a Kafka cluster
 
 ```bash
-$ kubectl apply -f kafka-ephemeral-oauth.yaml
+$ kubectl apply -f kafka-oauth.yaml
 ```
 
-### Producer / Consumer with 9092 
+### Producer / Consumer with 9092 - this should still work
 
 In one terminal create a producer: (this will start up the `kafka-producer` pod)
 
@@ -118,20 +100,20 @@ error:  Connection to node -1 (my-cluster-kafka-bootstrap/10.43.58.190:9093) fai
 We get authentication error - SSL handshake failed, meaning creation of SSL connection failed even before any attempt of further communication. The reason is that the server certificate is not trusted by the client. We need to configure truststore with Kafka’s cluster CA certificate.
 
 
-Extract the `ca.p12` from the Cluster CA secret
+### Extract the `ca.p12` from the Cluster CA secret
 
 ```bash
 $ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.p12}' | base64 -d > ca.p12
 $ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.password}' | base64 -d > ca.password
 ```
 
-Run an interactive pod:
+### Run an interactive pod:
 
 ```bash
 $ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.32.0-kafka-3.3.1 producer-consumer -n kafka -- /bin/sh -c "sleep 7200"
 ```
 
-and copy the ca.p12 and config file into it.
+### Copy the ca.p12 and config file into it.
 
 ```bash
 $ kubectl cp ca.p12 producer-consumer:/tmp -n kafka
@@ -139,18 +121,23 @@ $ kubectl cp ca.p12 producer-consumer:/tmp -n kafka
 $ kubectl cp security-config.properties producer-consumer:/tmp -n kafka
 ```
 
-Next try to run a producer and then a consumer within the interactive pod with security configuration:
+### Run a producer and then a consumer within the interactive pod with security configuration:
 
 ```bash
 $ kubectl exec -it producer-consumer -- sh
 $ export OAUTH_CLIENT_ID=kafka-producer
-$ export OAUTH_CLIENT_SECRET=qZjG3Wk1GUiQJiT7qsVG3hjQgo7z8ckv
-$ export OAUTH_TOKEN_ENDPOINT_URI=https://b076-178-238-175-199.eu.ngrok.io/realms/kafka/protocol/openid-connect/token 
+$ export OAUTH_CLIENT_SECRET=RJ8JkW0SLmiHTcHUWxD5ZLPnhFyDwgLK
+$ export OAUTH_TOKEN_ENDPOINT_URI=http://keycloak-keycloakx-http/auth/realms/kafka/protocol/openid-connect/token 
 $ /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic --producer.config=/tmp/security-config.properties
 ```
 
-
-
+```bash
+$ kubectl exec -it producer-consumer -- sh
+$ export OAUTH_CLIENT_ID=kafka-consumer
+$ export OAUTH_CLIENT_SECRET=5q6e1iCATbSay11tjT7c44auQGScBSQg
+$ export OAUTH_TOKEN_ENDPOINT_URI=http://keycloak-keycloakx-http/auth/realms/kafka/protocol/openid-connect/token 
+$ /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic --from-beginning --consumer.config=/tmp/security-config.properties
+```
 
 
 

@@ -22,11 +22,11 @@ spec:
             key: secret
             secretName: broker-oauth-secret
           # By default, issuer is checked using the value configured by validIssuerUri
-          validIssuerUri: https://b076-178-238-175-199.eu.ngrok.io/realms/kafka
+          validIssuerUri: http://keycloak-keycloakx-http/auth/realms/kafka
           # we use fast local JWT token validation
           # jwksEndpointUri: https://<auth-server-address>/auth/realms/tls/protocol/openid-connect/certs
           # OAuth 2.0 introspection endpoint configuration
-          introspectionEndpointUri: https://b076-178-238-175-199.eu.ngrok.io/realms/kafka/protocol/openid-connect/token/introspect
+          introspectionEndpointUri: http://keycloak-keycloakx-http/auth/realms/kafka/protocol/openid-connect/token/introspect
           # for Kafka ACL authorization we need to identify the user by their username during authentication
           userNameClaim: preferred_username
           # Session re-authentication: https://strimzi.io/docs/operators/latest/full/configuring.html#str
@@ -39,6 +39,10 @@ spec:
       min.insync.replicas: 1
     storage:
       type: ephemeral
+    logging:
+      type: inline
+      loggers:
+        kafka.root.logger.level: DEBUG
   zookeeper:
     replicas: 1
     storage:
