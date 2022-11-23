@@ -86,19 +86,31 @@ $ kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.32.0-k
 ### Producer / Consumer with 9093
 
 ```bash
-$ kubectl -n kafka run kafka-producer -ti --image=quay.io/strimzi/kafka:0.32.0-kafka-3.3.1 --rm=true --restart=Never -- bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic
-```
+$ kubectl -n kafka run kafka-producer -it \
+--image=quay.io/strimzi/kafka:0.32.0-kafka-3.3.1 \
+--rm=true --restart=Never \
+-- bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic
+
 
 error: Bootstrap broker my-cluster-kafka-bootstrap:9093 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
 
-```bash
-$ kubectl -n kafka run kafka-producer -ti --image=quay.io/strimzi/kafka:0.32.0-kafka-3.3.1 --rm=true --restart=Never -- bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic --producer-property 'security.protocol=SSL'
 ```
 
-error:  Connection to node -1 (my-cluster-kafka-bootstrap/10.43.58.190:9093) failed authentication due to: SSL handshake failed (org.apache.kafka.clients.NetworkClient)
+On the broker side you will see:
 
-We get authentication error - SSL handshake failed, meaning creation of SSL connection failed even before any attempt of further communication. The reason is that the server certificate is not trusted by the client. We need to configure truststore with Kafka’s cluster CA certificate.
+```bash
+2022-11-23 20:29:45,061 INFO [SocketServer listenerType=ZK_BROKER, nodeId=0] Failed authentication with /10.42.1.38 (channelId=10.42.1.34:9093-10.42.1.38:43546-4) (SSL handshake failed) (org.apache.kafka.common.network.Selector) [data-plane-kafka-network-thread-0-ListenerName(TLS-9093)-SASL_SSL-8]
+```
 
+```bash
+$ kubectl -n kafka run kafka-producer -it \
+--image=quay.io/strimzi/kafka:0.32.0-kafka-3.3.1 \
+--rm=true --restart=Never \
+-- bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic --producer-property 'security.protocol=SSL'
+
+
+[2022-11-23 20:33:45,317] ERROR [Producer clientId=console-producer] Connection to node -1 (my-cluster-kafka-bootstrap/10.43.44.73:9093) failed authentication due to: SSL handshake failed (org.apache.kafka.clients.NetworkClient)
+```
 
 ### Extract the `ca.p12` from the Cluster CA secret
 
@@ -128,7 +140,8 @@ $ kubectl exec -it producer-consumer -- sh
 $ export OAUTH_CLIENT_ID=kafka-producer
 $ export OAUTH_CLIENT_SECRET=RJ8JkW0SLmiHTcHUWxD5ZLPnhFyDwgLK
 $ export OAUTH_TOKEN_ENDPOINT_URI=http://keycloak-keycloakx-http/auth/realms/kafka/protocol/openid-connect/token 
-$ /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic --producer.config=/tmp/security-config.properties
+$ /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic \
+--producer.config=/tmp/security-config.properties
 ```
 
 ```bash
@@ -136,11 +149,39 @@ $ kubectl exec -it producer-consumer -- sh
 $ export OAUTH_CLIENT_ID=kafka-consumer
 $ export OAUTH_CLIENT_SECRET=5q6e1iCATbSay11tjT7c44auQGScBSQg
 $ export OAUTH_TOKEN_ENDPOINT_URI=http://keycloak-keycloakx-http/auth/realms/kafka/protocol/openid-connect/token 
-$ /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic --from-beginning --consumer.config=/tmp/security-config.properties
+$ /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic \
+--from-beginning --group my-group --consumer.config=/tmp/security-config.properties 
 ```
 
+You can use the following communication flows for Kafka authentication using the `SASL OAUTHBEARER` mechanism.
+
+1. Client using client ID and secret, with broker delegating validation to authorization server
+![img_4.png](img_4.png)
+2. Client using client ID and secret, with broker performing fast local token validation
+![img_5.png](img_5.png)
+3. Client using long-lived access token, with broker delegating validation to authorization server
+![img_6.png](img_6.png)
+4. Client using long-lived access token, with broker performing fast local validation
+![img_7.png](img_7.png)
 
 
+### Authorization
+
+```bash
+$ kubectl apply -f service-account-kafka-consumer.yaml
+$ kubectl apply -f service-account-kafka-producer.yaml
+```
+
+```bash
+$ kubectl get ku 
+NAME                             CLUSTER      AUTHENTICATION   AUTHORIZATION   READY
+service-account-kafka-producer   my-cluster                    simple          True
+service-account-kafka-consumer   my-cluster                    simple          True
+```
+
+```bash
+$ kubectl logs -f my-cluster-entity-operator-6df799fffd-5q9mt -c user-operator
+```
 
 Resources:
 

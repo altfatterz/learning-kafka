@@ -6,6 +6,8 @@ spec:
   kafka:
     version: 3.3.1
     replicas: 1
+    authorization:
+      type: simple
     listeners:
       - name: plain
         port: 9092
@@ -23,8 +25,8 @@ spec:
             secretName: broker-oauth-secret
           # By default, issuer is checked using the value configured by validIssuerUri
           validIssuerUri: http://keycloak-keycloakx-http/auth/realms/kafka
-          # we use fast local JWT token validation
-          # jwksEndpointUri: https://<auth-server-address>/auth/realms/tls/protocol/openid-connect/certs
+          # Use fast local JWT token validation
+          # jwksEndpointUri: http://keycloak-keycloakx-http/auth/realms/kafka/protocol/openid-connect/certs
           # OAuth 2.0 introspection endpoint configuration
           introspectionEndpointUri: http://keycloak-keycloakx-http/auth/realms/kafka/protocol/openid-connect/token/introspect
           # for Kafka ACL authorization we need to identify the user by their username during authentication
@@ -42,7 +44,8 @@ spec:
     logging:
       type: inline
       loggers:
-        kafka.root.logger.level: DEBUG
+        log4j.logger.io.strimzi: "TRACE"
+        log4j.logger.org.apache.kafka: "DEBUG"
   zookeeper:
     replicas: 1
     storage:
