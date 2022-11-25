@@ -117,6 +117,7 @@ $ kubectl -n kafka run kafka-producer -it \
 ```bash
 $ kubectl get secret my-cluster-cluster-ca-cert -o jsonpath='{.data.ca\.p12}' | base64 -d > ca.p12
 $ kubectl get secret my-cluster-cluster-ca-cert -o jsonpath='{.data.ca\.password}' | base64 -d > ca.password
+$ kubectl get secret my-cluster-cluster-ca-cert -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
 ```
 
 ### Run an interactive pod:
@@ -130,7 +131,7 @@ $ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.32.0-kafka-3.3.1 p
 ```bash
 $ kubectl cp ca.p12 producer-consumer:/tmp -n kafka
 # after you modified the `ssl.truststore.password` inside the config.properties
-$ kubectl cp security-config.properties producer-consumer:/tmp -n kafka
+$ oc cp security-config.properties producer-consumer:/tmp -n kafka
 ```
 
 ### Run a producer and then a consumer within the interactive pod with security configuration:
@@ -138,7 +139,7 @@ $ kubectl cp security-config.properties producer-consumer:/tmp -n kafka
 ```bash
 $ kubectl exec -it producer-consumer -- sh
 $ export OAUTH_CLIENT_ID=kafka-producer
-$ export OAUTH_CLIENT_SECRET=RJ8JkW0SLmiHTcHUWxD5ZLPnhFyDwgLK
+$ export OAUTH_CLIENT_SECRET=<change>
 $ export OAUTH_TOKEN_ENDPOINT_URI=http://keycloak-keycloakx-http/auth/realms/kafka/protocol/openid-connect/token 
 $ /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic \
 --producer.config=/tmp/security-config.properties
@@ -190,8 +191,16 @@ $ kubectl logs -f my-cluster-entity-operator-6df799fffd-5q9mt -c user-operator
 
 ```bash
 export KAFKA_BRIDGE_CLIENT_SECRET=snJ8TmaqHxAI3LBxVySX9ioC6gY0ljP3
-    kubectl delete secret bridge-oauth-secret
+kubectl delete secret bridge-oauth-secret
 kubectl create secret generic bridge-oauth-secret --from-literal=secret=$KAFKA_BRIDGE_CLIENT_SECRET 
+```
+
+
+### Certificate commands
+
+```bash
+$ openssl pkcs12 -info -in ca.p12
+$  openssl x509 -in ca.crt -text -noout
 ```
 
 Resources:

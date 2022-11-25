@@ -19,6 +19,9 @@ spec:
         tls: true
         authentication:
           type: oauth
+#          tlsTrustedCertificates:
+#            secretName: <keycloak-oauth-secret>
+#            certificate: <keycloak-certificate>
           clientId: kafka-broker
           clientSecret:
             key: secret
