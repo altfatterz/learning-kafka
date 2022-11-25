@@ -115,8 +115,8 @@ $ kubectl -n kafka run kafka-producer -it \
 ### Extract the `ca.p12` from the Cluster CA secret
 
 ```bash
-$ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.p12}' | base64 -d > ca.p12
-$ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.password}' | base64 -d > ca.password
+$ kubectl get secret my-cluster-cluster-ca-cert -o jsonpath='{.data.ca\.p12}' | base64 -d > ca.p12
+$ kubectl get secret my-cluster-cluster-ca-cert -o jsonpath='{.data.ca\.password}' | base64 -d > ca.password
 ```
 
 ### Run an interactive pod:
@@ -181,6 +181,17 @@ service-account-kafka-consumer   my-cluster                    simple          T
 
 ```bash
 $ kubectl logs -f my-cluster-entity-operator-6df799fffd-5q9mt -c user-operator
+```
+
+
+### Kafka bridge - does not work yet
+
+### Create the `bridge-oauth-secret` secret
+
+```bash
+export KAFKA_BRIDGE_CLIENT_SECRET=snJ8TmaqHxAI3LBxVySX9ioC6gY0ljP3
+    kubectl delete secret bridge-oauth-secret
+kubectl create secret generic bridge-oauth-secret --from-literal=secret=$KAFKA_BRIDGE_CLIENT_SECRET 
 ```
 
 Resources:

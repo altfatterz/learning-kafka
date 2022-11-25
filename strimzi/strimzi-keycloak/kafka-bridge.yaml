@@ -1,0 +1,20 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaBridge
+metadata:
+  name: my-bridge
+spec:
+  replicas: 1
+  bootstrapServers: my-cluster-kafka-bootstrap:9093
+  tls:
+    trustedCertificates:
+      - certificate: ca.crt
+        secretName: my-cluster-cluster-ca-cert
+  authentication:
+    type: oauth
+    clientId: kafka-bridge
+    clientSecret:
+      key: secret
+      secretName: bridge-oauth-secret
+    tokenEndpointUri: http://keycloak-keycloakx-http/auth/realms/kafka/protocol/openid-connect/token
+  http:
+    port: 8080
