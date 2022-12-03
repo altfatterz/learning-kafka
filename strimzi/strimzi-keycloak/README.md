@@ -194,6 +194,27 @@ $ curl -X POST "https://lemur-17.cloud-iam.com/auth/realms/strimzi-keycloak-demo
 ```
 
 
+### Authorization
+
+In KeyCloak we have those 3 roles:
+
+- `Realm Role`
+- `Client Role`
+- `Composite Role`
+
+There are no `User Role` in KeyCloak.
+Every `Realm` has one or multiple `Clients`. And every `Client` can have multiple `Users` attached to it.
+
+`Realm Role`: It is a global role, belonging to that specific realm. You can access it from any client and map to any user. 
+Ex Role: 'Global Admin, Admin'
+
+`Client Role`: It is a role which belongs only to that specific client. You cannot access that role from a different client. You can only map it to the `Users` from that `client`. Ex Roles: 'Employee, Customer'
+
+`Composite Role`: It is a role that has one or more roles (realm or client ones) associated to it.
+
+
+
+
 Resources:
 
 1. [https://strimzi.io/docs/operators/latest/full/configuring.html#assembly-oauth-authentication_str](https://strimzi.io/docs/operators/latest/full/configuring.html#assembly-oauth-authentication_str)
