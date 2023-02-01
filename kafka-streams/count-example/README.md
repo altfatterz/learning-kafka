@@ -45,5 +45,6 @@ The Godfather	3
 The Godfather	4
 ```
 
+Monitoring Kafka Streams applications
 
-
+https://docs.confluent.io/platform/current/streams/monitoring.html#monitoring-kstreams-applications

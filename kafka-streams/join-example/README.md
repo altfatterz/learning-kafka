@@ -14,19 +14,20 @@ $ kafka-topics --bootstrap-server kafka:9092 --delete --topic right-topic;
 $ kafka-topics --bootstrap-server kafka:9092 --delete --topic joined-topic;
 ```
 
-[kafkacat](https://github.com/edenhill/kafkacat)
+[kcat](https://github.com/edenhill/kcat)
+
 
 Write some values into the topics and see the join topic output
 
 ```bash
-$ kafkacat -P -b kafka:9092 -t left-topic -K:
+$ kcat -P -b localhost:19092 -t left-topic -K:
 x:foo
 x:bar
 y:aaa
 ```
 
 ```bash
-$ kafkacat -P -b kafka:9092 -t right-topic -P -K:
+$ kcat -P -b localhost:19092 -t right-topic -P -K:
 x:baz
 ```
 
@@ -34,7 +35,7 @@ x:baz
 Consume the joined-topic
 
 ```bash
-$ kafkacat -C -b kafka:9092 -t joined-topic -C -K\\t
+$ kcat -C -b localhost:19092 -t joined-topic -C -K\\t
 
 % Reached end of topic joined-topic [0] at offset 0
 x	[foo, baz]
