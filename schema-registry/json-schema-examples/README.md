@@ -8,11 +8,11 @@ $ docker compose up -d
 
 ```bash
 CONTAINER ID   IMAGE                                                    COMMAND                  CREATED              STATUS                      PORTS                                        NAMES
-bf0a641c0c7d   confluentinc/cp-enterprise-kafka:7.1.1-1-ubi8            "/etc/confluent/dock…"   About a minute ago   Up About a minute           9092/tcp, 0.0.0.0:19092->19092/tcp           kafka
-98d680d648ba   confluentinc/cp-schema-registry:7.1.1-1-ubi8             "/etc/confluent/dock…"   About a minute ago   Up About a minute           0.0.0.0:8081->8081/tcp                       schema-registry
-ef17fd5563bb   confluentinc/cp-enterprise-kafka:7.1.1-1-ubi8            "bash -c 'echo Waiti…"   About a minute ago   Exited (0) 33 seconds ago                                                create-topics
-62b24e0adde1   confluentinc/cp-zookeeper:7.1.1-1-ubi8                   "/etc/confluent/dock…"   About a minute ago   Up About a minute           2888/tcp, 0.0.0.0:2181->2181/tcp, 3888/tcp   zookeeper
-f7bbbb867695   confluentinc/cp-enterprise-control-center:7.1.1-1-ubi8   "/etc/confluent/dock…"   About a minute ago   Up About a minute           0.0.0.0:9021->9021/tcp                       control-center
+bf0a641c0c7d   confluentinc/cp-enterprise-kafka:7.3.1            "/etc/confluent/dock…"   About a minute ago   Up About a minute           9092/tcp, 0.0.0.0:19092->19092/tcp           kafka
+98d680d648ba   confluentinc/cp-schema-registry:7.3.1             "/etc/confluent/dock…"   About a minute ago   Up About a minute           0.0.0.0:8081->8081/tcp                       schema-registry
+ef17fd5563bb   confluentinc/cp-enterprise-kafka:7.3.1            "bash -c 'echo Waiti…"   About a minute ago   Exited (0) 33 seconds ago                                                create-topics
+62b24e0adde1   confluentinc/cp-zookeeper:7.3.1                   "/etc/confluent/dock…"   About a minute ago   Up About a minute           2888/tcp, 0.0.0.0:2181->2181/tcp, 3888/tcp   zookeeper
+f7bbbb867695   confluentinc/cp-enterprise-control-center:7.3.1   "/etc/confluent/dock…"   About a minute ago   Up About a minute           0.0.0.0:9021->9021/tcp                       control-center
 b0664f414562   cnfltraining/training-tools:6.0                          "/bin/sh"                About a minute ago   Up About a minute                                                        tools
 ```
 
