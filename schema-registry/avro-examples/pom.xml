@@ -17,10 +17,10 @@
         <avro.version>1.11.0</avro.version>
 
         <!-- https://docs.confluent.io/current/release-notes/index.html#cs -->
-        <confluent.version>7.1.1</confluent.version>
+        <confluent.version>7.3.1</confluent.version>
 
         <!-- latest kafka version supported by: https://github.com/lensesio/fast-data-dev -->
-        <kafka.version>3.1.0</kafka.version>
+        <kafka.version>3.3.2</kafka.version>
 
         <logback.version>1.2.11</logback.version>
 
