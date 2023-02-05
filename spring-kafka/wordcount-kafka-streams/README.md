@@ -2,16 +2,16 @@
 
 ```bash
 $ kafka-topics --create --topic word-count-input \
-   --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+   --bootstrap-server localhost:19092 --partitions 1 --replication-factor 1
 
 $ kafka-topics --create --topic word-count-output \
-   --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+   --bootstrap-server localhost:19092 --partitions 1 --replication-factor 1
 ```
 
 2. List topics:
 
 ```bash
-$ kafka-topics --bootstrap-server localhost:9092 --list
+$ kafka-topics --bootstrap-server localhost:19092 --list
 
 __consumer_offsets
 word-count-input
@@ -22,7 +22,7 @@ word-count-output
 
 ```bash
 $ kafka-console-consumer --topic word-count-output --from-beginning \
-   --bootstrap-server localhost:9092 \
+   --bootstrap-server localhost:19092 \
    --property print.key=true \
    --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
 ```
@@ -30,7 +30,7 @@ $ kafka-console-consumer --topic word-count-output --from-beginning \
 4. Start producer:
 
 ```bash
-$ kafka-console-producer --broker-list localhost:9092 --topic word-count-input
+$ kafka-console-producer --bootstrap-server localhost:19092 --topic word-count-input
 ```
 
 5. Start Kafka Streams app:
@@ -42,7 +42,7 @@ $ java -jar target/wordcount-kafka-streams.jar
 6. List again the topics:
 
 ```bash
-$ kafka-topics --bootstrap-server localhost:9092 --list
+$ kafka-topics --bootstrap-server localhost:19092 --list
 
 __confluent.support.metrics
 __consumer_offsets

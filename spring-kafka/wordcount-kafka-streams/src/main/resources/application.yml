@@ -1,12 +1,21 @@
 spring:
   kafka:
+    bootstrap-servers:
+      - localhost:19092
     streams:
       application-id: wordcount
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: localhost:19092
       properties:
+        store.dir: /tmp/kafka-streams
         default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
         default.value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - "*"
 
 logging:
   level:
