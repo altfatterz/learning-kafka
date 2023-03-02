@@ -1,5 +1,9 @@
 Deploying Kafka Connect
 
+---------------------------------------------------------------------------
+PostgreSQL ----------> Kafka Connect (Debezium Plugin) -------> Kafka Topic 
+---------------------------------------------------------------------------
+
 The `Cluster Operator` manages Kafka Connect clusters deployed using the `KafkaConnect` resource and connectors created using the `KafkaConnector` resource. [https://strimzi.io/docs/operators/latest/deploying.html#kafka-connect-str](https://strimzi.io/docs/operators/latest/deploying.html#kafka-connect-str)
 
 ### Create a k8s cluster using k3d
@@ -261,3 +265,7 @@ Do an update and delete
 $ UPDATE customers SET email = 'janedoe1@gmail.com' WHERE first_name = 'Jane' AND last_name = 'Doe';
 $ DELETE FROM customers WHERE first_name = 'Jane' AND last_name = 'Doe';
 ```
+
+Resources:
+1. [https://strimzi.io/blog/2020/01/27/deploying-debezium-with-kafkaconnector-resource/](https://strimzi.io/blog/2020/01/27/deploying-debezium-with-kafkaconnector-resource/)
+2. [https://strimzi.io/docs/operators/latest/deploying.html](https://strimzi.io/docs/operators/latest/deploying.html)
