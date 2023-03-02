@@ -1,0 +1,71 @@
+primary:
+  # Override default postgresql.conf
+  configuration: |-
+    # Note: This configuration was created with bitnami/postgresql default chart, connecting and running `SHOW ALL;`
+    #       then modifying to the appropriate yaml format. All values in SHOW present and if commented, this likely
+    #       indicates attempt to set value failed. Please experiment. 
+    #
+    #       CHART NAME: postgresql
+    #       CHART VERSION: 11.0.4
+    #       APP VERSION: 14.1.0
+    #       Example use: 
+    #       >>> helm install pg-release-1 bitnami/postgresql -f /path/to/this/file/values_bitnami_pg_postgresql_conf.yaml
+    #       (chart should display connection details... connect using psql and run `SHOW ALL;`)
+    #       If anything appears odd or not present review the pod logs (`kubectl logs <target pod for release>`)
+    allow_system_table_mods = 'off' #Allows modifications of the structure of system tables.
+    application_name = 'psql' #Sets the application name to be reported in statistics and logs.
+    archive_cleanup_command = '' #Sets the shell command that will be executed at every restart point.
+    archive_command = '(disabled' #Sets the shell command that will be called to archive a WAL file.
+    archive_mode = 'off' #Allows archiving of WAL files using archive_command.
+    archive_timeout = '0' #Forces a switch to the next WAL file if a new file has not been started within N seconds.
+    array_nulls = 'on' #Enable input of NULL elements in arrays.
+    authentication_timeout = '1min' #Sets the maximum allowed time to complete client authentication.
+    autovacuum = 'on' #Starts the autovacuum subprocess.
+    autovacuum_analyze_scale_factor = '0.1' #Number of tuple inserts, updates, or deletes prior to analyze as a fraction of reltuples.
+    autovacuum_analyze_threshold = '50' #Minimum number of tuple inserts, updates, or deletes prior to analyze.
+    autovacuum_freeze_max_age = '200000000' #Age at which to autovacuum a table to prevent transaction ID wraparound.
+    autovacuum_max_workers = '3' #Sets the maximum number of simultaneously running autovacuum worker processes.
+    autovacuum_multixact_freeze_max_age = '400000000' #Multixact age at which to autovacuum a table to prevent multixact wraparound.
+    autovacuum_naptime = '1min' #Time to sleep between autovacuum runs.
+    autovacuum_vacuum_cost_delay = '2ms' #Vacuum cost delay in milliseconds, for autovacuum.
+    # won't let me post entire show ... so cut the middle 
+    # ...
+    vacuum_defer_cleanup_age = '0' #Number of transactions by which VACUUM and HOT cleanup should be deferred, if any.
+    vacuum_failsafe_age = '1600000000' #Age at which VACUUM should trigger failsafe to avoid a wraparound outage.
+    vacuum_freeze_min_age = '50000000' #Minimum age at which VACUUM should freeze a table row.
+    vacuum_freeze_table_age = '150000000' #Age at which VACUUM should scan whole table to freeze tuples.
+    vacuum_multixact_failsafe_age = '1600000000' #Multixact age at which VACUUM should trigger failsafe to avoid a wraparound outage.
+    vacuum_multixact_freeze_min_age = '5000000' #Minimum age at which VACUUM should freeze a MultiXactId in a table row.
+    vacuum_multixact_freeze_table_age = '150000000' #Multixact age at which VACUUM should scan whole table to freeze tuples.
+    #wal_block_size = '8192' #Shows the block size in the write ahead log.
+    wal_buffers = '256kB' #Sets the number of disk-page buffers in shared memory for WAL.
+    wal_compression = 'off' #Compresses full-page writes written in WAL file.
+    wal_consistency_checking = '' #Sets the WAL resource managers for which WAL consistency checks are done.
+    wal_init_zero = 'on' #Writes zeroes to new WAL files before first use.
+    wal_keep_size = '128MB' #Sets the size of WAL files held for standby servers.
+    wal_level = 'logical' #Sets the level of information written to the WAL.
+    wal_log_hints = 'off' #Writes full pages to WAL when first modified after a checkpoint, even for a non-critical modification.
+    wal_receiver_create_temp_slot = 'off' #Sets whether a WAL receiver should create a temporary replication slot if no permanent slot is configured.
+    wal_receiver_status_interval = '10s' #Sets the maximum interval between WAL receiver status reports to the sending server.
+    wal_receiver_timeout = '1min' #Sets the maximum wait time to receive data from the sending server.
+    wal_recycle = 'on' #Recycles WAL files by renaming them.
+    wal_retrieve_retry_interval = '5s' #Sets the time to wait before retrying to retrieve WAL after a failed attempt.
+    #wal_segment_size = '16MB' #Shows the size of write ahead log segments.
+    wal_sender_timeout = '1min' #Sets the maximum time to wait for WAL replication.
+    wal_skip_threshold = '2MB' #Minimum size of new file to fsync instead of writing WAL.
+    wal_sync_method = 'fdatasync' #Selects the method used for forcing WAL updates to disk.
+    wal_writer_delay = '200ms' #Time between WAL flushes performed in the WAL writer.
+    wal_writer_flush_after = '1MB' #Amount of WAL written out by WAL writer that triggers a flush.
+    work_mem = '4MB' #Sets the maximum memory to be used for query workspaces.
+    xmlbinary = 'base64' #Sets how binary values are to be encoded in XML.
+    xmloption = 'content' #Sets whether XML data in implicit parsing and serialization operations is to be considered as documents or content fragments.
+    zero_damaged_pages = 'off' #Continues processing past damaged page headers.
+  # Override default pg_hba.conf
+  pgHbaConfiguration: |-
+    # WARNING! This is wide open and only for toy local development purposes.
+    # Note: To verify this is loaded, connect via psql and run `table pg_hba_file_rules ;`
+    host     all             all             0.0.0.0/0               trust
+    host     all             all             ::/0                    trust
+    local    all             all                                     trust
+    host     all             all        127.0.0.1/32                 trust
+    host     all             all        ::1/128                      trust

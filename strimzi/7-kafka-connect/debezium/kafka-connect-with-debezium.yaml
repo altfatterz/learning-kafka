@@ -26,7 +26,7 @@ spec:
     output:
       type: docker
       # This image will last only for 2 hours, use a different name
-      image: ttl.sh/altfatterz-strimzi-kafka-connect-debezium-3.2.3:2h
+      image: ttl.sh/altfatterz-strimzi-kafka-connect-debezium-demo-3.2.3:2h
     plugins:
       - name: debezium-postgres-connector
         artifacts:
