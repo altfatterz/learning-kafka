@@ -188,12 +188,12 @@ $ kubectl apply -f debezium/kafka-source-connector-debezium.yaml
 ```
 
 Issues with `wal_level` property - PostgreSQL specific
-More info here: https://stackoverflow.com/questions/71214664/how-to-change-bitnami-postgresql-helm-chart-configs-ph-hba-conf-postgresql-co
+More info here: [https://stackoverflow.com/questions/71214664/how-to-change-bitnami-postgresql-helm-chart-configs-ph-hba-conf-postgresql-co](https://stackoverflow.com/questions/71214664/how-to-change-bitnami-postgresql-helm-chart-configs-ph-hba-conf-postgresql-co)
+
+In the logs you should see:
 
 ```bash
-2023-02-24 20:33:20,999 INFO Successfully tested connection for jdbc:postgresql://my-postgresql:5432/postgres with user 'postgres' (io.debezium.connector.postgresql.PostgresConnector) [pool-2-thread-1]
-2023-02-24 20:33:20,999 ERROR Postgres server wal_level property must be "logical" but is: replica (io.debezium.connector.postgresql.PostgresConnector) [pool-2-thread-1]
-2023-02-24 20:33:21,003 INFO Connection gracefully closed (io.debezium.jdbc.JdbcConnection) [pool-6-thread-1]
+2023-03-02 20:33:12,975 INFO Successfully tested connection for jdbc:postgresql://my-postgresql:5432/postgres with user 'postgres' (io.debezium.connector.postgresql.PostgresConnector) [pool-2-thread-19]
 ```
 
 ### View topics: 
@@ -217,8 +217,47 @@ $ kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.31.1-k
 ```
 
 
-### 6. Start a consumer
+### Start a consumer
 
 ```bash
 $ kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.31.1-kafka-3.2.3 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
+```
+
+### Check the connector config:
+
+```bash
+$ curl localhost:8083/connectors
+$ curl localhost:8083/connectors/my-source-connector
+```
+
+```json
+{
+  "name": "my-source-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.dbname": "postgres",
+    "database.user": "postgres",
+    "topic.prefix": "postgresql",
+    "database.hostname": "my-postgresql",
+    "tasks.max": "1",
+    "database.password": "U1Rzn6nRMf",
+    "name": "my-source-connector",
+    "database.port": "5432",
+    "plugin.name": "pgoutput"
+  },
+  "tasks": [
+    {
+      "connector": "my-source-connector",
+      "task": 0
+    }
+  ],
+  "type": "source"
+}
+```
+
+Do an update and delete
+
+```bash
+$ UPDATE customers SET email = 'janedoe1@gmail.com' WHERE first_name = 'Jane' AND last_name = 'Doe';
+$ DELETE FROM customers WHERE first_name = 'Jane' AND last_name = 'Doe';
 ```
