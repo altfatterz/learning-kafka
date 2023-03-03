@@ -11,6 +11,7 @@ spec:
   version: 3.2.3
   replicas: 1
   bootstrapServers: my-cluster-kafka-bootstrap:9092
+  # tls setup !!!
   config:
     group.id: connect-cluster
     offset.storage.topic: connect-cluster-offsets

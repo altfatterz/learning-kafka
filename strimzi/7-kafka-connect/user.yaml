@@ -1,0 +1,38 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: <TODO>
+  labels:
+    strimzi.io/cluster: <TODO>
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      # Example ACL rules for consuming from 'connect-cluster-' topics using consumer group connect-cluster
+      - resource:
+          type: topic
+          name: connect-cluster-
+          patternType: prefix
+        operation: Read
+        host: "*"
+      - resource:
+          type: topic
+          name: connect-cluster-
+          patternType: prefix
+        operation: Describe
+        host: "*"
+      - resource:
+          type: group
+          name: connect-cluster
+          patternType: literal
+        operation: Read
+        host: "*"
+      # Example ACL rules for producing to 'connect-cluster-' topics
+      - resource:
+          type: topic
+          name: connect-cluster-
+          patternType: prefix
+        operation: Write
+        host: "*"

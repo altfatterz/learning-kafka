@@ -1,8 +1,39 @@
 Deploying Kafka Connect
 
+- Source Connector
+    - task polls the external data system and returns a list of records that a worker sends to the Kafka brokers.
 ---------------------------------------------------------------------------
 PostgreSQL ----------> Kafka Connect (Debezium Plugin) -------> Kafka Topic 
 ---------------------------------------------------------------------------
+
+- Sink Connector 
+  - task receives Kafka records from a worker for writing to the external data system
+
+---------------------------------------------------------------------------
+Kafka Topic ------------------> Kafka Connect --------------> Elasticsearch
+---------------------------------------------------------------------------
+
+- Kafka Connect cluster is basically a `K8S Deployment` (1 or more pods) - they are also called `Worker Nodes` 
+- Worker Nodes distribute the streaming `tasks`
+- If there are more `tasks` than `workers`, `workers` are assigned multiple `tasks`.
+- If a `worker` fails, its `tasks` are automatically assigned to active `workers` in the `Kafka Connect cluster`.
+
+Things to remember:
+- `Connectors` to create `tasks` (We are going to use Debezium Connector or also called plugin)
+- `Tasks` move the data
+- `Workers` run the `tasks`
+- `Transforms` transform external data 
+  - `Source connectors` apply transforms before converting data into a format supported by Kafka.
+  - `Sink connectors` apply transforms after converting data into a format suitable for an external data system.
+- `Converters` converts the data (JSON / Avro)
+
+Good picture here: [https://strimzi.io/docs/operators/latest/overview.html#connectors](https://strimzi.io/docs/operators/latest/overview.html#connectors)
+
+- Sink connectors, the number of `tasks` created relates to the number of partitions being consumed.
+- Source connectors, how the source data is partitioned is defined by the connector, see `tasksMax` 
+(maximum number of tasks that can run in parallel). The Connector might create fewer tasks if not possible 
+to split the source data into that many partitions.
+
 
 The `Cluster Operator` manages Kafka Connect clusters deployed using the `KafkaConnect` resource and connectors created using the `KafkaConnector` resource. [https://strimzi.io/docs/operators/latest/deploying.html#kafka-connect-str](https://strimzi.io/docs/operators/latest/deploying.html#kafka-connect-str)
 
@@ -266,6 +297,20 @@ $ UPDATE customers SET email = 'janedoe1@gmail.com' WHERE first_name = 'Jane' AN
 $ DELETE FROM customers WHERE first_name = 'Jane' AND last_name = 'Doe';
 ```
 
+Delete topics:
+
+```bash
+$ kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.33.2-kafka-3.2.3 --rm=true --restart=Never -- bin/kafka-topics.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --delete --topic postgresql.public.customers
+
+```
+
 Resources:
 1. [https://strimzi.io/blog/2020/01/27/deploying-debezium-with-kafkaconnector-resource/](https://strimzi.io/blog/2020/01/27/deploying-debezium-with-kafkaconnector-resource/)
 2. [https://strimzi.io/docs/operators/latest/deploying.html](https://strimzi.io/docs/operators/latest/deploying.html)
+
+
+Next steps:
+- ACLs - I can update the demo
+- How to generate the image with the plugin
+- Make the demo work in the Centris environment
+
