@@ -10,7 +10,17 @@ metadata:
 spec:
   version: 3.2.3
   replicas: 1
-  bootstrapServers: my-cluster-kafka-bootstrap:9092
+  bootstrapServers: my-cluster-kafka-bootstrap:9093
+  tls:
+    trustedCertificates:
+      - secretName: my-cluster-cluster-ca-cert
+        certificate: ca.crt
+  authentication:
+    type: tls
+    certificateAndKey:
+      secretName: kafka-connect-user
+      certificate: user.crt
+      key: user.key
   # tls setup !!!
   config:
     group.id: connect-cluster

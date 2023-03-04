@@ -62,26 +62,6 @@ $ watch kubectl get pods
 ```bash
 $ helm install my-postgresql bitnami/postgresql -f debezium/values.yaml
 $ helm status my-postgresql
-
-PostgreSQL can be accessed via port 5432 on the following DNS names from within your cluster:
-
-    my-postgresql.kafka.svc.cluster.local - Read/Write connection
-
-To get the password for "postgres" run:
-
-    export POSTGRES_PASSWORD=$(kubectl get secret --namespace kafka my-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
-
-To connect to your database run the following command:
-
-    kubectl run my-postgresql-client --rm --tty -i --restart='Never' --namespace kafka --image docker.io/bitnami/postgresql:15.1.0-debian-11-r0 --env="PGPASSWORD=$POSTGRES_PASSWORD" \
-      --command -- psql --host my-postgresql -U postgres -d postgres -p 5432
-
-    > NOTE: If you access the container using bash, make sure that you execute "/opt/bitnami/scripts/postgresql/entrypoint.sh /bin/bash" in order to avoid the error "psql: local user with ID 1001} does not exist"
-
-To connect to your database from outside the cluster execute the following commands:
-
-    kubectl port-forward --namespace kafka svc/my-postgresql 5432:5432 &
-    PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U postgres -d postgres -p 5432
 ```
 
 ### Connect to PostgreSQL
@@ -137,47 +117,7 @@ Check in the logs what is doing:
 
 ```bash
 $ kubectl logs -f my-connect-cluster-connect-build
-
-INFO[0001] Retrieving image manifest quay.io/strimzi/kafka:0.33.2-kafka-3.2.3
-INFO[0001] Retrieving image quay.io/strimzi/kafka:0.33.2-kafka-3.2.3 from registry quay.io
-INFO[0002] Built cross stage deps: map[]
-INFO[0002] Retrieving image manifest quay.io/strimzi/kafka:0.33.2-kafka-3.2.3
-INFO[0002] Returning cached image manifest
-INFO[0002] Executing 0 build triggers
-INFO[0002] Building stage 'quay.io/strimzi/kafka:0.33.2-kafka-3.2.3' [idx: '0', base-idx: '-1']
-INFO[0002] Unpacking rootfs as cmd RUN 'mkdir' '-p' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0'       && 'curl' '-f' '-L' '--output' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz' 'https://repo1.maven.org/maven2/io/debezium/debezium-connector-postgres/2.1.2.Final/debezium-connector-postgres-2.1.2.Final-plugin.tar.gz'       && 'tar' 'xvfz' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz' '-C' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0'       && 'rm' '-vf' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz' requires it.
-INFO[0017] USER root:root
-INFO[0017] Cmd: USER
-INFO[0017] RUN 'mkdir' '-p' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0'       && 'curl' '-f' '-L' '--output' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz' 'https://repo1.maven.org/maven2/io/debezium/debezium-connector-postgres/2.1.2.Final/debezium-connector-postgres-2.1.2.Final-plugin.tar.gz'       && 'tar' 'xvfz' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz' '-C' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0'       && 'rm' '-vf' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz'
-INFO[0017] Initializing snapshotter ...
-INFO[0017] Taking snapshot of full filesystem...
-INFO[0018] Cmd: /bin/sh
-INFO[0018] Args: [-c 'mkdir' '-p' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0'       && 'curl' '-f' '-L' '--output' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz' 'https://repo1.maven.org/maven2/io/debezium/debezium-connector-postgres/2.1.2.Final/debezium-connector-postgres-2.1.2.Final-plugin.tar.gz'       && 'tar' 'xvfz' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz' '-C' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0'       && 'rm' '-vf' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz']
-INFO[0018] Util.Lookup returned: &{Uid:0 Gid:0 Username:root Name: HomeDir:/root}
-INFO[0018] Performing slow lookup of group ids for root
-INFO[0018] Running: [/bin/sh -c 'mkdir' '-p' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0'       && 'curl' '-f' '-L' '--output' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz' 'https://repo1.maven.org/maven2/io/debezium/debezium-connector-postgres/2.1.2.Final/debezium-connector-postgres-2.1.2.Final-plugin.tar.gz'       && 'tar' 'xvfz' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz' '-C' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0'       && 'rm' '-vf' '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz']
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100 3852k  100 3852k    0     0  8505k      0 --:--:-- --:--:-- --:--:-- 8524k
-debezium-connector-postgres/CHANGELOG.md
-debezium-connector-postgres/CONTRIBUTE.md
-debezium-connector-postgres/COPYRIGHT.txt
-debezium-connector-postgres/LICENSE-3rd-PARTIES.txt
-debezium-connector-postgres/LICENSE.txt
-debezium-connector-postgres/README.md
-debezium-connector-postgres/README_JA.md
-debezium-connector-postgres/README_KO.md
-debezium-connector-postgres/README_ZH.md
-debezium-connector-postgres/postgres.json
-debezium-connector-postgres/debezium-core-2.1.2.Final.jar
-debezium-connector-postgres/debezium-api-2.1.2.Final.jar
-debezium-connector-postgres/postgresql-42.5.1.jar
-debezium-connector-postgres/protobuf-java-3.19.6.jar
-debezium-connector-postgres/debezium-connector-postgres-2.1.2.Final.jar
-removed '/opt/kafka/plugins/debezium-postgres-connector/72e697f0.tgz'
-INFO[0018] Taking snapshot of full filesystem...
-INFO[0019] USER 1001
-INFO[0019] Cmd: USER
+...
 INFO[0019] Pushing image to ttl.sh/altfatterz-strimzi-kafka-connect-debezium-demo-3.2.3:2h
 INFO[0043] Pushed ttl.sh/altfatterz-strimzi-kafka-connect-debezium-demo-3.2.3@sha256:3ba07438591f2f7f3a2e46d0fc84841d59f6c8d6222d1dcc8d9098a629bae32f
 ```

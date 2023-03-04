@@ -13,6 +13,6 @@ spec:
     database.hostname: my-postgresql
     database.port: 5432
     database.user: postgres
-    database.password: U1Rzn6nRMf
+    database.password: NgQMGskIFK
     database.dbname : postgres
     topic.prefix: postgresql
