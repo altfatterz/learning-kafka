@@ -244,6 +244,32 @@ $ kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.33.2-k
 
 ```
 
+
+### Apicurio Registry Operator & Apicurio Registry
+
+```bash
+$ kubectl apply -f apicurio-registrt-operator.yaml
+$ kubectl apply -f apicurio-registry.yaml
+```
+
+```bash
+$ kubectl port-forward svc/apicurio-registry-service 8080:8080
+$ kubectl port-forward svc/my-cluster-kafka-bootstrap 9092:9092
+-- needed to change /etc/hosts to be able to connect 
+127.0.0.1 my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc 
+```
+
+Check with browser:
+
+```bash
+http://localhost:8080/
+http://localhost:8080/apis/
+```
+
+
+
+
+
 Resources:
 1. [https://strimzi.io/blog/2020/01/27/deploying-debezium-with-kafkaconnector-resource/](https://strimzi.io/blog/2020/01/27/deploying-debezium-with-kafkaconnector-resource/)
 2. [https://strimzi.io/docs/operators/latest/deploying.html](https://strimzi.io/docs/operators/latest/deploying.html)
