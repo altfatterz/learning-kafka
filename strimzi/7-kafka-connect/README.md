@@ -60,7 +60,7 @@ $ watch kubectl get pods
 ### Install PostgresSQL 
 
 ```bash
-$ helm install my-postgresql bitnami/postgresql -f debezium/values.yaml
+$ helm install my-postgresql bitnami/postgresql -f values.yaml
 $ helm status my-postgresql
 ```
 
@@ -248,7 +248,7 @@ $ kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.33.2-k
 ### Apicurio Registry Operator & Apicurio Registry
 
 ```bash
-$ kubectl apply -f apicurio-registrt-operator.yaml
+$ kubectl apply -f apicurio-registry-operator.yaml
 $ kubectl apply -f apicurio-registry.yaml
 ```
 
@@ -268,6 +268,14 @@ http://localhost:8080/apis/
 
 
 
+Useful commands:
+```bash
+$ kcat -L -b localhost:9092 -t my-topic
+$ kcat -C -b localhost:9092 -t my-topic
+
+$ http put :8083/connectors/my-source-connector/pause
+$ http put :8083/connectors/my-source-connector/resume
+```
 
 
 Resources:

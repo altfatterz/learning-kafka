@@ -1,0 +1,3 @@
+primary:
+  extendedConfiguration: |-
+    wal_level = logical

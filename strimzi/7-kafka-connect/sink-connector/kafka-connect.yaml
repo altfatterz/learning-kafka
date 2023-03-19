@@ -26,9 +26,13 @@ spec:
     output:
       type: docker
       # This image will last only for 2 hours, use a different name
-      image: ttl.sh/altfatterz-strimzi-kafka-connect-jdbc-sink-connector-demo-3.2.3:2h
+      image: ttl.sh/altfatterz-strimzi-kafka-connect-centris-demo-3.2.3:2h
     plugins:
       - name: jdbc-sink-connector
         artifacts:
           - type: zip
             url: https://centris-demo.s3.eu-central-1.amazonaws.com/confluentinc-kafka-connect-jdbc-10.6.4.zip
+      - name: datagen-source-connector
+        artifacts:
+          - type: zip
+            url: https://centris-demo.s3.eu-central-1.amazonaws.com/confluentinc-kafka-connect-datagen-0.6.0.zip

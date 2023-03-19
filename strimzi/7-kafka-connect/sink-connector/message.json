@@ -1,0 +1,56 @@
+{
+  "schema": {
+    "type": "struct",
+    "fields": [
+      {
+        "type": "string",
+        "optional": false,
+        "field": "side"
+      },
+      {
+        "type": "int32",
+        "optional": false,
+        "field": "quantity"
+      },
+      {
+        "type": "string",
+        "optional": false,
+        "field": "symbol"
+      },
+      {
+        "type": "int32",
+        "optional": false,
+        "field": "price"
+      },
+      {
+        "type": "string",
+        "optional": false,
+        "field": "account"
+      },
+      {
+        "type": "string",
+        "optional": false,
+        "field": "userid"
+      }
+    ],
+    "optional": false,
+    "name": "ksql.StockTrade",
+    "parameters": {
+      "io.confluent.connect.avro.record.doc": "Defines a hypothetical stock trade using some known test stock symbols.",
+      "io.confluent.connect.avro.field.doc.side": "A simulated trade side (buy or sell or short)",
+      "io.confluent.connect.avro.field.doc.quantity": "A simulated random quantity of the trade",
+      "io.confluent.connect.avro.field.doc.symbol": "Simulated stock symbols",
+      "io.confluent.connect.avro.field.doc.price": "A simulated random trade price in pennies",
+      "io.confluent.connect.avro.field.doc.account": "Simulated accounts assigned to the trade",
+      "io.confluent.connect.avro.field.doc.userid": "The simulated user who executed the trade"
+    }
+  },
+  "payload": {
+    "side": "BUY",
+    "quantity": 646,
+    "symbol": "ZTEST",
+    "price": 531,
+    "account": "ABC123",
+    "userid": "User_4"
+  }
+}
