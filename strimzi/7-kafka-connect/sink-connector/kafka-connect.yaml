@@ -8,7 +8,7 @@ metadata:
     #  # needing to call the Connect REST API directly
     strimzi.io/use-connector-resources: "true"
 spec:
-  version: 3.2.3
+  version: 3.3.1
   replicas: 1
   bootstrapServers: my-cluster-kafka-bootstrap:9092
   config:
@@ -26,12 +26,12 @@ spec:
     output:
       type: docker
       # This image will last only for 2 hours, use a different name
-      image: ttl.sh/altfatterz-strimzi-kafka-connect-centris-demo-3.2.3:2h
+      image: ttl.sh/altfatterz-strimzi-kafka-connect-centris-demo-3.3.1:2h
     plugins:
       - name: jdbc-sink-connector
         artifacts:
           - type: zip
-            url: https://centris-demo.s3.eu-central-1.amazonaws.com/confluentinc-kafka-connect-jdbc-10.6.4.zip
+            url: https://centris-demo.s3.eu-central-1.amazonaws.com/confluentinc-kafka-connect-jdbc-10.6.4-apicurio-8.zip
       - name: datagen-source-connector
         artifacts:
           - type: zip

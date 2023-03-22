@@ -1,10 +1,10 @@
 spring:
   kafka:
-    bootstrap-servers: my-cluster-kafka-external-bootstrap-kafka.apps-crc.testing:443
-    security.protocol: SSL
-    ssl:
-      trust-store-location: "classpath:ca.p12"
-      trust-store-password: bVgnmB5HWAFi
+    bootstrap-servers: localhost:9092
+#    security.protocol: SSL
+#    ssl:
+#      trust-store-location: "classpath:ca.p12"
+#      trust-store-password: bVgnmB5HWAFi
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: io.apicurio.registry.serde.avro.AvroKafkaSerializer

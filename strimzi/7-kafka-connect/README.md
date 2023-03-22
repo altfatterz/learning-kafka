@@ -253,6 +253,8 @@ $ kubectl apply -f apicurio-registry.yaml
 ```
 
 ```bash
+$ kubectl port-forward --namespace kafka svc/my-postgresql 5432:5432
+$ kubectl port-forward svc/my-connect-cluster-connect-api 8083:8083
 $ kubectl port-forward svc/apicurio-registry-service 8080:8080
 $ kubectl port-forward svc/my-cluster-kafka-bootstrap 9092:9092
 -- needed to change /etc/hosts to be able to connect 
@@ -266,7 +268,12 @@ http://localhost:8080/
 http://localhost:8080/apis/
 ```
 
+# Kafka Connect and JDBC Sink Connector
 
+```bash
+$ kubectl apply -f kafka-connect.yaml
+$ kubectl apply -f kafka-jdbc-sink-connector.yaml
+```
 
 Useful commands:
 ```bash
@@ -275,7 +282,21 @@ $ kcat -C -b localhost:9092 -t my-topic
 
 $ http put :8083/connectors/my-source-connector/pause
 $ http put :8083/connectors/my-source-connector/resume
+
+$ http get :8083/connector-plugins/
 ```
+
+Current issue:
+
+```bash
+Caused by: io.apicurio.registry.rest.client.exception.RestClientException: RESTEASY003210: Could not find resource for full path: http://apicurio-registry-service:8080/apis/registry/v2/ids/globalIds/1/references
+
+Similar issue: https://github.com/quarkusio/quarkus/issues/25814
+
+After upgrading to Apicurio Version 2.4.1.Final the issue does not occur.
+```
+
+
 
 
 Resources:
