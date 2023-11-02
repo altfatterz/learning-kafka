@@ -26,7 +26,8 @@ spec:
     output:
       type: docker
       # This image will last only for 2 hours, use a different name
-      image: ttl.sh/altfatterz-strimzi-kafka-connect-centris-demo-3.3.1:2h
+      image: https://quay.io/repository/altfatterz/centris-demo
+      pushSecret: <name>
     plugins:
       - name: jdbc-sink-connector
         artifacts:

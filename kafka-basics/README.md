@@ -1,11 +1,33 @@
 #### Kafka Basics
 
-https://zoltanaltfatter.com/2019/11/23/kafka-basics
+#### Start kafka with control center 
 
-Running locally:
+```bash
+$ docker compose up -d
+```
+
+#### Create a topic
+
+```bash
+$ docker exec -it broker bash
+$ kafka-topics --bootstrap-server broker:9092 --create --topic test-topic --partitions 3 --replication-factor 1
+```
+
+#### Build the consumer and producer
+
+```bash
+$ mvn clean package
+```
+
+#### Start the consumer
 
 ```bash
 $ java -cp target/kafka-basics-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaConsumerDemo config/local-consumer.properties
+```
+
+#### Start the producer
+
+```bash
 $ java -cp target/kafka-basics-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaProducerDemo config/local-producer.properties
 ```
 
@@ -31,14 +53,10 @@ Manage api keys (both for kafka and schema-registry)
 $ confluent api-key list
 ```
 
-
-
-
 ```bash
 $ confluent kafka topic produce test-topic --api-key --api-secret
 $ confluent kafka topic 
 ```
-
 
 
 
