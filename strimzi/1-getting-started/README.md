@@ -139,7 +139,7 @@ my-cluster-kafka-brokers      ClusterIP   None            <none>        9090/TCP
 my-cluster-kafka-bootstrap    ClusterIP   10.43.180.195   <none>        9091/TCP,9092/TCP,9093/TCP            2m32s
 ```
 
-Verify that you can get inforation about kafka as a resource
+Verify that you can get information about kafka as a resource
 
 ```bash
 $ kubectl get kafkas -n kafka
