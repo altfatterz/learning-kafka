@@ -14,12 +14,14 @@ $ kubectl get nodes -o wide
 $ docker ps
 # taint the server node that no workloads are scheduled on it
 $ kubectl taint nodes k3d-mycluster-server-0 key1=value1:NoSchedule
+# create the `kafka` namespace
+$ kubectl create ns kafka
 ```
 
 ### 1. Install the [Strimzi](https://strimzi.io/) operator
 
 ```bash
-$ kubectl create ns kafka
+
 $ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 ```
 
@@ -128,7 +130,9 @@ $ kubectl get sps -n kafka
 $ kubectl describe sps my-cluster-kafka -n kafka
 ```
 
-### 9. Deleting your Apache Kafka cluster
+### 9. Cleanup
+
+- Deleting your Apache Kafka cluster
 
 ```bash
 $ kubectl -n kafka delete $(kubectl get strimzi -o name -n kafka)
@@ -136,10 +140,16 @@ $ kubectl -n kafka delete $(kubectl get strimzi -o name -n kafka)
 This will remove all Strimzi custom resources, including the Apache Kafka cluster and any KafkaTopic custom resources 
 but leave the Strimzi cluster operator running so that it can respond to new Kafka custom resources.
 
-### 10. Deleting the Strimzi cluster operator
+- Deleting the Strimzi cluster operator
 
 ```bash
 $ kubectl -n kafka delete -f 'https://strimzi.io/install/latest?namespace=kafka'
+```
+
+- Delete the Kubernetes cluster
+
+```bash
+$ k3d cluster delete mycluster
 ```
 
 ### Resources
