@@ -31,7 +31,6 @@ $ kubectl apply -f kafka-tls.yaml -n kafka
 
 ### 4. View the created pods / services
 
-Terminal:
 ```bash
 $ watch kubectl get all -n kafka 
 ```
