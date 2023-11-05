@@ -9,6 +9,7 @@ $ k3d cluster delete mycluster
 # Start a k8s cluster with 1 agent node, 1 server node (control-plane), 
 # we disable the loadbalancer in front of the server nodes and add a volume mapping
 # we map the /tmp/kafka-volume to the /var/lib/rancher/k3s/storage
+$ rm -r /tmp/kafka-volume
 $ mkdir -p /tmp/kafka-volume 
 $ k3d cluster create mycluster --agents 1 --no-lb -v /tmp/kafka-volume/:/var/lib/rancher/k3s/storage@all    
 # taint the server node that no workloads are scheduled on it

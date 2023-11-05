@@ -47,7 +47,7 @@ e85586562046   rancher/k3s:v1.27.4-k3s1         "/bin/k3s agent"         3 minut
 $ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 ```
 
-### 4. View the operator 
+### 4. View the created pods / services 
 
 Terminal:
 ```bash
