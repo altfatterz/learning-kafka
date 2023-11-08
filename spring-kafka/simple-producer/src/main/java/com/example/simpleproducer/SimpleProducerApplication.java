@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
 @SpringBootApplication
@@ -42,21 +44,17 @@ class Producer {
 
         logger.info("Sending payload {}", payload);
 
-        ListenableFuture<SendResult<String, String>> result = kafkaTemplate.send(Config.TOPIC, payload);
+        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(Config.TOPIC, payload);
 
-        result.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-            @Override
-            public void onFailure(Throwable throwable) {
-                logger.info("error occurred:" + throwable);
-            }
-
-            @Override
-            public void onSuccess(SendResult<String, String> result) {
+        future.whenComplete((result, throwable) -> {
+            if (result != null) {
                 RecordMetadata recordMetadata = result.getRecordMetadata();
                 logger.info("success, topic: {}, partition: {}, offset: {}",
                         recordMetadata.topic(),
                         recordMetadata.partition(),
                         recordMetadata.offset());
+            } else {
+                logger.info("error occurred:" + throwable);
             }
         });
     }
@@ -67,15 +65,21 @@ class Producer {
         logger.info("Sending {} nr. of messages", nr);
 
         IntStream.range(0, nr).forEach(value -> {
-            ListenableFuture<SendResult<String, String>> result = kafkaTemplate.send(Config.TOPIC, "message_" + value);
-            result.addCallback(sendResult -> {
-                RecordMetadata recordMetadata = sendResult.getRecordMetadata();
-                logger.info("success, topic: {}, partition: {}, offset: {}",
-                        recordMetadata.topic(),
-                        recordMetadata.partition(),
-                        recordMetadata.offset());
-            }, ex -> {
+
+            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(Config.TOPIC, "message_" + value);
+
+            future.whenComplete((result, throwable) -> {
+                if (result != null) {
+                    RecordMetadata recordMetadata = result.getRecordMetadata();
+                    logger.info("success, topic: {}, partition: {}, offset: {}",
+                            recordMetadata.topic(),
+                            recordMetadata.partition(),
+                            recordMetadata.offset());
+                } else {
+                    logger.info("error occurred:" + throwable);
+                }
             });
+
         });
     }
 

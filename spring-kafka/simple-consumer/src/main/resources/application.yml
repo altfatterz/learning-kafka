@@ -6,8 +6,7 @@ spring:
     name: simple-consumer
 
   kafka:
-    consumer:
-      bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:29092
 #      group-id: group-id
       # default is `latest`, it is used only when there is no offset information (for example when consumer group was removed)
 #      auto-offset-reset: earliest

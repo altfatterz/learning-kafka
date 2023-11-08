@@ -1,6 +1,8 @@
 package com.example.simpleconsumer;
 
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
@@ -11,8 +13,8 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.listener.RecordInterceptor;
-import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 
 @Configuration
@@ -60,9 +62,10 @@ public class Config {
 
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, kafkaConsumerFactory);
-        factory.setErrorHandler(new SeekToCurrentErrorHandler(
-                new DeadLetterPublishingRecoverer(kafkaTemplate), new FixedBackOff(2000, 3)
-        ));
+        factory.setCommonErrorHandler(new DefaultErrorHandler());
+//        factory.setErrorHandler(new SeekToCurrentErrorHandler(
+//                new DeadLetterPublishingRecoverer(kafkaTemplate), new FixedBackOff(2000, 3)
+//        ));
         return factory;
     }
 
@@ -71,7 +74,7 @@ public class Config {
     //  If the interceptor returns null, the listener is not called.
     @Bean
     public RecordInterceptor recordInterceptor() {
-        return consumerRecord -> {
+        return (consumerRecord, consumer) -> {
             logger.info("Key: {}, Value: {}", consumerRecord.key(), consumerRecord.value());
             logger.info("Topic: {}, Partition: {}, Offset: {}", consumerRecord.topic(), consumerRecord.partition(), consumerRecord.offset());
             return consumerRecord;

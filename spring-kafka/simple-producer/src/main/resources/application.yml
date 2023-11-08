@@ -3,7 +3,7 @@ server:
 
 spring:
   kafka:
-    bootstrap-servers: localhost:19092
+    bootstrap-servers: localhost:29092
     producer:
       properties:
         # wait 5 seconds for messages and then sent it out with one batch to Kafka
