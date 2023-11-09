@@ -3,16 +3,11 @@ server:
 
 spring:
   application:
-    name: simple-consumer
+    name: simple-consumer-1
 
   kafka:
     bootstrap-servers: localhost:29092
-#      group-id: group-id
-      # default is `latest`, it is used only when there is no offset information (for example when consumer group was removed)
-#      auto-offset-reset: earliest
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
-#logging:
-#  level:
-#    org.springframework.kafka: DEBUG
+logging:
+  level:
+    org.springframework.kafka: DEBUG
