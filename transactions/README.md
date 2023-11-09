@@ -148,5 +148,25 @@ Exception in thread "main" org.apache.kafka.common.errors.ProducerFencedExceptio
 
 
 
+Transactions
+
+spring.kafka.producer.transaction-id-prefix=tx.
+
+```bash
+Caused by: java.lang.IllegalStateException: No transaction is in process; possible solutions: 
+- run the template operation within the scope of a template.executeInTransaction() operation,
+- start a transaction with @Transactional before invoking the template method, 
+- run in a transaction started by a listener container when consuming a record
+```
+
+
+
+
+
 Resources
 * https://www.baeldung.com/kafka-exactly-once
+
+Confluent Series about this topic:
+* https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/
+* https://www.confluent.io/blog/transactions-apache-kafka/
+* https://www.confluent.io/blog/enabling-exactly-once-kafka-streams/
