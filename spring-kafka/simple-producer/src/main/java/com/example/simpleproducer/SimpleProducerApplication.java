@@ -1,10 +1,15 @@
 package com.example.simpleproducer;
 
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.kafka.annotation.EnableKafka;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -19,24 +24,22 @@ import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
 @SpringBootApplication
+@RestController
 public class SimpleProducerApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(SimpleProducerApplication.class, args);
+    private static final Logger logger = LoggerFactory.getLogger(SimpleProducerApplication.class);
+    private static final String TOPIC = "messages";
+
+    @Bean
+    public NewTopic topic1() {
+        return TopicBuilder.name(TOPIC)
+                .partitions(6)
+                .replicas(1)
+                .build();
     }
 
-}
-
-@RestController
-class Producer {
-
-    private static final Logger logger = LoggerFactory.getLogger(Producer.class);
-
-    private final KafkaTemplate<String, String> kafkaTemplate;
-
-    public Producer(KafkaTemplate<String, String> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
-    }
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
 
     @PostMapping("/messages")
     public void sendMessage(@RequestBody String message) {
@@ -44,7 +47,8 @@ class Producer {
 
         logger.info("Sending payload {}", payload);
 
-        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(Config.TOPIC, payload);
+        CompletableFuture<SendResult<String, String>> future =
+                kafkaTemplate.send(TOPIC, payload);
 
         future.whenComplete((result, throwable) -> {
             if (result != null) {
@@ -61,13 +65,10 @@ class Producer {
 
     @PostMapping("/many-messages")
     public void multipleMessages(@RequestBody Integer nr) {
-
         logger.info("Sending {} nr. of messages", nr);
-
         IntStream.range(0, nr).forEach(value -> {
-
-            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(Config.TOPIC, "message_" + value);
-
+            CompletableFuture<SendResult<String, String>> future =
+                    kafkaTemplate.send(TOPIC, "message_" + value, "message_" + value);
             future.whenComplete((result, throwable) -> {
                 if (result != null) {
                     RecordMetadata recordMetadata = result.getRecordMetadata();
@@ -88,7 +89,7 @@ class Producer {
 
         logger.info("Sending message to partition {}", partition);
 
-        SendResult<String, String> result = kafkaTemplate.sendDefault(partition, null, "Hello World").get();
+        SendResult<String, String> result = kafkaTemplate.send(TOPIC, partition, null, "Hello World").get();
         RecordMetadata recordMetadata = result.getRecordMetadata();
 
         logger.info("success, topic: {}, partition: {}, offset: {}",
@@ -96,4 +97,9 @@ class Producer {
                 recordMetadata.partition(),
                 recordMetadata.offset());
     }
+
+    public static void main(String[] args) {
+        SpringApplication.run(SimpleProducerApplication.class, args);
+    }
+
 }
