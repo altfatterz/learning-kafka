@@ -25,10 +25,10 @@
         <module>spring-kafka/amq-streams-producer</module>
         <module>spring-kafka/simple-producer</module>
         <module>spring-kafka/simple-consumer</module>
-        <module>spring-kafka/transactional-producer</module>
         <module>spring-kafka/wordcount-kafka-streams</module>
         <module>spring-kafka/ticket-sales</module>
         <module>spring-kafka/ccloud-demo</module>
+        <module>spring-kafka/transaction-demo</module>
 
         <module>spring-cloud-stream/uppercase-transformer</module>
         <module>spring-cloud-stream/uppercase-transformer-old-way</module>
