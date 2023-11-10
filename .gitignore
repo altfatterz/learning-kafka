@@ -1,7 +1,7 @@
 .idea
 *.iml
 data
-target
+**/target/*
 
 *.jks
 *.crt
