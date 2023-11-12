@@ -135,3 +135,9 @@ $ kcat -C -b bootstrap.127.0.0.1.nip.io:443 -t my-topic \
 -X security.protocol=SASL_SSL -X sasl.mechanisms=SCRAM-SHA-512 \
 -X sasl.username=my-user -X sasl.password=poIXRTrqM4d8XUadqMi1xp4bQaMTUfMQ 
 ```
+
+### Cleanup
+
+```bash
+$ k3d cluster delete mycluster
+```
