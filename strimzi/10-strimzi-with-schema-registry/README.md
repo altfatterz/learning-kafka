@@ -45,4 +45,4 @@ To access Schema Registry from outside the cluster execute the following command
 Resources:
 
 1. https://docs.confluent.io/platform/current/schema-registry/index.html
-
+2. https://artifacthub.io/packages/helm/bitnami/schema-registry
