@@ -5,6 +5,19 @@ auth:
     truststorePassword: ""
 
 kafka:
+  # we don't want Kafka broker to be started
+  enabled: false
   listeners:
     client:
       protocol: "SASL_SSL"
+
+externalKafka:
+  brokers:
+    - SASL_SSL://my-cluster-kafka-bootstrap:9093
+  listener:
+    protocols: SASL_SSL
+  sasl:
+    user: schemaregistry
+    password:
+    # Name of the existing secret containing a password for SASL authentication (under the key named "client-passwords")
+    existingSecret:
