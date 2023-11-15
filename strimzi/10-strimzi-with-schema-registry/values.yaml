@@ -1,0 +1,10 @@
+auth:
+  kafka:
+    saslMechanism: SCRAM-SHA-512
+    jksSecret: ""
+    truststorePassword: ""
+
+kafka:
+  listeners:
+    client:
+      protocol: "SASL_SSL"

@@ -113,10 +113,18 @@ $ kafka-console-producer --bootstrap-server bootstrap.127.0.0.1.nip.io:443 --top
 Start the consumer:
 
 With the following consumer you will get the below error message, since we enable also authorization
-`
+
+!!! - for some reason the kafka-console-consumer cannot connect, I get the following exception:
+
 ```bash
-$ kafka-console-consumer --bootstrap-server bootstrap.127.0.0.1.nip.io:443 --group my-group --topic my-topic --from-beginning \
---consumer.config security-config.properties
+[2023-11-15 21:47:06,122] ERROR [Consumer clientId=console-consumer, groupId=my-group] Connection to node 0 (broker-0.127.0.0.1.nip.io/127.0.0.1:443) failed authentication due to: SSL handshake failed (org.apache.kafka.clients.NetworkClient)
+[2023-11-15 21:47:06,122] ERROR Error processing message, terminating consumer process:  (kafka.tools.ConsoleConsumer$)
+org.apache.kafka.common.errors.SslAuthenticationException: SSL handshake failed
+Caused by: javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+```
+
+```bash
+$ kafka-console-consumer --bootstrap-server bootstrap.127.0.0.1.nip.io:443 --topic my-topic --consumer.config security-config.properties 
 ```
 
 ### 10. Try to connect using `kcat`
@@ -128,12 +136,12 @@ $ kubectl get secret my-cluster-cluster-ca-cert -o jsonpath='{.data.ca\.crt}' | 
 $ echo "foo\nbar\nbaz" | kcat -P -b bootstrap.127.0.0.1.nip.io:443 \
 -X ssl.ca.location=ca.crt \
 -X security.protocol=SASL_SSL -X sasl.mechanisms=SCRAM-SHA-512 \
--X sasl.username=my-user -X sasl.password=poIXRTrqM4d8XUadqMi1xp4bQaMTUfMQ -P -t my-topic
+-X sasl.username=my-user -X sasl.password=KS50CNmZXDWs0cLIi1GCz92Uod3xIzWV -P -t my-topic
 # consume 
 $ kcat -C -b bootstrap.127.0.0.1.nip.io:443 -t my-topic \
 -X ssl.ca.location=ca.crt \
 -X security.protocol=SASL_SSL -X sasl.mechanisms=SCRAM-SHA-512 \
--X sasl.username=my-user -X sasl.password=poIXRTrqM4d8XUadqMi1xp4bQaMTUfMQ 
+-X sasl.username=my-user -X sasl.password=KS50CNmZXDWs0cLIi1GCz92Uod3xIzWV
 ```
 
 ### Cleanup
