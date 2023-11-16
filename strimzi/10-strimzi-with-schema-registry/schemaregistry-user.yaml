@@ -4,3 +4,25 @@ metadata:
   name: schemaregistry
   labels:
     strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: _schema
+          patternType: literal
+        operations:
+          - Read
+          - Write
+          - Describe
+          - DescribeConfigs
+          - Create
+        host: "*"
+      - resource:
+          type: cluster
+        operations:
+          - Describe
+        host: "*"

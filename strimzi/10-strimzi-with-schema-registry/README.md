@@ -19,6 +19,10 @@ kafkastore.sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginMod
 
 
 
+
+
+
+
 ```bash
 $ helm repo add bitnami https://charts.bitnami.com/bitnami
 $ helm repo update
@@ -41,8 +45,34 @@ To access Schema Registry from outside the cluster execute the following command
 2. Access Schema Registry using the obtained URL.
 
 
+### Schema Registry
+
+```bash
+$ kubectl apply -f schemaregistry-user.yaml
+$ kubectl get secret schemaregistry -o jsonpath="{.data['sasl\.jaas\.config']}" | base64 -d
+$ kubectl get secret schemaregistry -o jsonpath="{.data.password}" | base64 -d
+```
+
+```bash
+$ keytool -importkeystore -srckeystore ca.p12 -srcstoretype PKCS12 -destkeystore schema-registry.truststore.jks -deststoretype jks -deststorepass verysecure
+$ keytool -v -list -keystore schema-registry.truststore.jks
+```
+
+```bash
+$ kubectl create secret generic schemaregistry-truststore --from-file=./schema-registry.truststore.jks
+```
+
+```bash
+$ helm repo add bitnami https://charts.bitnami.com/bitnami
+$ helm repo update
+$ helm install my-schema-registry bitnami/schema-registry --version 16.2.2 -f values.yaml
+```
+
+
+
 
 Resources:
 
 1. https://docs.confluent.io/platform/current/schema-registry/index.html
 2. https://artifacthub.io/packages/helm/bitnami/schema-registry
+3. https://raw.githubusercontent.com/confluentinc/confluent-platform-security-tools/master/kafka-generate-ssl.sh

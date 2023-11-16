@@ -1,15 +1,12 @@
 auth:
   kafka:
     saslMechanism: SCRAM-SHA-512
-    jksSecret: ""
-    truststorePassword: ""
+    jksSecret: schemaregistry-truststore
+    truststorePassword: verysecure
 
 kafka:
   # we don't want Kafka broker to be started
   enabled: false
-  listeners:
-    client:
-      protocol: "SASL_SSL"
 
 externalKafka:
   brokers:
@@ -18,6 +15,4 @@ externalKafka:
     protocols: SASL_SSL
   sasl:
     user: schemaregistry
-    password:
-    # Name of the existing secret containing a password for SASL authentication (under the key named "client-passwords")
-    existingSecret:
+    password: NbVgy9nDScNDvMMGGbrKYnNtCaKB9ybM
