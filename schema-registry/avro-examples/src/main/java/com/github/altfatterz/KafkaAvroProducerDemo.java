@@ -2,7 +2,8 @@ package com.github.altfatterz;
 
 import com.github.altfatterz.avro.Account;
 import com.github.altfatterz.avro.AccountType;
-import com.github.altfatterz.avro.Customer;
+import com.github.altfatterz.avro.NewCustomerCreatedEvent;
+import com.github.javafaker.Faker;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -32,7 +33,7 @@ public class KafkaAvroProducerDemo {
         final String topic = props.getProperty("topic");
 
         // producer
-        Producer<String, Customer> producer = new KafkaProducer<>(props);
+        Producer<String, NewCustomerCreatedEvent> producer = new KafkaProducer<>(props);
 
         // Adding a shutdown hook to clean up when the application exits
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -40,37 +41,37 @@ public class KafkaAvroProducerDemo {
             producer.close();
         }));
 
-        Customer customer = newCustomer();
+        Faker faker = new Faker();
 
-        logger.info("Customer: {}", customer);
+        while (true) {
+            NewCustomerCreatedEvent event = newCustomer(faker);
 
-        // create a producer record
-        ProducerRecord<String, Customer> record = new ProducerRecord<>(topic, customer);
+            ProducerRecord<String, NewCustomerCreatedEvent> record = new ProducerRecord<>(topic, event);
+            producer.send(record);
 
-        logger.info("send message asynchronously....");
-        producer.send(record);
-
-        Thread.sleep(5000);
+            Thread.sleep(100);
+        }
 
     }
 
-    private static Customer newCustomer() {
-        return Customer.newBuilder()
-                .setFirstName("John")
-                .setLastName("Doe")
+    private static NewCustomerCreatedEvent newCustomer(Faker faker) {
+        return NewCustomerCreatedEvent.newBuilder()
+                .setFirstName(faker.name().firstName())
+                .setLastName(faker.name().lastName())
                 .setAccounts(Arrays.asList(
                         Account.newBuilder()
                                 .setIban("CH93 0076 2011 6238 5295 7")
+                                .setIban(faker.finance().iban())
                                 .setType(AccountType.CHECKING)
                                 .build(),
                         Account.newBuilder()
-                                .setIban("CH93 0076 2011 6238 5295 8")
+                                .setIban(faker.finance().iban())
                                 .setType(AccountType.SAVING)
                                 .build()
                 ))
                 .setSettings(new HashMap<String, Boolean>() {{
-                    put("e-billing-enabled", true);
-                    put("push-notification-enabled", false);
+                    put("e-billing-enabled", faker.bool().bool());
+                    put("push-notification-enabled", faker.bool().bool());
                 }})
                 .setSignupTimestamp(Instant.now())
                 .build();

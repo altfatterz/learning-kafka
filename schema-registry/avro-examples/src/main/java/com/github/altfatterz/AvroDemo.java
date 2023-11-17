@@ -2,7 +2,7 @@ package com.github.altfatterz;
 
 import com.github.altfatterz.avro.Account;
 import com.github.altfatterz.avro.AccountType;
-import com.github.altfatterz.avro.Customer;
+import com.github.altfatterz.avro.NewCustomerCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +15,7 @@ public class AvroDemo {
     static final Logger logger = LoggerFactory.getLogger(AvroDemo.class);
 
     public static void main(String[] args) {
-        Customer customer = Customer.newBuilder()
+        NewCustomerCreatedEvent event = NewCustomerCreatedEvent.newBuilder()
                 .setFirstName("John")
                 .setLastName("Doe")
                 .setAccounts(Arrays.asList(
@@ -35,6 +35,6 @@ public class AvroDemo {
                 .setSignupTimestamp(Instant.now())
                 .build();
 
-        logger.info("Customer: {}", customer);
+        logger.info("NewCustomerCreatedEvent: {}", event);
     }
 }

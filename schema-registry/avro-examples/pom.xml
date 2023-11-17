@@ -23,6 +23,7 @@
         <kafka.version>3.5.1</kafka.version>
 
         <logback.version>1.2.11</logback.version>
+        <javafaker.version>1.0.2</javafaker.version>
 
     </properties>
 
@@ -51,6 +52,12 @@
             <groupId>io.confluent</groupId>
             <artifactId>kafka-avro-serializer</artifactId>
             <version>${confluent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.javafaker</groupId>
+            <artifactId>javafaker</artifactId>
+            <version>${javafaker.version}</version>
         </dependency>
 
     </dependencies>

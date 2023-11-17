@@ -1,6 +1,7 @@
 package com.github.altfatterz;
 
-import com.github.altfatterz.avro.Customer;
+
+import com.github.altfatterz.avro.NewCustomerCreatedEvent;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -29,17 +30,17 @@ public class KafkaAvroConsumerDemo {
         final String topic = props.getProperty("topic");
 
         // create the consumer
-        KafkaConsumer<String, Customer> consumer = new KafkaConsumer<>(props);
+        KafkaConsumer<String, NewCustomerCreatedEvent> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Arrays.asList(topic));
 
         logger.info("waiting for data ...");
 
-        while (true){
-            ConsumerRecords<String, Customer> records = consumer.poll(Duration.ofMillis(1000));
+        while (true) {
+            ConsumerRecords<String, NewCustomerCreatedEvent> records = consumer.poll(Duration.ofMillis(1000));
 
-            for (ConsumerRecord<String, Customer> record : records){
-                Customer customer = record.value();
-                logger.info("Customer: {}", customer);
+            for (ConsumerRecord<String, NewCustomerCreatedEvent> record : records) {
+                NewCustomerCreatedEvent event = record.value();
+                logger.info("Customer: {}", event);
             }
         }
 

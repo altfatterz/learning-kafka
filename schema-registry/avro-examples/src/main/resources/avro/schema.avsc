@@ -1,6 +1,6 @@
 {
   "namespace": "com.github.altfatterz.avro",
-  "name": "Customer",
+  "name": "NewCustomerCreatedEvent",
   "type": "record",
   "fields": [
     {
