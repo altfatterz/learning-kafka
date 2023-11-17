@@ -56,7 +56,7 @@ $ kafka-avro-console-consumer --bootstrap-server kafka:9092 --topic avro-demo --
 ```
 
 # avro-tools
-$ java -jar avro-tools-1.11.0.jar
+$ java -jar avro-tools-1.11.3.jar
 ```bash
 ----------------
 Available tools:
@@ -97,7 +97,7 @@ $ java -jar avro-tools-1.11.3.jar fromjson --schema-file ./src/main/resources/av
 Get back the schema:
 
 ```bash
-$ java -jar avro-tools-1.11.0.jar getschema customer.avro
+$ java -jar avro-tools-1.11.3.jar getschema customer.avro
 ```
 
 # Confluent Cloud 
