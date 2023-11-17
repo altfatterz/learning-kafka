@@ -91,7 +91,7 @@ trevni_tojson  Dumps a Trevni file as JSON.
 ```
 
 ```bash
-$ java -jar avro-tools-1.11.0.jar fromjson --schema-file ./src/main/resources/avro/schema.avsc customer.json > customer.avro
+$ java -jar avro-tools-1.11.3.jar fromjson --schema-file ./src/main/resources/avro/schema.avsc customer.json > customer.avro
 ```
 
 Get back the schema:
