@@ -1,0 +1,28 @@
+server:
+  port: 8080
+
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:29092
+    producer:
+      # For applications running with multiple instances, the transactionIdPrefix must be unique per instance.
+      # otheriwse: org.apache.kafka.common.errors.ProducerFencedException: There is a newer producer with the same transactionalId which fences the current one.
+      # Transactions are enabled by providing the DefaultKafkaProducerFactory with a transactionIdPrefix.
+      # Spring Boot will automatically configure a KafkaTransactionManager bean and wire it into the listener container.
+      # The KafkaTransactionManager is an implementation of Spring Framework’s PlatformTransactionManager.
+      transaction-id-prefix: tx-${random.uuid}
+
+    consumer:
+      client-id: consumer1
+      properties:
+#        isolation.level: read_uncommitted
+        isolation.level: read_committed
+
+    listener:
+      type: batch
+
+logging.level:
+  org.springframework.transaction: trace
+  org.springframework.kafka.transaction: debug
+
