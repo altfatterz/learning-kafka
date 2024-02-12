@@ -19,25 +19,99 @@ $ helm repo update
 
 Install Confluent For Kubernetes using Helm:
 ```bash
-$ helm upgrade --install operator confluentinc/confluent-for-kubernetes -n confluent
+$ helm upgrade --install confluent-operator confluentinc/confluent-for-kubernetes --set kRaftEnabled=true
 ```
-
-Check that the Confluent For Kubernetes pod comes up and is running:
-```bash
-$ kubect get pods -n confluent
-```
-
-Deploy Confluent platform (Zookeeper / Kafka / Connect):
 
 ```bash
-$ kubectl apply -f confluent-platform.yaml
+$ kubectl get crds | grep confluent
+
+clusterlinks.platform.confluent.io            2024-02-12T20:03:58Z
+confluentrolebindings.platform.confluent.io   2024-02-12T20:03:58Z
+connectors.platform.confluent.io              2024-02-12T20:03:58Z
+connects.platform.confluent.io                2024-02-12T20:03:58Z
+controlcenters.platform.confluent.io          2024-02-12T20:03:58Z
+kafkarestclasses.platform.confluent.io        2024-02-12T20:03:58Z
+kafkarestproxies.platform.confluent.io        2024-02-12T20:03:58Z
+kafkas.platform.confluent.io                  2024-02-12T20:03:58Z
+kafkatopics.platform.confluent.io             2024-02-12T20:03:58Z
+kraftcontrollers.platform.confluent.io        2024-02-12T20:03:58Z
+ksqldbs.platform.confluent.io                 2024-02-12T20:03:58Z
+schemaexporters.platform.confluent.io         2024-02-12T20:03:58Z
+schemaregistries.platform.confluent.io        2024-02-12T20:03:59Z
+schemas.platform.confluent.io                 2024-02-12T20:03:59Z
+zookeepers.platform.confluent.io              2024-02-12T20:03:59Z
 ```
 
-Deploy Topic: 
+Check that the Confluent For Kubernetes operator pod comes up and is running:
 
 ```bash
-$ kubectl apply -f topic.yaml
+$ kubectl get pods -n confluent
+
+NAME                                  READY   STATUS    RESTARTS   AGE
+confluent-operator-6c7bb75484-k294m   1/1     Running   0          22s
 ```
+
+Deploy a 3 Controller and 3 broker cluster
+
+```bash
+$ kubectl apply -f kraft/kraft-broker-controller.yaml
+```
+
+Produce and consume from the topics:
+
+```bash
+$ kubectl exec -it kafka-0 -- bash
+$ seq 5 | kafka-console-producer --topic demotopic --bootstrap-server kafka.confluent.svc.cluster.local:9092
+$ kafka-console-consumer --from-beginning --topic demotopic --bootstrap-server  kafka.confluent.svc.cluster.local:9092
+1
+2
+3
+4
+5
+```
+
+Install and `port-forward` control center
+
+```bash
+$ kubectl apply -f kraft/control-center.yaml
+$ kubectl port-forward controlcenter-0 9021:9021
+```
+
+Install the sample producer app and topic.
+
+```bash
+$ kubectl apply -f kraft/producer-app-data.yaml
+```
+
+Check the logs for the created demo and view the Controll Center demo how the messages are flowing in
+
+```bash
+$ kubectl logs -f elastic-0
+```
+
+Cleanup
+
+```
+$ kubectl delete -f kraft/producer-app-data.yaml
+$ kubectl delete -f kraft/control-center.yaml
+$ kubectl delete -f kraft/kraft-broker-controller.yaml
+
+$ helm uninstall confluent-operator
+$ kubectl delete namespace confluent
+
+$ k3d cluster delete confluent
+```
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+------- older version - to be updated ----------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 
 Deploy Connector:
 
@@ -103,12 +177,6 @@ $ kubectl exec kafka-0 -it -- bash
 $ kafka-console-consumer --from-beginning --topic pageviews --bootstrap-server  kafka.confluent.svc.cluster.local:9071
 ```
 
-View Data:
-
-```bash
-$ kubectl get pvc
-$ kubectl get pv 
-```
 
 Notice that for the volumes the RECLAIM_POLICY is 'Delete', this is not a production setyp.
 
@@ -120,6 +188,8 @@ $ kubectl delete -f connector.yaml
 $ kubectl delete -f topic.yaml
 $ kubectl delete -f confluent-platform.yaml
 ```
+
+
 
 
 
