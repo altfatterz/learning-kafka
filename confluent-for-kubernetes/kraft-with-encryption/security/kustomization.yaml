@@ -1,0 +1,14 @@
+resources:
+  - issuer.yaml
+  - certificate.yaml
+
+secretGenerator:
+  - name: ca-key-pair
+    files:
+      - tls.key
+      - tls.crt
+    type: "kubernetes.io/tls"
+
+# otherwise ca-key-pair is generated like ca-key-pair-df445km26
+generatorOptions:
+  disableNameSuffixHash: true

@@ -1,0 +1,53 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ca-kafka-cert
+  namespace: confluent
+spec:
+  commonName: kafka
+  dnsNames:
+  - kafka
+  - kafka.$(NAMESPACE)
+  - kafka.$(NAMESPACE).svc.cluster.local
+  - '*.$(NAMESPACE).svc.cluster.local'
+  - '*.kafka.$(NAMESPACE).svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: ca-issuer
+  secretName: kafka-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ca-controller-cert
+  namespace: confluent
+spec:
+  commonName: controller
+  dnsNames:
+    - controller
+    - controller.$(NAMESPACE)
+    - controller.$(NAMESPACE).svc.cluster.local
+    - '*.$(NAMESPACE).svc.cluster.local'
+    - '*.controller.$(NAMESPACE).svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: ca-issuer
+  secretName: controller-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ca-c3-cert
+  namespace: confluent
+spec:
+  commonName: controlcenter
+  dnsNames:
+    - controlcenter
+    - controlcenter.$(NAMESPACE)
+    - controlcenter.$(NAMESPACE).svc.cluster.local
+    - '*.$(NAMESPACE).svc.cluster.local'
+    - '*.controlcenter.$(NAMESPACE).svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: ca-issuer
+  secretName: controlcenter-tls
