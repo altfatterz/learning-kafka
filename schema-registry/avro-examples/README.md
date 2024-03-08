@@ -6,17 +6,41 @@
 $ docker compose up -d
 ```
 
+Create the topic
+
 ```bash
-CONTAINER ID   IMAGE                                                    COMMAND                  CREATED              STATUS                      PORTS                                        NAMES
-bf0a641c0c7d   confluentinc/cp-enterprise-kafka:7.3.1            "/etc/confluent/dock…"   About a minute ago   Up About a minute           9092/tcp, 0.0.0.0:19092->19092/tcp           kafka
-98d680d648ba   confluentinc/cp-schema-registry:7.3.1             "/etc/confluent/dock…"   About a minute ago   Up About a minute           0.0.0.0:8081->8081/tcp                       schema-registry
-ef17fd5563bb   confluentinc/cp-enterprise-kafka:7.3.1            "bash -c 'echo Waiti…"   About a minute ago   Exited (0) 33 seconds ago                                                create-topics
-62b24e0adde1   confluentinc/cp-zookeeper:7.3.1                   "/etc/confluent/dock…"   About a minute ago   Up About a minute           2888/tcp, 0.0.0.0:2181->2181/tcp, 3888/tcp   zookeeper
-f7bbbb867695   confluentinc/cp-enterprise-control-center:7.3.1   "/etc/confluent/dock…"   About a minute ago   Up About a minute           0.0.0.0:9021->9021/tcp                       control-center
-b0664f414562   cnfltraining/training-tools:6.0                          "/bin/sh"                About a minute ago   Up About a minute                                                        tools
+$ kafka-topics --bootstrap-server localhost:29092 --create --topic avro-demo --partitions 1 --replication-factor 1
 ```
 
-Start the producer, notice that it will connect to the Schema Registry and will create the schema.
+Register the new schema 
+```bash
+jq '. | {schema: tojson}' src/main/resources/avro/schema.avsc | \
+curl -X POST http://localhost:8081/subjects/avro-demo-value/versions \
+-H "Content-Type: application/json" \
+-d @- 
+```
+
+
+View subjects / schemas
+
+```bash
+$ curl http://localhost:8081/subjects
+$ curl http://localhost:8081/schemas
+```
+
+
+If needed perform a soft delete or hard delete (appending `?permanent=true`) of all versions of the schema.
+
+```bash
+$ curl -X DELETE 'http://localhost:8081/subjects/avro-demo-value'
+$ curl -X DELETE 'http://localhost:8081/subjects/avro-demo-value?permanent=true'
+```
+
+Build the avro-examples
+
+```bash
+$ mvn clean package
+```
 
 ```bash
 $ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroProducerDemo config/local-producer.properties
@@ -28,31 +52,33 @@ Start the consumer:
 $ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroConsumerDemo config/local-consumer.properties
 ````
 
-
-Produce the following message in the Control Center:
-
-```json
-{"first_name":"John","last_name":"Doe","accounts":[{"iban":"CH93 0076 2011 6238 5295 7","type":"CHECKING"},{"iban":"CH93 0076 2011 6238 5295 8","type":"SAVING"}],"settings":{"e-billing-enabled":true,"push-notification-enabled":false},"signup_timestamp":"2022-05-21T10:41:24.117Z","phone_number":null}
-```
-
-In the consumer you will see an error message:
+Read via `kafka-avro-console-consumer`
 
 ```bash
-org.apache.kafka.common.errors.SerializationException: Unknown magic byte!
+$ kafka-avro-console-consumer --bootstrap-server localhost:29092 --topic avro-demo
 ```
 
-Turns out the produced message is not serialised via Avro, is a simple JSON message and serialised via StringSerialiser.
-Try to read it out using:
+Check compatibility level set for subject
 
 ```bash
-$ kafka-console-consumer --bootstrap-server kafka:9092 --topic avro-demo --partition 0 --offset <check-which-offset>
+$ http :8081/config/avro-demo-value
+{
+    "error_code": 40408,
+    "message": "Subject 'avro-demo-value' does not have subject-level compatibility configured"
+}
 ```
 
-To read via Avro use:
+Default is `Backward`
 
 ```bash
-$ docker exec -it schema-registry bash
-$ kafka-avro-console-consumer --bootstrap-server kafka:9092 --topic avro-demo --from-beginning
+jq '. | {schema: tojson}' src/main/resources/avro/schema2.avsc | \
+curl -X POST http://localhost:8081/subjects/avro-demo-value/versions \
+-H "Content-Type: application/json" \
+-d @- 
+```
+
+```bash
+{"error_code":409,"message":"Schema being registered is incompatible with an earlier schema for subject \"avro-demo-value\", details: [{errorType:'READER_FIELD_MISSING_DEFAULT_VALUE', description:'The field 'first_name_new' at path '/fields/0' in the new schema has no default value and is missing in the old schema', additionalInfo:'first_name_new'}, {oldSchemaVersion: 1}, {oldSchema: '{\"type\":\"record\",\"name\":\"NewCustomerCreatedEvent\",\"namespace\":\"com.github.altfatterz.avro\",\"fields\":[{\"name\":\"first_name\",\"type\":\"string\",\"doc\":\"the first name of the customer\"},{\"name\":\"last_name\",\"type\":\"string\",\"doc\":\"the last name of the customer\"},{\"name\":\"accounts\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"Account\",\"fields\":[{\"name\":\"iban\",\"type\":\"string\"},{\"name\":\"type\",\"type\":{\"type\":\"enum\",\"name\":\"AccountType\",\"symbols\":[\"SAVING\",\"CHECKING\",\"JOINT\"]}}]}}},{\"name\":\"settings\",\"type\":{\"type\":\"map\",\"values\":\"boolean\"}},{\"name\":\"signup_timestamp\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"},\"doc\":\"Customer Signup Timestamp\"},{\"name\":\"phone_number\",\"type\":[\"null\",\"string\"],\"doc\":\"the phone number of the customer\",\"default\":null}]}'}, {validateFields: 'false', compatibility: 'BACKWARD'}]"}%
 ```
 
 # avro-tools
@@ -100,7 +126,7 @@ Get back the schema:
 $ java -jar avro-tools-1.11.3.jar getschema customer.avro
 ```
 
-# Confluent Cloud 
+# Confluent Cloud  -- TODO to refine 
 
 ```bash
 $ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroConsumerDemo config/cloud-consumer.properties
@@ -127,3 +153,12 @@ https://zoltanaltfatter.com/2020/01/02/schema-evolution-with-confluent-registry/
 
 https://docs.confluent.io/current/installation/docker/image-reference.html#image-reference
 https://github.com/simplesteph/kafka-stack-docker-compose/
+
+https://github.com/confluentinc/learn-kafka-courses/
+
+https://docs.confluent.io/platform/current/schema-registry/develop/api.html#schemas
+
+https://github.com/confluentinc/schema-registry/issues/2479
+
+https://docs.confluent.io/platform/7.6/schema-registry/index.html
+

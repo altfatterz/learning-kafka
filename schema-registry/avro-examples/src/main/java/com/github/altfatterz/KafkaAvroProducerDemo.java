@@ -60,7 +60,6 @@ public class KafkaAvroProducerDemo {
                 .setLastName(faker.name().lastName())
                 .setAccounts(Arrays.asList(
                         Account.newBuilder()
-                                .setIban("CH93 0076 2011 6238 5295 7")
                                 .setIban(faker.finance().iban())
                                 .setType(AccountType.CHECKING)
                                 .build(),
@@ -69,7 +68,7 @@ public class KafkaAvroProducerDemo {
                                 .setType(AccountType.SAVING)
                                 .build()
                 ))
-                .setSettings(new HashMap<String, Boolean>() {{
+                .setSettings(new HashMap<>() {{
                     put("e-billing-enabled", faker.bool().bool());
                     put("push-notification-enabled", faker.bool().bool());
                 }})
