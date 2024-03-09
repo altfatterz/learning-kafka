@@ -49,7 +49,7 @@ public class KafkaAvroProducerDemo {
             ProducerRecord<String, NewCustomerCreatedEvent> record = new ProducerRecord<>(topic, event);
             producer.send(record);
 
-            Thread.sleep(100);
+            Thread.sleep(1000);
         }
 
     }

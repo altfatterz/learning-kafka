@@ -23,6 +23,9 @@
         <kafka.version>3.6.0</kafka.version>
 
         <logback.version>1.2.11</logback.version>
+        <schemaRegistryUrl>http://localhost:8081</schemaRegistryUrl>
+        <schemaRegistryBasicAuthUserInfo></schemaRegistryBasicAuthUserInfo>
+
         <javafaker.version>1.0.2</javafaker.version>
 
     </properties>
@@ -127,15 +130,41 @@
                     </execution>
                 </executions>
             </plugin>
+
+
+            <plugin>
+                <groupId>io.confluent</groupId>
+                <artifactId>kafka-schema-registry-maven-plugin</artifactId>
+                <version>${confluent.version}</version>
+                <configuration>
+                    <schemaRegistryUrls>
+                        <param>${schemaRegistryUrl}</param>
+                    </schemaRegistryUrls>
+                    <userInfoConfig>${schemaRegistryBasicAuthUserInfo}</userInfoConfig>
+                    <subjects>
+                        <avro-demo-value>src/main/resources/avro/schema2a.avsc</avro-demo-value>
+<!--                        <avro-demo-value>src/main/resources/avro/schema2b.avsc</avro-demo-value>-->
+                    </subjects>
+                </configuration>
+                <goals>
+                    <goal>test-compatibility</goal>
+                </goals>
+            </plugin>
         </plugins>
     </build>
 
     <repositories>
         <repository>
             <id>confluent</id>
-            <url>http://packages.confluent.io/maven/</url>
+            <url>https://packages.confluent.io/maven/</url>
         </repository>
     </repositories>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>confluent</id>
+            <url>https://packages.confluent.io/maven/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
 </project>

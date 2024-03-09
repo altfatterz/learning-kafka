@@ -14,27 +14,78 @@ $ kafka-topics --bootstrap-server localhost:29092 --create --topic avro-demo --p
 
 Register the new schema 
 ```bash
-jq '. | {schema: tojson}' src/main/resources/avro/schema.avsc | \
-curl -X POST http://localhost:8081/subjects/avro-demo-value/versions \
--H "Content-Type: application/json" \
--d @- 
+jq '. | {schema: tojson}' src/main/resources/avro/schema.avsc | http post :8081/subjects/avro-demo-value/versions  
 ```
 
+Get back the latest version
+```bash
+http :8081/subjects/avro-demo-value/versions/latest
+```
 
 View subjects / schemas
 
 ```bash
-$ curl http://localhost:8081/subjects
-$ curl http://localhost:8081/schemas
+$ http :8081/subjects
+$ http :8081/schemas
 ```
-
 
 If needed perform a soft delete or hard delete (appending `?permanent=true`) of all versions of the schema.
 
 ```bash
-$ curl -X DELETE 'http://localhost:8081/subjects/avro-demo-value'
-$ curl -X DELETE 'http://localhost:8081/subjects/avro-demo-value?permanent=true'
+$ http delete :8081/subjects/avro-demo-value
+$ http delete :8081/subjects/avro-demo-value?permanent=true
 ```
+
+Check syntax errors:
+```bash
+$ mvn io.confluent:kafka-schema-registry-maven-plugin:validate
+```
+
+Test backward compatibility by adding only a field without a default value (`schema2a.avsc`)
+
+```bash
+$ mvn io.confluent:kafka-schema-registry-maven-plugin:test-compatibility
+```
+
+You will get a failure like:
+
+```bash [{errorType:'READER_FIELD_MISSING_DEFAULT_VALUE', description:'The field 'middle_name' at path '/fields/2' in the new schema has no default value and is missing in the old schema', additionalInfo:'middle_name'}, {oldSchemaVersion: 1}, {oldSchema: '{"type":"record","name":"NewCustomerCreatedEvent","namespace":"com.github.altfatterz.avro","fields":[{"name":"first_name","type":"string","doc":"the first name of the customer"},{"name":"last_name","type":"string","doc":"the last name of the customer"},{"name":"accounts","type":{"type":"array","items":{"type":"record","name":"Account","fields":[{"name":"iban","type":"string"},{"name":"type","type":{"type":"enum","name":"AccountType","symbols":["SAVING","CHECKING","JOINT"]}}]}}},{"name":"settings","type":{"type":"map","values":"boolean"}},{"name":"signup_timestamp","type":{"type":"long","logicalType":"timestamp-millis"},"doc":"Customer Signup Timestamp"},{"name":"phone_number","type":["null","string"],"doc":"the phone number of the customer","default":null}]}'}, {validateFields: 'false', compatibility: 'BACKWARD'}]
+
+```
+
+Fix it by adding a default value to the newly added field (`schema2b.avsc`)
+
+```bash
+$ mvn io.confluent:kafka-schema-registry-maven-plugin:test-compatibility
+```
+
+Register it
+
+```bash
+$ mvn io.confluent:kafka-schema-registry-maven-plugin:register
+```
+
+You can set the compatibility at subject level like
+
+```bash
+echo '{"compatibility": "FORWARD"}' | http put :8081/config/avro-demo-value
+```
+
+The compatibility levels can be:
+
+- BACKWARD (default)
+- FORWARD
+- FULL
+- NONE
+- BACKWARD_TRANSITIVE
+- FORWARD_TRANSITIVE
+- FULL_TRANSITIVE
+
+More details about the `kafka-schema-registry-maven-plugin`:
+https://docs.confluent.io/platform/current/schema-registry/develop/maven-plugin.html 
+
+More details about the Schema Registry Rest API:
+https://docs.confluent.io/cloud/current/sr/sr-rest-apis.html
 
 Build the avro-examples
 
@@ -56,29 +107,6 @@ Read via `kafka-avro-console-consumer`
 
 ```bash
 $ kafka-avro-console-consumer --bootstrap-server localhost:29092 --topic avro-demo
-```
-
-Check compatibility level set for subject
-
-```bash
-$ http :8081/config/avro-demo-value
-{
-    "error_code": 40408,
-    "message": "Subject 'avro-demo-value' does not have subject-level compatibility configured"
-}
-```
-
-Default is `Backward`
-
-```bash
-jq '. | {schema: tojson}' src/main/resources/avro/schema2.avsc | \
-curl -X POST http://localhost:8081/subjects/avro-demo-value/versions \
--H "Content-Type: application/json" \
--d @- 
-```
-
-```bash
-{"error_code":409,"message":"Schema being registered is incompatible with an earlier schema for subject \"avro-demo-value\", details: [{errorType:'READER_FIELD_MISSING_DEFAULT_VALUE', description:'The field 'first_name_new' at path '/fields/0' in the new schema has no default value and is missing in the old schema', additionalInfo:'first_name_new'}, {oldSchemaVersion: 1}, {oldSchema: '{\"type\":\"record\",\"name\":\"NewCustomerCreatedEvent\",\"namespace\":\"com.github.altfatterz.avro\",\"fields\":[{\"name\":\"first_name\",\"type\":\"string\",\"doc\":\"the first name of the customer\"},{\"name\":\"last_name\",\"type\":\"string\",\"doc\":\"the last name of the customer\"},{\"name\":\"accounts\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"Account\",\"fields\":[{\"name\":\"iban\",\"type\":\"string\"},{\"name\":\"type\",\"type\":{\"type\":\"enum\",\"name\":\"AccountType\",\"symbols\":[\"SAVING\",\"CHECKING\",\"JOINT\"]}}]}}},{\"name\":\"settings\",\"type\":{\"type\":\"map\",\"values\":\"boolean\"}},{\"name\":\"signup_timestamp\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"},\"doc\":\"Customer Signup Timestamp\"},{\"name\":\"phone_number\",\"type\":[\"null\",\"string\"],\"doc\":\"the phone number of the customer\",\"default\":null}]}'}, {validateFields: 'false', compatibility: 'BACKWARD'}]"}%
 ```
 
 # avro-tools
@@ -126,28 +154,54 @@ Get back the schema:
 $ java -jar avro-tools-1.11.3.jar getschema customer.avro
 ```
 
-# Confluent Cloud  -- TODO to refine 
+# Confluent Cloud  -- TODO to refine
 
 ```bash
-$ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroConsumerDemo config/cloud-consumer.properties
+$ confluent login --save --prompt
+$ confluent environment list
+$ confluent kafka cluster list
+$ confluent kafka cluster use lkc-8ggg70
+$ confluent kafka topic create avro-demo
+```
+
+Get the subjects
+```bash
+$ http -a <CHECK-1PASSWORD>:<CHECK-1PASSWORD> https://psrc-9zg5y.europe-west3.gcp.confluent.cloud/subjects
+```
+
+Get the latest schema of the `orders` topic versions:
+```bash
+$ http -a <CHECK-1PASSWORD>:<CHECK-1PASSWORD> https://psrc-9zg5y.europe-west3.gcp.confluent.cloud/subjects/orders-value/versions/latest
+```
+
+Run the producer which should fail since the schema has to be registered first since we set the properties
+
+```bash
+use.latest.version=true
+auto.register.schemas=false
+```
+
+```bash
 $ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroProducerDemo config/cloud-producer.properties
 ```
 
-```bash
-$ docker exec -it kafka bash
-$ kafka-consumer-groups --bootstrap-server kafka:9092 --list
-$ kafka-consumer-groups --bootstrap-server kafka:9092 --describe --group kafka-avro-local-consumer
-$ kafka-consumer-groups --bootstrap-server kafka:9092 --group kafka-avro-local-consumer --reset-offsets --topic avro-demo:0 --to-offset 0
-$ kafka-consumer-groups --bootstrap-server kafka:9092 --group kafka-avro-local-consumer --reset-offsets --topic avro-demo:0 --to-offset 0 --execute
-$ kafka-consumer-groups --bootstrap-server kafka:9092 --delete --group kafka-avro-local-consumer
- 
+Register the schema
 
+```bash
+$ confluent schema-registry schema create --subject avro-demo-value --schema src/main/resources/avro/schema.avsc --type avro 
 ```
 
+Try to produce again, it should work
 
-https://zoltanaltfatter.com/2020/01/02/schema-evolution-with-confluent-registry/
+```bash
+$ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroProducerDemo config/cloud-producer.properties
+```
 
+Start the consumer also:
 
+```bash
+$ java -cp target/avro-examples-0.0.1-SNAPSHOT-jar-with-dependencies.jar com.github.altfatterz.KafkaAvroConsumerDemo config/cloud-consumer.properties
+```
 
 ### Resources:
 
@@ -162,3 +216,5 @@ https://github.com/confluentinc/schema-registry/issues/2479
 
 https://docs.confluent.io/platform/7.6/schema-registry/index.html
 
+Good tutorial:
+https://docs.confluent.io/platform/current/schema-registry/schema_registry_onprem_tutorial.html

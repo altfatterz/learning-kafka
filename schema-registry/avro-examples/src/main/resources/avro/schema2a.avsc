@@ -1,10 +1,10 @@
 {
-  "namespace": "com.github.altfatterz.avro",
+  "namespace": "com.github.altfatterz.avro2",
   "name": "NewCustomerCreatedEvent",
   "type": "record",
   "fields": [
     {
-      "name": "first_name_new",
+      "name": "first_name",
       "type": "string",
       "doc": "the first name of the customer"
     },
@@ -12,6 +12,11 @@
       "name": "last_name",
       "type": "string",
       "doc": "the last name of the customer"
+    },
+    {
+      "name": "middle_name",
+      "type": "string",
+      "doc": "the middle name of the customer"
     },
     {
       "name": "accounts",

@@ -1,0 +1,75 @@
+{
+  "namespace": "com.github.altfatterz.avro3",
+  "name": "NewCustomerCreatedEvent",
+  "type": "record",
+  "fields": [
+    {
+      "name": "first_name",
+      "type": "string",
+      "doc": "the first name of the customer"
+    },
+    {
+      "name": "last_name",
+      "type": "string",
+      "doc": "the last name of the customer"
+    },
+    {
+      "name": "middle_name",
+      "type": "string",
+      "doc": "the middle name of the customer",
+      "default": ""
+    },
+    {
+      "name": "accounts",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "Account",
+          "type": "record",
+          "fields": [
+            {
+              "name": "iban",
+              "type": "string"
+            },
+            {
+              "name": "type",
+              "type": {
+                "name": "AccountType",
+                "type": "enum",
+                "symbols": [
+                  "SAVING",
+                  "CHECKING",
+                  "JOINT"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "settings",
+      "type": {
+        "type": "map",
+        "values": "boolean"
+      }
+    },
+    {
+      "name": "signup_timestamp",
+      "doc": "Customer Signup Timestamp",
+      "type": {
+        "type" : "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "phone_number",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "doc": "the phone number of the customer"
+    }
+  ]
+}
