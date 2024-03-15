@@ -11,6 +11,13 @@ $ docker compose up -d
 ```bash
 $ docker exec -it broker bash
 $ kafka-topics --bootstrap-server broker:9092 --create --topic test-topic --partitions 3 --replication-factor 1
+$ exit
+```
+
+### Access control center
+
+```bash
+$ open https://localhost:9021
 ```
 
 #### Build the consumer and producer

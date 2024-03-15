@@ -58,15 +58,3 @@ services:
       CONFLUENT_METRICS_TOPIC_REPLICATION: 1
       PORT: 9021
 
-#
-#  create-topics:
-#    image: confluentinc/cp-server:7.5.2
-#    container_name: create-topics
-#    command: >
-#      bash -c 'echo Waiting for Kafka to be ready... ;
-#      cub kafka-ready -b broker:29092 1 300 ;
-#      echo Creating topics... ;
-#      kafka-topics --bootstrap-server broker:29092 --create --topic avro-demo --partitions 1 --replication-factor 1 ;
-#      kafka-topics --bootstrap-server broker:29092 --create --topic protobuf-demo --partitions 1 --replication-factor 1 ;
-#      kafka-topics --bootstrap-server broker:29092 --create --topic json-schema-demo --partitions 1 --replication-factor 1 ;
-#      true'

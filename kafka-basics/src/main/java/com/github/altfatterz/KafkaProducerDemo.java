@@ -40,11 +40,14 @@ public class KafkaProducerDemo {
         Faker faker = new Faker();
 
         while (true) {
-            ProducerRecord<String, String> record = new ProducerRecord<>(topic, faker.chuckNorris().fact());
+            ProducerRecord<String, String> record = new ProducerRecord<>(topic,
+                    faker.idNumber().ssnValid(),
+                    faker.chuckNorris().fact());
+
             producer.send(record);
 
             // Play here with this setting in combination with the linger.ms
-            Thread.sleep(100);
+            Thread.sleep(200);
         }
 
     }
