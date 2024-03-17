@@ -4,17 +4,20 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.PartitionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 public class KafkaConsumerDemo {
 
-    static final Logger logger = LoggerFactory.getLogger(KafkaConsumerDemo.class);
+    private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerDemo.class);
 
     public static void main(String[] args) throws IOException {
 
@@ -31,8 +34,21 @@ public class KafkaConsumerDemo {
         // consumer
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
 
-        // subscribe consumer to topic
-        consumer.subscribe(Arrays.asList(topic));
+        try {
+            final long startTimestamp = Long.parseLong(props.getProperty("read-from-timestamp"));
+            // consumer.subscribe with ConsumerRebalanceListener
+            consumer.subscribe(Arrays.asList(topic), new CustomCunsumerRebalanceListener(consumer, startTimestamp));
+        } catch (NumberFormatException e) {
+            logger.info("Could not parse `read-from-timestamp` property using instead `auto.offset.reset` property");
+            // subscribe consumer to topic
+            consumer.subscribe(Arrays.asList(topic));
+        }
+
+        // Get metadata about the partitions for a given topic
+        List<PartitionInfo> partitionInfos = consumer.partitionsFor(topic);
+        for (PartitionInfo partitionInfo : partitionInfos) {
+            logger.info("PartitionInfo: {}", partitionInfo);
+        }
 
         // poll for new data
         while (true) {
