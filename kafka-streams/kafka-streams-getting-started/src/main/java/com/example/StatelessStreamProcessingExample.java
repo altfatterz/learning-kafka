@@ -5,9 +5,7 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
-import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.kstream.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +16,7 @@ public class StatelessStreamProcessingExample {
     private static final Logger logger = LoggerFactory.getLogger(StatelessStreamProcessingExample.class);
 
     private final static String APPLICATION_ID = "stateless-kafka-streams-example";
-    private final static String BOOTSTRAP_SERVERS = "localhost:19092";
+    private final static String BOOTSTRAP_SERVERS = "localhost:29092";
 
     private final static String INPUT_TOPIC = "sentences-topic";
     private final static String OUTPUT_TOPIC = "lowercase-sentences-topic";
@@ -55,9 +53,19 @@ public class StatelessStreamProcessingExample {
 
     private static Topology getTopology() {
         StreamsBuilder builder = new StreamsBuilder();
-        KStream<String, String> lines = builder.stream(INPUT_TOPIC, Consumed.with(Serdes.String(), Serdes.String()));
-        KStream<String, String> transformed = lines.mapValues(value -> value.toLowerCase());
-        transformed.to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.String()));
+
+        // Kafka Streams works on unbounded sequence of events called events streams (sequence of records (key value pairs))
+
+        builder.stream(INPUT_TOPIC, Consumed.with(Serdes.String(), Serdes.String()))
+                .peek((key, value) -> logger.info("Incoming record - key:" + key + " value:" + value))
+                // mapValues useful for example credit card data and want to scrub out the first five characters
+                // when you can use mapValues you should prefer it, instead of map(), reason for this is the `repartitioning`
+                .mapValues(value -> value.toLowerCase())
+                // keep only those which value is longer than 5 characters
+                .filter((key, value) -> value.length() > 5)
+                .peek((key, value) -> logger.info("Outgoing record - key:" + key + " value:" + value))
+                .to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.String()));
+
         return builder.build();
     }
 
