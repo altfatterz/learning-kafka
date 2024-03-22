@@ -146,3 +146,36 @@ GlobalKTable<String, String> globalKTable =
 
 
 
+------------------------------------------------------------------------------------------------------------------------
+
+```bash
+$ docker compose exec -it tools bash
+$ kafka-topics --bootstrap-server broker:9092 --delete --topic ktable-input-topic
+$ kafka-topics --bootstrap-server broker:9092 --delete --topic ktable-output-topic
+$ kafka-topics --bootstrap-server broker:9092 --topic ktable-input-topic --create --partitions 3 --replication-factor 1
+$ kafka-topics --bootstrap-server broker:9092 --topic ktable-output-topic --create --partitions 1 --replication-factor 1
+```
+
+
+Producer:
+
+```bash
+$ docker compose exec -it tools bash
+$ kafka-console-producer --bootstrap-server broker:9092 --topic ktable-input-topic --property parse.key=true --property key.separator=:
+1:orderNumber-1001
+1:orderNumber-5000
+1:orderNumber-999
+1:orderNumber-3330
+1:bogus-1
+1:bogus-2
+1:orderNumber-8400
+```
+
+* Consumer:
+
+```bash
+$ docker compose exec -it tools bash
+$ kafka-console-consumer --bootstrap-server broker:9092 --topic ktable-output-topic --from-beginning --property print.key=true 
+```
+
+Processor: KTableExample
