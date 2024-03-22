@@ -8,26 +8,28 @@ Create the topics:
 
 ```bash
 $ docker compose exec -it tools bash
-$ kafka-topics --bootstrap-server broker:9092 --delete --topic sentences-topic
-$ kafka-topics --bootstrap-server broker:9092 --delete --topic lowercase-sentences-topic
-$ kafka-topics --bootstrap-server broker:9092 --delete --topic word-counts-topic 
-$ kafka-topics --bootstrap-server broker:9092 --topic sentences-topic --create --partitions 3 --replication-factor 1 
-$ kafka-topics --bootstrap-server broker:9092 --topic lowercase-sentences-topic --create --partitions 1 --replication-factor 1 
-$ kafka-topics --bootstrap-server broker:9092 --topic word-counts-topic --create --partitions 1 --replication-factor 1 
+$ kafka-topics --bootstrap-server broker:9092 --delete --topic stateless-demo-input-topic
+$ kafka-topics --bootstrap-server broker:9092 --delete --topic stateless-demo-output-topic
+$ kafka-topics --bootstrap-server broker:9092 --delete --topic stateful-demo-input-topic
+$ kafka-topics --bootstrap-server broker:9092 --delete --topic stateful-demo-output-topic 
+$ kafka-topics --bootstrap-server broker:9092 --topic stateless-demo-input-topic --create --partitions 3 --replication-factor 1
+$ kafka-topics --bootstrap-server broker:9092 --topic stateless-demo-output-topic --create --partitions 1 --replication-factor 1
+$ kafka-topics --bootstrap-server broker:9092 --topic stateful-demo-input-topic --create --partitions 3 --replication-factor 1 
+$ kafka-topics --bootstrap-server broker:9092 --topic stateful-demo-output-topic --create --partitions 1 --replication-factor 1 
 ```
 
 * Add data into the input topic
 
 ```bash
 $ docker compose exec -it tools bash
-$ kafka-console-producer --bootstrap-server broker:9092 --topic sentences-topic
+$ kafka-console-producer --bootstrap-server broker:9092 --topic stateless-demo-input-topic
 ```
 
 * Stream the output content:
 
 ```bash
 $ docker compose exec -it tools bash
-$ kafka-console-consumer --bootstrap-server broker:9092 --topic lowercase-sentences-topic --from-beginning --property print.key=true 
+$ kafka-console-consumer --bootstrap-server broker:9092 --topic stateless-demo-output-topic --from-beginning --property print.key=true 
 ```
 
 * Start the StatelessStreamProcessingExample
@@ -43,9 +45,9 @@ Check the logs:
     Sink: KSTREAM-SINK-0000000002 (topic: lowercase-sentences-topic)
       <-- KSTREAM-MAPVALUES-0000000001
 ...
-	Assigned partitions:                       [sentences-topic-0, sentences-topic-1, sentences-topic-2]
+	Assigned partitions:                       [stateless-demo-input-topic-0, stateless-demo-input-topic-1,stateless-demo-input-topic-2]
 	Current owned partitions:                  []
-	Added partitions (assigned - owned):       [sentences-topic-0, sentences-topic-1, sentences-topic-2]
+	Added partitions (assigned - owned):       [stateless-demo-input-topic-0, stateless-demo-input-topic-1, stateless-demo-input-topic-2]
 	Revoked partitions (owned - assigned):     []
 ...
 	New active tasks: [0_2, 0_1, 0_0]
@@ -84,16 +86,63 @@ You can see the difference between `scale up` vs `scale out`
 
 ------------------------------------------------------------------------------------------------------------------------
 
-* Start the StatefulStreamProcessingExample
+Provide input
 
 ```bash
-$ kafka-console-consumer --bootstrap-server broker:9092 --topic word-counts-topic --from-beginning \
+$ docker compose exec -it tools bash
+$ kafka-console-producer --bootstrap-server broker:9092 --topic stateful-demo-input-topic
+```
+
+Check output
+
+```bash
+$ kafka-console-consumer --bootstrap-server broker:9092 --topic stateful-demo-output-topic  --from-beginning \
 --property print.key=true --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
 ```
 
+* Start the StatefulStreamProcessingExample
+
+Check the consumer group:
 ```bash
-$ kafka-consumer-groups --bootstrap-server broker:9092 --list
-$ kafka-consumer-groups --bootstrap-server broker:9092 --group stateless-kafka-streams-example --describe
 $ kafka-consumer-groups --bootstrap-server broker:9092 --group stateful-kafka-streams-example --describe
 ```
+
+Check that the `changelog` and `repartition` topics were created
+
+```bash
+$ kafka-topics --bootstrap-server broker:9092 --list | grep stateful
+```
+
+```bash
+$ ls -l /tmp/kafka-streams/stateful-kafka-streams-example
+```
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+`KStream`
+
+```java
+Stream<String, String> firstStream = 
+    builder.stream(inputTopic, Consumed.with(Serdes.String(), Serdes.String())); 
+```
+
+`KTable`
+
+```java
+KTable<String, String> firstKTable = 
+    builder.table(inputTopic, Materialized.with(Serdes.String(), Serdes.String()));
+```
+
+`GlobalKTable`
+
+```java
+GlobalKTable<String, String> globalKTable = 
+    builder.globalTable(inputTopic, Materialized.with(Serdes.String(), Serdes.String()));
+```
+
+- The main difference between a KTable and a GlobalKTable is that a KTable shards data between Kafka Streams instances, while a GlobalKTable extends a full copy of the data to each instance. 
+- You typically use a GlobalKTable with lookup data.
+
+
 

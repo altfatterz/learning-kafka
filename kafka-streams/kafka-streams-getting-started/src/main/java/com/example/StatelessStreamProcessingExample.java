@@ -18,8 +18,8 @@ public class StatelessStreamProcessingExample {
     private final static String APPLICATION_ID = "stateless-kafka-streams-example";
     private final static String BOOTSTRAP_SERVERS = "localhost:29092";
 
-    private final static String INPUT_TOPIC = "sentences-topic";
-    private final static String OUTPUT_TOPIC = "lowercase-sentences-topic";
+    private final static String INPUT_TOPIC = "stateless-demo-input-topic";
+    private final static String OUTPUT_TOPIC = "stateless-demo-output-topic";
 
     public static void main(String[] args) {
         Properties config = getConfig();
@@ -39,6 +39,8 @@ public class StatelessStreamProcessingExample {
         Properties settings = new Properties();
         settings.put(StreamsConfig.APPLICATION_ID_CONFIG, APPLICATION_ID);
         settings.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+
+        settings.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams");
 
         // check the number of tasks created
         // [0_0], [0_1], [0_2]

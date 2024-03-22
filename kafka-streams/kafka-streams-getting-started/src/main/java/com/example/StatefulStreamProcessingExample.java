@@ -16,10 +16,10 @@ public class StatefulStreamProcessingExample {
     private static final Logger logger = LoggerFactory.getLogger(StatefulStreamProcessingExample.class);
 
     private final static String APPLICATION_ID = "stateful-kafka-streams-example";
-    private final static String BOOTSTRAP_SERVERS = "localhost:19092";
+    private final static String BOOTSTRAP_SERVERS = "localhost:29092";
 
-    private final static String INPUT_TOPIC = "sentences-topic";
-    private final static String OUTPUT_TOPIC = "word-counts-topic";
+    private final static String INPUT_TOPIC = "stateful-demo-input-topic";
+    private final static String OUTPUT_TOPIC = "stateful-demo-output-topic";
 
     public static void main(String[] args) {
         Properties config = getConfig();
@@ -39,6 +39,8 @@ public class StatefulStreamProcessingExample {
         Properties settings = new Properties();
         settings.put(StreamsConfig.APPLICATION_ID_CONFIG, APPLICATION_ID);
         settings.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+
+        settings.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams");
 
         // if no consumer offsets found start from the beginning
         settings.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
@@ -67,7 +69,7 @@ public class StatefulStreamProcessingExample {
                 .count(Materialized.as("WordCount"))
                 .toStream()
                 .peek((key, value) -> logger.info("record to be produced [key: {}, value: {}]", key, value))
-                //.map((Windowed<String> key, Long count) -> new KeyValue<>(key.toString(), count))
+//                .map((Windowed<String> key, Long count) -> new KeyValue<>(key.toString(), count))
                 .to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.Long()));
 
         return builder.build();
@@ -80,9 +82,5 @@ public class StatefulStreamProcessingExample {
         }));
     }
 
-    // Check the state store: /tmp/kafka-streams/stateful-kafka-streams-example
-    // Check the changelog and repartition topics created
-
-
-    // Enable the windowing
+    // TODO Enable the windowing
 }
