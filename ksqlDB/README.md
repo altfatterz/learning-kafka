@@ -1,14 +1,14 @@
 Install the Kafka Connect Datagen connector
 
 ```bash
-$ docker exec -u root connect confluent-hub install --no-prompt confluentinc/kafka-connect-datagen:0.4.0
-$ docker-compose restart connect
+$ docker exec -u root kafka-connect confluent-hub install --no-prompt confluentinc/kafka-connect-datagen:0.6.5 
+$ docker-compose restart kafka-connect
 ```
 
 Execute the ksqlDB CLI:
 
 ```bash
-$ docker exec -it tools bash
+$ docker exec -it ksqldb-cli bash
 $ ksql http://ksqldb-server:8088
 $ list topics;
 $ list streams;
@@ -16,6 +16,7 @@ $ list tables;
 $ list connectors;
 $ list queries;
 $ server
+$ version
 ```
 
 Create data in the `pageviews-ksql-connector` and `users-ksql-connector` connectors
@@ -51,13 +52,13 @@ $ list connectors;
 -----------------------------------------------------------------------------------------------------------------------
 ```
 
-Check it the connectors from the `connect` REST interface:
+Check it the connectors from the `kafka-connect` REST interface:
 
 ```bash
 $ docker exec -it tools bash
-$ curl connect:8083/connectors | jq
-$ curl connect:8083/connectors/pageviews-ksql-connector | jq
-$ curl connect:8083/connectors/users-ksql-connector | jq
+$ curl kafka-connect:8083/connectors | jq
+$ curl kafka-connect:8083/connectors/pageviews-ksql-connector | jq
+$ curl kafka-connect:8083/connectors/users-ksql-connector | jq
 ```
 
 Create a stream
@@ -67,7 +68,7 @@ $ CREATE STREAM pageviews (viewtime BIGINT, userid VARCHAR, pageid VARCHAR) \
 WITH (VALUE_FORMAT = 'AVRO', KAFKA_TOPIC = 'my-pageviews-topic');
 
 $ describe pageviews;
-$ describe extended pageviews;
+$ describe pageviews extended;
 $ SELECT * FROM pageviews EMIT CHANGES;
 ```
 
@@ -77,7 +78,7 @@ $ CREATE TABLE users (registertime BIGINT, userid VARCHAR PRIMARY KEY, gender VA
 WITH (VALUE_FORMAT = 'AVRO', KAFKA_TOPIC = 'my-users-topic');
 
 $ describe users;
-$ describe extended users;
+$ describe users extended;
 $ SELECT * FROM users EMIT CHANGES;
 ```
 
@@ -97,6 +98,8 @@ $ CREATE STREAM pageviews_enriched AS \
 ```
 
 ```bash
+$ list queries;
+$ explain <query-id>;
 $ SELECT * FROM pageviews_enriched EMIT CHANGES;
 ```
 
@@ -113,13 +116,6 @@ $ CREATE STREAM pageviews_enriched2 WITH (KAFKA_TOPIC='pageviews_enriched', part
       LEFT JOIN users u \
       ON pv.userid = u.userid \
     EMIT CHANGES;
-```
-
-List queries
-```bash
-$ list queries
-$ explain <query-id>
-$ list queries extended
 ```
 
 Persistent query with windowing example:
