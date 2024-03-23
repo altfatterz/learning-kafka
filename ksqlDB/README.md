@@ -1,3 +1,15 @@
+Start the cluster
+
+```bash
+$ docker compose up -d
+```
+
+Check:
+
+```bash
+$ open http://localhost:9021
+```
+
 Install the Kafka Connect Datagen connector
 
 ```bash
@@ -52,6 +64,12 @@ $ list connectors;
 -----------------------------------------------------------------------------------------------------------------------
 ```
 
+```bash
+$ print 'my-pageviews-topic' from beginning;
+$ print 'my-users-topic' from beginning;
+```
+
+
 Check it the connectors from the `kafka-connect` REST interface:
 
 ```bash
@@ -82,10 +100,10 @@ $ describe users extended;
 $ SELECT * FROM users EMIT CHANGES;
 ```
 
-Create a persistent query: (PAGEVIEWS_ENRICHED topic will be created)
+Create a persistent query: (pageviews_enriched topic will be created with the provided customizations)
 
 ```bash
-$ CREATE STREAM pageviews_enriched AS \
+$ CREATE STREAM pageviews_enriched WITH (KAFKA_TOPIC='pageviews_enriched', partitions = 1, replicas = 1) AS \
     SELECT pv.userid AS userid, \
            pv.viewtime, \
            pv.pageid, \
@@ -103,29 +121,14 @@ $ explain <query-id>;
 $ SELECT * FROM pageviews_enriched EMIT CHANGES;
 ```
 
-Customise the topic underneath:
-
-```bash
-$ CREATE STREAM pageviews_enriched2 WITH (KAFKA_TOPIC='pageviews_enriched', partitions = 1, replicas = 1) AS \
-    SELECT pv.userid AS userid, \
-           pv.viewtime, \
-           pv.pageid, \
-           u.gender, \
-           u.regionid \
-    FROM pageviews pv \
-      LEFT JOIN users u \
-      ON pv.userid = u.userid \
-    EMIT CHANGES;
-```
-
 Persistent query with windowing example:
 
 ```bash
 $ CREATE TABLE pageviews_count_by_region WITH (KAFKA_TOPIC='pageviews_count_by_region_topic') AS \
-    SELECT gender, regionid, COUNT(*) AS total \
+    SELECT regionid, COUNT(*) AS total \
     FROM pageviews_enriched \
     WINDOW TUMBLING (SIZE 10 SECONDS) \
-    GROUP BY gender, regionid \
+    GROUP BY regionid \
     HAVING COUNT(*) > 1 \
     EMIT CHANGES;
 ```
@@ -139,23 +142,35 @@ $ SELECT * FROM pageviews_count_by_region EMIT CHANGES;
 Pull query:
 
 ```bash
-$ SELECT * FROM pageviews_count_by_region \ 
-WHERE KSQL_COL_0='FEMALE|+|Region_4' AND WINDOWSTART >= 1619552920000 AND WINDOWSTART <= 1619552930000;
+$ SELECT * FROM pageviews_count_by_region WHERE TOTAL >= 10;
 ```
 
 Try to drop a stream, should fail because there are running queries against it.
 
 ```bash
 $ drop stream pageviews_enriched
+
+Cannot drop PAGEVIEWS_ENRICHED.
+The following streams and/or tables read from this source: [PAGEVIEWS_COUNT_BY_REGION].
+You need to drop them before dropping PAGEVIEWS_ENRICHED.
 ```
 
-Terminate a query
+Terminate a query. Persistent queries run continuously until they are explicitly terminated.
+In client-server mode, exiting the CLI doesn't stop persistent queries, because the ksqlDB Server(s) continue to process the queries.
+A non-persistent query can also be terminated by using Ctrl+C in the CLI.
+
 ```bash
-$ terminate CTAS_PAGEVIEWS_COUNT_BY_REGION_5;
+$ terminate <CTAS_PAGEVIEWS_COUNT_BY_REGION-TODO-CHECK-ID>
+$ terminate all;
 ```
 
 ```bash
-$ drop stream pageviews_enriched
+$ drop table pageviews_count_by_region;
+$ drop stream pageviews_enriched;
+$ drop stream pageviews;
+$ drop table users;
+$ drop connector "users-ksql-connector";
+$ drop connector "pageviews-ksql-connector";
 ```
 
 
