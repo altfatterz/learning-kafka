@@ -1,6 +1,5 @@
 package com.github.altfatterz;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -33,6 +31,12 @@ public class KafkaConsumerDemo {
 
         // consumer
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+
+        // Adding a shutdown hook to clean up when the application exits
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Closing consumer.");
+            consumer.close();
+        }));
 
         try {
             final long startTimestamp = Long.parseLong(props.getProperty("read-from-timestamp"));

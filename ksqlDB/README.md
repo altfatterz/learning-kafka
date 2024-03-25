@@ -17,6 +17,9 @@ $ docker exec -u root kafka-connect confluent-hub install --no-prompt confluenti
 $ docker-compose restart kafka-connect
 ```
 
+Check the schemas kafka-connect-datagen connector: https://github.com/confluentinc/kafka-connect-datagen/tree/master/src/main/resources
+
+
 Execute the ksqlDB CLI:
 
 ```bash
@@ -37,7 +40,7 @@ Create data in the `pageviews-ksql-connector` and `users-ksql-connector` connect
 $ CREATE SOURCE CONNECTOR `pageviews-ksql-connector` WITH( 
   'connector.class'='io.confluent.kafka.connect.datagen.DatagenConnector',
   "key.converter"='org.apache.kafka.connect.storage.StringConverter',
-  "kafka.topic"='my-pageviews-topic',
+  "kafka.topic"='pageviews-topic',
   "quickstart"='pageviews',
   "max.interval"=1000,
   "iterations"=10000000,
@@ -48,7 +51,7 @@ $ CREATE SOURCE CONNECTOR `pageviews-ksql-connector` WITH(
 $ CREATE SOURCE CONNECTOR `users-ksql-connector` WITH( 
   'connector.class'='io.confluent.kafka.connect.datagen.DatagenConnector',
   "key.converter"='org.apache.kafka.connect.storage.StringConverter',
-  "kafka.topic"='my-users-topic',
+  "kafka.topic"='users-topic',
   "quickstart"='users',
   "max.interval"=1000,
   "iterations"=10000000,
@@ -84,6 +87,9 @@ Create a stream
 ```bash
 $ CREATE STREAM pageviews (viewtime BIGINT, userid VARCHAR, pageid VARCHAR) \
 WITH (VALUE_FORMAT = 'AVRO', KAFKA_TOPIC = 'my-pageviews-topic');
+
+CREATE STREAM pageviews (rowkey STRING KEY, viewtime BIGINT, userid VARCHAR, pageid VARCHAR) \
+  WITH (KAFKA_TOPIC='pageviews-topic', VALUE_FORMAT='AVRO');
 
 $ describe pageviews;
 $ describe pageviews extended;
@@ -144,6 +150,18 @@ Pull query:
 ```bash
 $ SELECT * FROM pageviews_count_by_region WHERE TOTAL >= 10;
 ```
+
+For example, if you want to count the pageviews for only Region_6 by female users for a hopping window 
+of 30 seconds that advances by 10 seconds
+
+```bash
+SELECT regionid, COUNT(*) FROM pageviews
+  WINDOW HOPPING (SIZE 30 SECONDS, ADVANCE BY 10 SECONDS)
+  WHERE UCASE(gender)='FEMALE' AND LCASE (regionid) LIKE '%_6'
+  GROUP BY regionid
+  EMIT CHANGES;
+```      
+
 
 Try to drop a stream, should fail because there are running queries against it.
 
