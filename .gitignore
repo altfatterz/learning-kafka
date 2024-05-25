@@ -10,3 +10,8 @@ data
 *.srl
 *_creds
 
+.terraform
+.terraform.*
+terraform.*
+
+
