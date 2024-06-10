@@ -1,19 +1,17 @@
 package com.example.ticketsales;
 
 import org.apache.kafka.clients.admin.NewTopic;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
 @ConfigurationProperties("topics")
-public class TopicsConfig {
+public class TicketSalesConfig {
 
-    public Topic input;
-    public Topic output;
+    private Topic input;
+    private Topic output;
 
     // Spring Boot Apache Kafka Support
     // https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-kafka
@@ -34,11 +32,31 @@ public class TopicsConfig {
                 .build();
     }
 
+    public Topic getInput() {
+        return input;
+    }
+
+    public void setInput(Topic input) {
+        this.input = input;
+    }
+
+    public Topic getOutput() {
+        return output;
+    }
+
+    public void setOutput(Topic output) {
+        this.output = output;
+    }
+
     static class Topic {
 
-        String name;
-        int partitions;
-        int replicas;
+        private String name;
+        private int partitions;
+        private int replicas;
+
+        public Topic(String name) {
+            this.name = name;
+        }
 
         public String getName() {
             return name;
@@ -65,19 +83,4 @@ public class TopicsConfig {
         }
     }
 
-    public Topic getInput() {
-        return input;
-    }
-
-    public void setInput(Topic input) {
-        this.input = input;
-    }
-
-    public Topic getOutput() {
-        return output;
-    }
-
-    public void setOutput(Topic output) {
-        this.output = output;
-    }
 }

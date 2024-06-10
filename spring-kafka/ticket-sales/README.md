@@ -73,6 +73,12 @@ The Godfather	4 tickets sold
 ```
 
 
+### Notes
+
+- https://developer.confluent.io/courses/kafka-streams/testing/
+- Memory management: https://docs.confluent.io/platform/current/streams/developer-guide/memory-mgmt.html
+- 
+
 `KafkaStreams` actually provides a `TopologyTestDriver` that can be used to test the Topologies built via the 
 `StreamsBuilder` without the need to have an embedded kafka.
 

@@ -18,23 +18,23 @@ import java.util.Map;
 import static io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG;
 
 @Configuration
-public class TicketSalesStreamConfig {
+public class TicketSalesPipeline {
 
     private final KafkaProperties kafkaProperties;
-    private final TopicsConfig topicsConfig;
+    private final TicketSalesConfig ticketSalesConfig;
 
-    private static final Logger logger = LoggerFactory.getLogger(TicketSalesStreamConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(TicketSalesPipeline.class);
 
-    public TicketSalesStreamConfig(KafkaProperties kafkaProperties, TopicsConfig topicsConfig) {
+    public TicketSalesPipeline(KafkaProperties kafkaProperties, TicketSalesConfig topicsConfig) {
         this.kafkaProperties = kafkaProperties;
-        this.topicsConfig = topicsConfig;
+        this.ticketSalesConfig = topicsConfig;
     }
 
     @Bean
-    public KStream<String, String> kStream(StreamsBuilder streamsBuilder) {
+    public KStream<String, String> buildPipeline(StreamsBuilder streamsBuilder) {
 
         KStream<String, String> kStream = streamsBuilder
-                .stream(topicsConfig.input.getName(), Consumed.with(Serdes.String(), ticketSaleSerde()))
+                .stream(ticketSalesConfig.getInput().getName(), Consumed.with(Serdes.String(), ticketSaleSerde()))
                 .peek((key, value) -> logger.info("input record - key: {} value: {}", key, value))
                 // Set key to title and value to ticket value
                 .map((k, v) -> new KeyValue<>(v.getTitle(), v.getTicketTotalValue()))
@@ -48,7 +48,7 @@ public class TicketSalesStreamConfig {
                 .mapValues(v -> v.toString() + " tickets sold")
                 .peek((key, value) -> logger.info("output record - key: {} value: {}", key, value));
 
-        kStream.to(topicsConfig.output.getName(), Produced.with(Serdes.String(), Serdes.String()));
+        kStream.to(ticketSalesConfig.getOutput().getName(), Produced.with(Serdes.String(), Serdes.String()));
 
         return kStream;
     }
