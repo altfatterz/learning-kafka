@@ -20,7 +20,9 @@ import org.springframework.test.context.ActiveProfiles;
  *
  * @EmbeddedKafka registers the EmbeddedKafkaBroker bean.
  */
-@EmbeddedKafka
+
+
+@EmbeddedKafka(kraft = true, topics = { "topic1", "topic2"} )
 @SpringBootTest
 @ActiveProfiles("test")
 public class TicketSalesAppIntegrationTest {
@@ -28,18 +30,27 @@ public class TicketSalesAppIntegrationTest {
     private static Logger logger = LoggerFactory.getLogger(TicketSalesAppIntegrationTest.class);
 
     @Autowired
+    // the embedded broker is cached in test application context
     private EmbeddedKafkaBroker embeddedKafkaBroker;
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
     @Test
-    void contextLoads() {
+    void test1() {
         logger.info("Embedded broker connection: {}", embeddedKafkaBroker.getBrokersAsString());
-
-        TicketSale ticketSale = new TicketSale("Die Hard", "2019-07-18T10:00:00Z", 12);
-
-        kafkaTemplate.send("movie-ticket-sales", "hello");
+        logger.info("List of topics: {}", embeddedKafkaBroker.getTopics());
+        kafkaTemplate.send("dummy", "hello");
     }
+
+    @Test
+    void test2() {
+        logger.info("Embedded broker connection: {}", embeddedKafkaBroker.getBrokersAsString());
+        logger.info("List of topics: {}", embeddedKafkaBroker.getTopics());
+        kafkaTemplate.send("dummy", "hello");
+    }
+
+
+
 
 }
