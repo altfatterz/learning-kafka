@@ -2,20 +2,19 @@ spring:
   kafka:
     streams:
       application-id: ticket-sales
-      bootstrap-servers: localhost:19092
+      bootstrap-servers: localhost:29092
 
       properties:
+        cache.max.bytes.buffering: 0
         schema.registry.url: http://localhost:8081
+
 
 topics:
   input:
     name: movie-ticket-sales
-    partitions: 1
-    replicas: 1
   output:
     name: movie-tickets-sold
-    partitions: 1
-    replicas: 1
+
 
 logging:
   level:

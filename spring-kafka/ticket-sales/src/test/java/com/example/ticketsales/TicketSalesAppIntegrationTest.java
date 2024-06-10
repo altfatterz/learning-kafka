@@ -34,7 +34,6 @@ public class TicketSalesAppIntegrationTest {
 
     @Test
     void contextLoads() {
-        logger.info("Zookeeper connection: {}", embeddedKafkaBroker.getZookeeperConnectionString());
         logger.info("Embedded broker connection: {}", embeddedKafkaBroker.getBrokersAsString());
 
         TicketSale ticketSale = new TicketSale("Die Hard", "2019-07-18T10:00:00Z", 12);

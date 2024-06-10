@@ -6,6 +6,8 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,26 +23,32 @@ public class TicketSalesStreamConfig {
     private final KafkaProperties kafkaProperties;
     private final TopicsConfig topicsConfig;
 
+    private static final Logger logger = LoggerFactory.getLogger(TicketSalesStreamConfig.class);
+
     public TicketSalesStreamConfig(KafkaProperties kafkaProperties, TopicsConfig topicsConfig) {
         this.kafkaProperties = kafkaProperties;
         this.topicsConfig = topicsConfig;
     }
 
     @Bean
-    public KStream<String, Long> kStream(StreamsBuilder streamsBuilder) {
+    public KStream<String, String> kStream(StreamsBuilder streamsBuilder) {
 
-        KStream<String, Long> kStream = streamsBuilder
+        KStream<String, String> kStream = streamsBuilder
                 .stream(topicsConfig.input.getName(), Consumed.with(Serdes.String(), ticketSaleSerde()))
+                .peek((key, value) -> logger.info("input record - key: {} value: {}", key, value))
                 // Set key to title and value to ticket value
                 .map((k, v) -> new KeyValue<>(v.getTitle(), v.getTicketTotalValue()))
+                .peek((key, value) -> logger.info("after map - key: {} value: {}", key, value))
                 // Group by title
                 .groupByKey(Grouped.with(Serdes.String(), Serdes.Integer()))
                 // Apply COUNT method
                 .count()
                 // Write to stream specified by outputTopic
-                .toStream();
+                .toStream()
+                .mapValues(v -> v.toString() + " tickets sold")
+                .peek((key, value) -> logger.info("output record - key: {} value: {}", key, value));
 
-        kStream.to(topicsConfig.output.getName(), Produced.with(Serdes.String(), Serdes.Long()));
+        kStream.to(topicsConfig.output.getName(), Produced.with(Serdes.String(), Serdes.String()));
 
         return kStream;
     }
