@@ -1,6 +1,5 @@
-spring:
-  kafka:
-    streams:
-      bootstrap-servers: ${spring.embedded.kafka.brokers}
-      properties:
-        schema.registry.url: mock://localhost.something
+topics:
+  input:
+    name: movie-ticket-sales
+  output:
+    name: movie-tickets-sold
