@@ -1,3 +1,9 @@
+spring:
+  kafka:
+    streams:
+      application-id: ${random.uuid}
+      bootstrap-servers: ${spring.embedded.kafka.brokers}
+
 topics:
   input:
     name: movie-ticket-sales

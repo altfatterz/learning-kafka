@@ -3,11 +3,10 @@ spring:
     streams:
       application-id: ticket-sales
       bootstrap-servers: localhost:29092
-
       properties:
-        cache.max.bytes.buffering: 0
+        # cache.max.bytes.buffering is deprecated
+        statestore.cache.max.bytes: 0
         schema.registry.url: http://localhost:8081
-
 
 topics:
   input:

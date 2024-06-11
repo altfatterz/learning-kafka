@@ -32,7 +32,7 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 
 // https://github.com/deepi2003/AvroSample/blob/master/src/test/java/com/deepti/kafka/sample/integrationtest/UserIntegrationTest.java
 
-@EmbeddedKafka(kraft = true, partitions = 1)
+@EmbeddedKafka(kraft = true, partitions = 1, topics = { "${topics.input.name}", "${topics.output.name}"})
 @SpringBootTest
 @ActiveProfiles("test")
 public class TicketSalesAppIntegrationTest {
@@ -57,7 +57,6 @@ public class TicketSalesAppIntegrationTest {
 
     @BeforeEach
     public void setUp() {
-        embeddedKafkaBroker.addTopics(inputTopic, outputTopic);
         initializeConsumer();
         initializeProducer();
     }
