@@ -3,7 +3,7 @@ server:
 
 spring:
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
     consumer:
       group-id: group1
 #      key-serializer: org.apache.kafka.common.serialization.StringSerializer
