@@ -35,13 +35,13 @@ class EmbeddedKafkaIntegrationTest {
 
     @Test
     public void sendAndReceive() throws Exception {
-
-
         String fact = "Chuck Norris can spawn threads that complete before they are started.";
         producer.sendFact(topic, fact);
         consumer.getLatch().await(10000, TimeUnit.MILLISECONDS);
 
         assertThat(consumer.getLatch().getCount(), equalTo(0L));
         assertThat(consumer.getPayload(), equalTo(fact));
+
+        System.out.println("broker URL=" + embeddedKafkaBroker.getBrokersAsString());
     }
 }
