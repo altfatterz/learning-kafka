@@ -30,13 +30,13 @@
         <module>spring-kafka/ccloud-demo</module>
         <module>spring-kafka/transaction-demo</module>
         <module>spring-kafka/spring-kafka-testing</module>
+        <module>spring-kafka/monitoring-demo</module>
 
         <module>spring-cloud-stream/uppercase-transformer</module>
         <module>spring-cloud-stream/uppercase-transformer-old-way</module>
 
         <module>transactions/transactional-message-producer</module>
 
-        <module>confluent-for-kubernetes/nginx-ingress-k3d/monitoring-demo</module>
     </modules>
 
     <build>
