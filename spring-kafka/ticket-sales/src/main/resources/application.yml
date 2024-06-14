@@ -2,7 +2,7 @@ spring:
   kafka:
     streams:
       application-id: ticket-sales
-      bootstrap-servers: localhost:29092
+      bootstrap-servers: localhost:19092
       properties:
         # cache.max.bytes.buffering is deprecated
         statestore.cache.max.bytes: 0

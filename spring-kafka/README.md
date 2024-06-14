@@ -1,3 +1,14 @@
+## Cluster Setup
+
+```bash
+$ docker compose -f cluster-docker-compose.yml up -d
+
+$ docker compose -f cluster-docker-compose.yml down
+```
+
+JMX monitoring stacks
+https://github.com/confluentinc/jmx-monitoring-stacks
+
 
 1. Start up a single instance Zookeeper and single instance Kafka
 
