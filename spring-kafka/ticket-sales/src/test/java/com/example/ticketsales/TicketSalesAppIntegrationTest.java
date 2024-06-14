@@ -25,8 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import static io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 
@@ -94,6 +93,7 @@ public class TicketSalesAppIntegrationTest {
                 .consumerProps("test-group", "true", embeddedKafkaBroker);
         consumerConfigs.put(KEY_DESERIALIZER_CLASS_CONFIG, Serdes.String().deserializer().getClass());
         consumerConfigs.put(VALUE_DESERIALIZER_CLASS_CONFIG, Serdes.String().deserializer().getClass());
+        consumerConfigs.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
         consumer = new DefaultKafkaConsumerFactory<>(consumerConfigs,
                 Serdes.String().deserializer(), Serdes.String().deserializer()).createConsumer();
 

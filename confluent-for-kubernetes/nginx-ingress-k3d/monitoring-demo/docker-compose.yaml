@@ -4,12 +4,12 @@ services:
   monitoring-demo:
     build: .
     container_name: monitoring-demo
-    image: monitoring-demo:v1
+    image: monitoring-demo:0.0.1-SNAPSHOT
     ports:
       - "8080:8080"
 
   prometheus:
-    image: prom/prometheus:v2.35.0
+    image: prom/prometheus:v2.52.0
     container_name: prometheus
     restart: unless-stopped
     volumes:
@@ -18,20 +18,9 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yaml"
     ports:
       - "9090:9090"
-  #      links:
-  #        - node-exporter:node-exporter
-
-
-  #  node-exporter:
-  #    image: prom/node-exporter:latest
-  #    network_mode: host
-  #    container_name: monitoring_node_exporter
-  #    restart: unless-stopped
-  #    expose:
-  #      - 9100
 
   grafana:
-    image: grafana/grafana-oss:8.5.2
+    image: grafana/grafana-oss:10.4.4
     container_name: grafana
     restart: unless-stopped
     user: root
@@ -41,10 +30,3 @@ services:
       - prometheus:prometheus
     volumes:
       - ./data/grafana:/var/lib/grafana
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-#      - GF_SERVER_DOMAIN=localhost
-      # Enabled for logging
-      - GF_LOG_MODE=console file
-      - GF_LOG_FILTERS=alerting.notifier.slack:debug alertmanager:debug ngalert:debug
