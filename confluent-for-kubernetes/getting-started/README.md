@@ -46,6 +46,40 @@ schemas.platform.confluent.io                 2024-06-17T08:35:50Z
 zookeepers.platform.confluent.io              2024-06-17T08:35:50Z
 ```
 
+```bash
+$ kubectl api-resources --api-group=platform.confluent.io
+NAME                    SHORTNAMES                  APIVERSION                      NAMESPACED   KIND
+clusterlinks            cl,clusterlink,clink        platform.confluent.io/v1beta1   true         ClusterLink
+confluentrolebindings   cfrb,confluentrolebinding   platform.confluent.io/v1beta1   true         ConfluentRolebinding
+connectors              ctr,connector               platform.confluent.io/v1beta1   true         Connector
+connects                connect                     platform.confluent.io/v1beta1   true         Connect
+controlcenters          controlcenter,c3            platform.confluent.io/v1beta1   true         ControlCenter
+kafkarestclasses        krc,kafkarestclass          platform.confluent.io/v1beta1   true         KafkaRestClass
+kafkarestproxies        kafkarestproxy,krp          platform.confluent.io/v1beta1   true         KafkaRestProxy
+kafkas                  kafka,broker                platform.confluent.io/v1beta1   true         Kafka
+kafkatopics             kt,topic                    platform.confluent.io/v1beta1   true         KafkaTopic
+kraftcontrollers        kraftcontroller,kraft       platform.confluent.io/v1beta1   true         KRaftController
+kraftmigrationjobs      kraftmigrationjob,kmj       platform.confluent.io/v1beta1   true         KRaftMigrationJob
+ksqldbs                 ksqldb,ksql                 platform.confluent.io/v1beta1   true         KsqlDB
+schemaexporters         se,schemaexporter           platform.confluent.io/v1beta1   true         SchemaExporter
+schemaregistries        schemaregistry,sr           platform.confluent.io/v1beta1   true         SchemaRegistry
+schemas                 schema                      platform.confluent.io/v1beta1   true         Schema
+zookeepers              zookeeper,zk                platform.confluent.io/v1beta1   true         Zookeeper
+```
+
+For storage we will use the default (local-path) storage class 
+
+```bash
+$ kubectl get sc
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  3h14m
+```
+
+For production is recommended:
+
+`volumeBindingMode: WaitForFirstConsumer`
+`reclaimPolicy: Retain`
+`allowVolumeExpansion: true`
 
 ### Install the Confluent Platform
 
@@ -180,7 +214,7 @@ Notice that for the volumes the RECLAIM_POLICY is 'Delete', this is not a produc
 ### Tear down:
 
 ```bash
-$ kubectl delete -f connector.yaml
+$ kubectl delete -f datagen-source-connector.yaml
 $ kubectl delete -f topic.yaml
 $ kubectl delete -f confluent-platform.yaml
 ```

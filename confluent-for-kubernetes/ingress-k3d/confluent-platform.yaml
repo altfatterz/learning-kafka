@@ -1,0 +1,38 @@
+apiVersion: platform.confluent.io/v1beta1
+kind: KRaftController
+metadata:
+  name: kraftcontroller
+  namespace: confluent
+spec:
+  replicas: 1
+  dataVolumeCapacity: 10Gi
+  image:
+    application: docker.io/confluentinc/cp-server:7.6.1
+    init: confluentinc/confluent-init-container:2.8.0
+
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Kafka
+metadata:
+  name: kafka
+  namespace: confluent
+spec:
+  replicas: 1
+  dataVolumeCapacity: 10Gi
+  metricReporter:
+    enabled: true
+  image:
+    application: confluentinc/cp-server:7.6.1
+    init: confluentinc/confluent-init-container:2.8.0
+  listeners:
+    external:
+      externalAccess:
+        type: staticForPortBasedRouting
+        staticForPortBasedRouting:
+          host: demo.example.com
+          portOffset: 9094
+  dependencies:
+    kRaftController:
+      clusterRef:
+        name: kraftcontroller
+
