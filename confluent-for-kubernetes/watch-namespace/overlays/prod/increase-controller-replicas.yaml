@@ -1,0 +1,6 @@
+apiVersion: platform.confluent.io/v1beta1
+kind: KRaftController
+metadata:
+  name: kraftcontroller
+spec:
+  replicas: 3
