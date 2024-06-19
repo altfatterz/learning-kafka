@@ -1,3 +1,5 @@
+# note, if you change the namespace you need to change the dnsNames as well, could not figure out yet how to parameterise this
+
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -7,10 +9,10 @@ spec:
   commonName: kafka
   dnsNames:
   - kafka
-  - kafka.$(NAMESPACE)
-  - kafka.$(NAMESPACE).svc.cluster.local
-  - '*.$(NAMESPACE).svc.cluster.local'
-  - '*.kafka.$(NAMESPACE).svc.cluster.local'
+  - kafka.confluent
+  - kafka.confluent.svc.cluster.local
+  - '*.confluent.svc.cluster.local'
+  - '*.kafka.confluent.svc.cluster.local'
   issuerRef:
     kind: Issuer
     name: ca-issuer
@@ -25,10 +27,10 @@ spec:
   commonName: controller
   dnsNames:
     - controller
-    - controller.$(NAMESPACE)
-    - controller.$(NAMESPACE).svc.cluster.local
-    - '*.$(NAMESPACE).svc.cluster.local'
-    - '*.controller.$(NAMESPACE).svc.cluster.local'
+    - controller.confluent
+    - controller.confluent.svc.cluster.local
+    - '*.confluent.svc.cluster.local'
+    - '*.controller.confluent.svc.cluster.local'
   issuerRef:
     kind: Issuer
     name: ca-issuer
@@ -43,10 +45,10 @@ spec:
   commonName: controlcenter
   dnsNames:
     - controlcenter
-    - controlcenter.$(NAMESPACE)
-    - controlcenter.$(NAMESPACE).svc.cluster.local
-    - '*.$(NAMESPACE).svc.cluster.local'
-    - '*.controlcenter.$(NAMESPACE).svc.cluster.local'
+    - controlcenter.confluent
+    - controlcenter.confluent.svc.cluster.local
+    - '*.confluent.svc.cluster.local'
+    - '*.controlcenter.confluent.svc.cluster.local'
   issuerRef:
     kind: Issuer
     name: ca-issuer

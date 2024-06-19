@@ -1,3 +1,6 @@
+------------- TODO again not working properly ----------------------------------------
+--------------------------------------------------------------------------------------
+
 # Setup a Kafka cluster in Kraft mode and enable encryption using cert-manager 
 
 ### The `tls.key` and `tls.crt` where generated via 
@@ -48,10 +51,17 @@ cert-manager-webhook-64d9455f47-b5rld     1/1     Running   0          27s
 
 ```bash
 $ kubectl get crds | grep cert-manager
+
+certificaterequests.cert-manager.io     2024-06-17T14:51:47Z
+certificates.cert-manager.io            2024-06-17T14:51:47Z
+challenges.acme.cert-manager.io         2024-06-17T14:51:47Z
+clusterissuers.cert-manager.io          2024-06-17T14:51:47Z
+issuers.cert-manager.io                 2024-06-17T14:51:47Z
+orders.acme.cert-manager.io             2024-06-17T14:51:47Z
 ```
 
 Cert Manager supports different modes for certificate authorities:
-- Using a CA Issuer - https://cert-manager.io/docs/configuration/ca/
+- Using a CA Issuer - https://cert-manager.io/docs/configuration/ca/ - we are using this one
 - Using a Self-Signed Issuer - https://cert-manager.io/docs/configuration/selfsigned/
 - Using a Let's Encrypt Issuer - https://cert-manager.io/docs/configuration/acme/
 - Using Vault - https://cert-manager.io/docs/configuration/vault/
@@ -100,10 +110,8 @@ controlcenter-tls   kubernetes.io/tls   3      77s
 kafka-tls           kubernetes.io/tls   3      75s
 ```
 
-TODO -- from here 
-
 ```bash
-$ kubectl get secret ca-key-pair -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
+$ kubectl get secret kafka-tls -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
 $ kubectl get secret kafka-tls -o jsonpath='{.data.tls\.crt}' | base64 -d > tls.crt
 $ kubectl get secret kafka-tls -o jsonpath='{.data.tls\.key}' | base64 -d > tls.key
 $ openssl x509 -in ca.crt -text -noout
@@ -117,19 +125,15 @@ $ brew install cmctl
 $ cmctl inspect secret kafka-tls
 ```
 
+### Set up the Helm Chart
 
-
-
-
-
-
-### Set up the Helm Chart:
 ```bash
 $ helm repo add confluentinc https://packages.confluent.io/helm
 $ helm repo update
 ```
 
-Install Confluent For Kubernetes using Helm:
+### Install Confluent For Kubernetes using Helm
+
 ```bash
 $ helm upgrade --install confluent-operator confluentinc/confluent-for-kubernetes --set kRaftEnabled=true
 ```
@@ -157,17 +161,79 @@ zookeepers.platform.confluent.io              2024-02-12T20:03:59Z
 Check that the Confluent For Kubernetes operator pod comes up and is running:
 
 ```bash
-$ kubectl get pods -n confluent
+$ kubectl get pods
 
 NAME                                  READY   STATUS    RESTARTS   AGE
 confluent-operator-6c7bb75484-k294m   1/1     Running   0          22s
 ```
 
-Deploy a 3 Controller and 3 broker cluster
+### Deploy the Confluent Platform
 
 ```bash
-$ kubectl apply -f kraft/kraft-broker-controller.yaml
+$ kubectl apply -f confluent-platform.yaml
 ```
+
+### Verify pods
+
+Wait until the pods are up
+
+```bash
+$ kubectl get pods
+
+```
+
+Check services
+
+```bash
+$ kubectl get svc
+```
+
+Check statefulsets
+
+```bash
+$ kubectl get sts
+```
+
+### Create a topic
+
+```bash
+$ kubectl apply -f topic.yaml
+```
+
+### Control Center
+
+Expose control center using
+
+```bash
+$ kubectl confluent dashboard controlcenter
+```
+
+Access the https://localhost:9021 and check the certificate in the browser
+
+```bash
+Common Name (CN)	controlcenter
+Organisation (O)	<Not part of certificate>
+Organisational Unit (OU)	<Not part of certificate>
+Common Name (CN)	ca1.mimacom.com
+Organisation (O)	mimacom
+Organisational Unit (OU)	development
+Issued On	Monday 17 June 2024 at 16:53:04
+Expires On	Sunday 15 September 2024 at 16:53:04
+```
+
+--------------------------- TODO ---------------------------------------
+Caused by: java.security.cert.CertificateException: No subject alternative DNS name matching kafka-2.kafka.confluent.svc.cluster.local found.
+at java.base/sun.security.util.HostnameChecker.matchDNS(HostnameChecker.java:212)
+at java.base/sun.security.util.HostnameChecker.match(HostnameChecker.java:103)
+at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:461)
+at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:421)
+at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:283)
+at java.base/sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:141)
+at java.base/sun.security.ssl.CertificateMessage$T12CertificateConsumer.checkServerCerts(CertificateMessage.java:632)
+... 20 more
+--------------------------------------------------------------------------
+
+
 
 Produce and consume from the topics:
 
@@ -182,16 +248,7 @@ $ kafka-console-consumer --from-beginning --topic demotopic --bootstrap-server  
 5
 ```
 
-Install and `port-forward` control center
-
-```bash
-$ kubectl apply -f kraft/control-center.yaml
-$ kubectl port-forward controlcenter-0 9021:9021
-```
-
-```bash
-$ kubectl confluent dashboard controlcenter
-```
+Access it 
 
 Install the sample producer app and topic.
 
