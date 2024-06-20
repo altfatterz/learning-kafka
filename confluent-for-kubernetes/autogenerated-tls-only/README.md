@@ -123,7 +123,7 @@ configuration as a file.
 $ kubectl apply -f secure-producer.yaml
 ```
 
-Check the data in Control Center 
+Check the data in Control Center to verify that the `elastic-0` topic is populated.
 
 
 ### Cleanup
