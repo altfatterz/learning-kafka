@@ -103,10 +103,15 @@ confluent-metrics-7.6.1-ce.jar
 $ kubectl logs -f kafka-0 | grep confluent.telemetry.enabled
 ```
 
+The setup of Health+ involves configuring the Confluent Telemetry Reporter on each Confluent Platform service that will be monitored.
+
+
 Resources:
 
 - Doc: https://docs.confluent.io/platform/current/kafka/monitoring.html
 - Doc: https://docs.confluent.io/operator/current/co-monitor-cp.html
+- Health+ Doc: https://docs.confluent.io/platform/current/health-plus/index.html
 - Code: https://github.com/confluentinc/jmx-monitoring-stacks/tree/main/jmxexporter-prometheus-grafana
 - Code: https://github.com/confluentinc/cp-demo
+- Health+: https://confluent.cloud/health-plus/welcome
 
