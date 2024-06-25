@@ -9,6 +9,7 @@ $ kubectl config set-context --current --namespace confluent
 
 ```bash
 $ kubectl create secret generic telemetry --from-file=./telemetry.txt
+$ kubectl get secret telemetry -o yaml
 ```
 
 ```bash
@@ -47,7 +48,15 @@ Expose control center
 $ kubectl confluent dashboard controlcenter
 ```
 
+View again Confluent Cloud UI
 
+```bash
+$ kubectl apply -f topic.yaml
+$ kubectl apply -f connector.yaml
+```
 
 Resouces: 
+- https://docs.confluent.io/operator/2.8/co-monitor-cp.html
 - https://docs.confluent.io/operator/current/co-monitor-cp.html#telemetry-reporter
+- How to use OpenTelemetry to Trace and Monitor Apache Kafka Systems: https://www.youtube.com/watch?v=-amJ80DZzv8
+- https://www.youtube.com/watch?v=7L1JgkF99LU
