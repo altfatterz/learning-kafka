@@ -55,8 +55,29 @@ $ kubectl apply -f topic.yaml
 $ kubectl apply -f connector.yaml
 ```
 
+- #### Out of sync replicas
+  - Unclean leader elections are caused when there are no available in-sync replicas for a partition 
+  (either due to network issues, lag causing the broker to fall behind, or brokers going down completely), 
+  so an out of sync replica is the only option for the leader.
+
+- #### Under Replicated Partitions
+  - A partition will also be considered under-replicated if the correct number of replicas exist, but one or more of 
+  the replicas have fallen significantly behind the partition leader.
+
+- #### Under Min In-sync Replicas
+  - `min.insync.replicas` is a config on the broker that denotes the minimum number of in-sync replicas required to 
+  exist for a broker to allow acks=all requests. That is, all requests with acks=all won't be processed and receive 
+  an error response if the number of in-sync replicas is below the configured minimum amount.
+  
+- #### Offline partitions
+  - happens when the broker which hosts the elected leader of a partition dies
+    
+Known issue: 
+- If you are operating your cluster in KRaft mode, controllers are currently reported as brokers, and alerts may not function as expected. For more information, see KRaft limitations and known issues. see (https://docs.confluent.io/platform/current/health-plus/health-plus-alerts.html#health-plus-alerts)
+
 Resouces: 
-- https://docs.confluent.io/operator/2.8/co-monitor-cp.html
+- Master documentation: https://docs.confluent.io/operator/2.8/co-monitor-cp.html
+- Monitor Confluent Platform with Health+: https://docs.confluent.io/platform/current/health-plus/index.html
 - https://docs.confluent.io/operator/current/co-monitor-cp.html#telemetry-reporter
 - How to use OpenTelemetry to Trace and Monitor Apache Kafka Systems: https://www.youtube.com/watch?v=-amJ80DZzv8
 - https://www.youtube.com/watch?v=7L1JgkF99LU
