@@ -76,3 +76,7 @@ $ kafka-consumer-groups --bootstrap-server localhost:$KAFKA_PORT --list
 $ kafka-consumer-groups --bootstrap-server localhost:$KAFKA_PORT --describe --list <group-id>
 ```
 
+Resources:
+- Part1: https://medium.com/@nuno.mt.sousa/kafka-schema-registry-junit-and-test-containers-part-i-082d0abfc804
+- Part2: https://medium.com/@nuno.mt.sousa/part-ii-creating-a-kafka-cluster-test-extension-569ed750d137
+- Part3: https://medium.com/@nuno.mt.sousa/part-iii-reducing-test-time-by-removing-all-topics-between-tests-ec9c829f3e9b
