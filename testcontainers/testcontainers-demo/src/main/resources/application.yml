@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: testcontainers-demo
+
+  # By default, SQL database initialization is only performed when using an embedded in-memory database
+  # To always initialize an SQL database, irrespective of its type, we set it to 'always'
+  # schema.sql - can be used to create the schema for JPA-managed entities
+  # data.sql - to populate it
+  # More details: https://docs.spring.io/spring-boot/how-to/data-initialization.html
+  sql.init.mode: always

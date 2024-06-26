@@ -37,6 +37,8 @@
 
         <module>transactions/transactional-message-producer</module>
 
+        <module>testcontainers/testcontainers-demo</module>
+
     </modules>
 
     <build>
