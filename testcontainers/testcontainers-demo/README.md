@@ -27,6 +27,12 @@ $ kafka-topics --bootstrap-server localhost:<port> --version
 ### Kafka with Schema Registry
 
 ```bash
+$ docker ps 
+$ export KAFKA_PORT=59480
+$ export SCHEMA_REGISTRY_PORT=59536
+```
+
+```bash
 $ docker network ls
 ```
 
@@ -38,6 +44,35 @@ $ docker ps --format '{{ .ID }} {{ .Names }} {{ json .Networks }}'
 $ docker network inspect <network-name>
 ```
 
-An example with redis:
+```bash
+$ kafka-topics --bootstrap-server localhost:$KAFKA_PORT --create --topic facts
+$ kafka-topics --bootstrap-server localhost:$KAFKA_PORT --describe --topic facts
+```
 
-https://github.com/redis-developer/testcontainers-redis
+```bash
+$ kafka-avro-console-producer \
+  --topic facts \
+  --bootstrap-server localhost:$KAFKA_PORT \
+  --property schema.registry.url=http://localhost:$SCHEMA_REGISTRY_PORT \
+  --property value.schema="$(< src/main/resources/avro/facts.avsc)" 
+```
+
+```bash
+{"value":"Chuck Norris does not sleep. He waits."}
+{"value":"On the 7th day, God rested ... Chuck Norris took over."}
+{"value":"Chuck Norris can dribble a bowling ball."}
+```
+
+```bash
+$ kafka-avro-console-consumer \
+  --topic facts \
+  --bootstrap-server localhost:$KAFKA_PORT \
+  --property schema.registry.url=http://localhost:$SCHEMA_REGISTRY_PORT \
+  --from-beginning
+```
+
+```bash
+$ kafka-consumer-groups --bootstrap-server localhost:$KAFKA_PORT --list
+$ kafka-consumer-groups --bootstrap-server localhost:$KAFKA_PORT --describe --list <group-id>
+```
+

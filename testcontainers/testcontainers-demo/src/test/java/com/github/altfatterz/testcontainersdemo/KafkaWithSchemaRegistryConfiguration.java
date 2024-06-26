@@ -16,10 +16,15 @@ import org.testcontainers.utility.DockerImageName;
 @EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
 public class KafkaWithSchemaRegistryConfiguration {
 
+
+    //  Starting a Kafka container with a schema registry requires some more work,
+    //  as there is still no official support for a schema registry test container.
+
+    // To get both containers communicating, we need to create a docker network and connect both containers to it
     private static final Network NETWORK = Network.newNetwork();
 
+    // https://java.testcontainers.org/modules/kafka/
     @Bean
-        // https://java.testcontainers.org/modules/kafka/
     KafkaContainer kafkaContainer() {
         return new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"))
                 .withKraft()
