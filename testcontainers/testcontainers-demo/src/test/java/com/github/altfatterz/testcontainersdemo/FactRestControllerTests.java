@@ -26,9 +26,10 @@ class FactRestControllerTests {
 
     private static Logger logger = LoggerFactory.getLogger(FactRepositoryTests.class);
 
+    // will be shared between test methods
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+    private static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
 
     @LocalServerPort
     int port;
