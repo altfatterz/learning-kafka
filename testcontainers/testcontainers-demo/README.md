@@ -10,6 +10,11 @@ PostgreSQL 16.3 (Debian 16.3-1.pgdg120+1) on x86_64-pc-linux-gnu, compiled by gc
 ```
 
 ```bash
+$ echo "Chuck Norris makes onions cry." | http post :8080/facts
+$ http :8080/facts
+```
+
+```bash
 $ mongosh --port <port>
 $ db.version
 7.0.11
@@ -58,9 +63,10 @@ $ kafka-avro-console-producer \
 ```
 
 ```bash
-{"value":"Chuck Norris does not sleep. He waits."}
-{"value":"On the 7th day, God rested ... Chuck Norris took over."}
-{"value":"Chuck Norris can dribble a bowling ball."}
+{"value":"Chuck Norris makes onions cry."}
+{"value":"Chuck Norris can kill two stones with one bird."}
+{"value":"Chuck Norris does not get frostbite. Chuck Norris bites frost."}
+{"value":"Death once had a near-Chuck-Norris experience."}
 ```
 
 ```bash
