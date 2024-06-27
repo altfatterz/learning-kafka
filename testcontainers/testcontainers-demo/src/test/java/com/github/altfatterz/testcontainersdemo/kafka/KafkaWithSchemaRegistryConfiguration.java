@@ -1,21 +1,24 @@
-package com.github.altfatterz.testcontainersdemo;
+package com.github.altfatterz.testcontainersdemo.kafka;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 @TestConfiguration(proxyBeanMethods = false)
-// to avoid getting error with providing the url to the database
-@EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
 public class KafkaWithSchemaRegistryConfiguration {
 
+    @Bean
+    @ServiceConnection
+    PostgreSQLContainer postgresContainer() {
+        return new PostgreSQLContainer<>(DockerImageName.parse("postgres:16"))
+                .withDatabaseName("test").withUsername("postgres").withPassword("secret");
+    }
 
     //  Starting a Kafka container with a schema registry requires some more work,
     //  as there is still no official support for a schema registry test container.

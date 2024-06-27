@@ -1,5 +1,6 @@
-package com.github.altfatterz.testcontainersdemo;
+package com.github.altfatterz.testcontainersdemo.kafka;
 
+import com.github.altfatterz.testcontainersdemo.TestcontainersDemoApplication;
 import org.springframework.boot.SpringApplication;
 
 public class KafkaWithSchemaRegistryApplication {

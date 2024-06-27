@@ -39,10 +39,18 @@ class FactRestController {
     List<Fact> getFacts() {
         return factRepository.findAll();
     }
+
+    @PostMapping("/facts/search")
+    List<Fact> searchFacts(@RequestBody String term) {
+        return factRepository.findFactsByValueContainingIgnoreCase(term);
+    }
 }
 
 @Repository
 interface FactRepository extends JpaRepository<Fact, Long> {
+
+    List<Fact> findFactsByValueContainingIgnoreCase(String value);
+
 }
 
 @Entity
@@ -50,18 +58,24 @@ interface FactRepository extends JpaRepository<Fact, Long> {
 class Fact {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String value;
 
-    public Fact() {}
+    public Fact() {
+    }
 
     public Fact(String value) {
         this.value = value;
     }
 
-    public Long getId() { return id; }
-    public String getValue() { return value; }
+    public Long getId() {
+        return id;
+    }
+
+    public String getValue() {
+        return value;
+    }
 
 }
 
