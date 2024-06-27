@@ -20,6 +20,8 @@ $ db.version
 7.0.11
 ```
 
+### Try also Testcontainer Desktop running locally or on the Cloud
+
 ```bash
 $ kcat -b localhost:52957 -L
  1 brokers:
@@ -28,6 +30,26 @@ $ kcat -b localhost:52957 -L
 $ kafka-topics --bootstrap-server localhost:<port> --version
 7.6.1-ce
 ```
+
+- easy to switch container runtimes
+- config 
+```bash
+$ cat ~/.testcontainers.properties
+$ ls ~/.config/testcontainers/services
+created postgres.toml - to fix the port on host to 5432 - only worked for embedded runtime not for Docker Desktop
+```
+
+```bash
+$ docker context list
+desktop-linux *   Docker Desktop                            unix:///Users/altfatterz/.docker/run/docker.sock
+tcd               Testcontainers Desktop                    tcp://127.0.0.1:51104
+
+$ docker context use tcd
+$ docker ps
+```
+
+Open terminal feature - you can connect to local worker or the cloud worker
+
 
 ### Kafka with Schema Registry
 

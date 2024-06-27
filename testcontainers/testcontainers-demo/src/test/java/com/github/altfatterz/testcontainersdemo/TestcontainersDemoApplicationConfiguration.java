@@ -13,7 +13,9 @@ class TestcontainersDemoApplicationConfiguration {
     @ServiceConnection
     PostgreSQLContainer postgresContainer() {
         return new PostgreSQLContainer<>(DockerImageName.parse("postgres:16"))
-                .withDatabaseName("test").withUsername("postgres").withPassword("secret");
+                .withDatabaseName("test").withUsername("postgres").withPassword("secret")
+                // .withReuse(true)
+                ;
     }
 
 }
