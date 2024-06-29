@@ -1,21 +1,24 @@
 spring:
   kafka:
-    bootstrap-servers:
-      - localhost:19092
+    bootstrap-servers: localhost:19092
     streams:
-      application-id: wordcount
+      application-id: word-count
       bootstrap-servers: localhost:19092
       properties:
-        store.dir: /tmp/kafka-streams
-        default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
-        default.value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+        state.dir: /tmp/kafka-streams
+        # Kafka Streams will commit "as soon as possible"
+        # cache.max.bytes.buffering is deprecated and will be removed in the future
+        statestore.cache.max.bytes: 0
+
+topics:
+  input:
+    name: word-count-input
+  output:
+    name: word-count-output
 
 management:
   endpoints:
-    web:
-      exposure:
-        include:
-          - "*"
+    web.exposure.include: "*"
 
 logging:
   level:
