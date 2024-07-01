@@ -31,6 +31,7 @@
         <module>spring-kafka/transaction-demo</module>
         <module>spring-kafka/spring-kafka-testing</module>
         <module>spring-kafka/monitoring-demo</module>
+        <module>spring-kafka/join-examples</module>
 
         <module>spring-cloud-stream/uppercase-transformer</module>
         <module>spring-cloud-stream/uppercase-transformer-old-way</module>
