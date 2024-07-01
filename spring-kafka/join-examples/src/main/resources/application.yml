@@ -1,0 +1,36 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:19092
+    streams:
+      application-id: join-examples
+#      bootstrap-servers: localhost:19092
+      properties:
+#        auto.offset.reset: earliest
+        state.dir: /tmp/kafka-streams
+        # Kafka Streams will commit "as soon as possible"
+        # cache.max.bytes.buffering is deprecated and will be removed in the future
+        statestore.cache.max.bytes: 0
+
+topics:
+  stream-to-table:
+    input1:
+      name: user-clicks
+      partitions: 1
+      replicas: 1
+    input2:
+      name: user-regions
+      partitions: 1
+      replicas: 1
+    output:
+      name: clicks-per-region
+      partitions: 1
+      replicas: 1
+
+management:
+  endpoints:
+    web.exposure.include: "*"
+
+logging:
+  level:
+    org.springframework.kafka: DEBUG
+
