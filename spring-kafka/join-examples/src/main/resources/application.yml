@@ -1,11 +1,9 @@
 spring:
   kafka:
-    bootstrap-servers: localhost:19092
     streams:
       application-id: join-examples
-#      bootstrap-servers: localhost:19092
+      bootstrap-servers: localhost:19092
       properties:
-#        auto.offset.reset: earliest
         state.dir: /tmp/kafka-streams
         # Kafka Streams will commit "as soon as possible"
         # cache.max.bytes.buffering is deprecated and will be removed in the future
