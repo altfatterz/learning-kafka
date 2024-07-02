@@ -26,6 +26,21 @@ topics:
       name: clicks-per-region
       partitions: 1
       replicas: 1
+  stream-to-stream:
+    window-size-in-seconds: 5
+    input1:
+      name: ad-impressions
+      partitions: 1
+      replicas: 1
+    input2:
+      name: ad-clicks
+      partitions: 1
+      replicas: 1
+    output:
+      name: ad-impressions-and-clicks
+      partitions: 1
+      replicas: 1
+
 
 management:
   endpoints:
