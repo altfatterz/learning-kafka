@@ -1,5 +1,7 @@
 spring:
   kafka:
+    # needed for the admin client to create the initial topics
+    bootstrap-servers: localhost:19092
     streams:
       application-id: join-examples
       bootstrap-servers: localhost:19092
@@ -8,6 +10,7 @@ spring:
         # Kafka Streams will commit "as soon as possible"
         # cache.max.bytes.buffering is deprecated and will be removed in the future
         statestore.cache.max.bytes: 0
+
 
 topics:
   stream-to-table:

@@ -19,9 +19,23 @@ chao:asia
 dave:europe
 ```
 
+```bash
+echo "alice:asia\nbob:americas\nchao:asia\ndave:europe" | kcat -b localhost:19092 -t user-regions -P -K:
+```
+
 2. Produce to user-clicks topic:
 
+Not working currently, cannot send with command line a value of Long
+With the example I always get this exception:
+
+Caused by: org.apache.kafka.common.errors.SerializationException: Size of data received by LongDeserializer is not 8
+at org.apache.kafka.common.serialization.LongDeserializer.deserialize(LongDeserializer.java:30) ~[kafka-clients-3.7.0.jar:na]
+
+
 ```bash
+
+https://stackoverflow.com/questions/44803392/kafka-console-producer-ignores-value-serializer
+
 $ kafka-console-producer \
   --topic user-clicks \
   --bootstrap-server localhost:19092 \
@@ -30,7 +44,8 @@ $ kafka-console-producer \
   --property key.serializer=org.apache.kafka.common.serialization.StringSerializer \
   --property value.serializer=org.apache.kafka.common.serialization.LongSerializer
   
-$ echo "alice:13\nbob:4\nchao:25\ndave:56\neve:78\nalice:40" | kcat -b localhost:19092 -t user-clicks -P -K:
+$ echo "alice:13\nbob:4\nchao:25\nbob:19\ndave:56\neve:78\nalice:40\nfang:99" | kcat -b localhost:19092 -t user-clicks -P -K: -s value=I
+$ echo "alice:13L" | kcat -b localhost:19092 -t user-clicks -P -K: 
   
 alice:13
 bob:4
