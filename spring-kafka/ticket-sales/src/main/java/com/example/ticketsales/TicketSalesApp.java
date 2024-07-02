@@ -7,6 +7,7 @@ import org.springframework.kafka.annotation.EnableKafkaStreams;
 
 @SpringBootApplication
 @EnableConfigurationProperties
+// @EnableKafkaStreams creates the `StreamsBuilderFactoryBean` (which requires a KafkaStreamsConfiguration - created by KafkaAutoConfiguration)
 @EnableKafkaStreams
 public class TicketSalesApp {
 
