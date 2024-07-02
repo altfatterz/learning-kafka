@@ -3,9 +3,6 @@ spring:
     streams:
       application-id: ${random.uuid}
       bootstrap-servers: ${spring.embedded.kafka.brokers}
-      # demonstrate that the test fails without this
-      properties:
-        statestore.cache.max.bytes: 0
 
 topics:
   input:

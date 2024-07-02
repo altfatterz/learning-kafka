@@ -1,5 +1,8 @@
+Based on the example:
 
-### Startup single node cluster
+https://kafka-tutorials.confluent.io/create-stateful-aggregation-count/kstreams.html
+
+### Startup
 
 ```bash
 $ docker compose up -d
@@ -7,27 +10,22 @@ $ docker compose up -d
 
 Wait until the cluster is available in the Confluent Control Center: http://localhost:9021/
 
-### Create the input and output topics:
+### Create the input topic:
 
 ```bash
 $ docker exec -i broker kafka-topics --bootstrap-server broker:9092 --create --topic movie-ticket-sales \
 --partitions 1 --replication-factor 1
+```
 
+### Create the output topic:
+```bash
 $ docker exec -i broker kafka-topics --bootstrap-server broker:9092 --create --topic movie-tickets-sold \
 --partitions 1 --replication-factor 1
-
-$ docker exec -i broker kafka-topics --bootstrap-server broker:9092 --list 
 ```
 
 ### Start the service 
 
-`TicketStalesApp` - via IntelliJ, check the configuration values in the logs for: 
-
-- StreamsConfig values:
-- KafkaAvroSerializerConfig values:
-- KafkaAvroDeserializerConfig values:
-- Topologies:
-- Kafka version: 3.7.0
+`TicketStalesApp` - via IntelliJ, verify the `StreamsConfig` values in the logs 
 
 ### Produce events to the input topic
 
@@ -86,6 +84,3 @@ The Godfather	4 tickets sold
 
 
 
-### Resources:
-
-- https://kafka-tutorials.confluent.io/create-stateful-aggregation-count/kstreams.html

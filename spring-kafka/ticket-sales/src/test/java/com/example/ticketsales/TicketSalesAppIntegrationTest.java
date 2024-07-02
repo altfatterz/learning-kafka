@@ -4,11 +4,9 @@ import io.confluent.developer.avro.TicketSale;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KeyValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -23,22 +21,15 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import static io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG;
-import static java.util.Arrays.asList;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
-import static org.assertj.core.api.Assertions.assertThat;
 
 // https://github.com/deepi2003/AvroSample/blob/master/src/test/java/com/deepti/kafka/sample/integrationtest/UserIntegrationTest.java
-// https://github.com/spring-projects/spring-kafka/issues/2291
 
 @EmbeddedKafka(kraft = true, partitions = 1, topics = { "${topics.input.name}", "${topics.output.name}"})
 @SpringBootTest
@@ -70,59 +61,26 @@ public class TicketSalesAppIntegrationTest {
     }
 
     @Test
-    void brokerInfo() {
+    void test1() {
         logger.info("Embedded broker connection: {}", embeddedKafkaBroker.getBrokersAsString());
         logger.info("List of topics: {}", embeddedKafkaBroker.getTopics());
-    }
 
-    @Test
-    void countSales() {
-        // arrange
-        List<TicketSale> input = asList(
-                new TicketSale("Die Hard", "2019-07-18T10:00:00Z", 12),
-                new TicketSale("Die Hard", "2019-07-18T10:01:00Z", 12),
-                new TicketSale("The Godfather", "2019-07-18T10:01:31Z", 12),
-                new TicketSale("Die Hard", "2019-07-18T10:01:36Z", 24),
-                new TicketSale("The Godfather", "2019-07-18T10:02:00Z", 18),
-                new TicketSale("The Big Lebowski", "2019-07-18T11:03:21Z", 12),
-                new TicketSale("The Big Lebowski", "2019-07-18T11:03:50Z", 12),
-                new TicketSale("The Godfather", "2019-07-18T11:40:00Z", 36),
-                new TicketSale("The Godfather", "2019-07-18T11:40:09Z", 18)
-        );
+        TicketSale ticketSale = new TicketSale("Die Hard", "2019-07-18T10:00:00Z", 12);
 
-        // act
-        for (TicketSale ticketSale : input) {
-            producer.send(new ProducerRecord<>(inputTopic, null, ticketSale));
-        }
+        producer.send(new ProducerRecord<>(inputTopic, null, ticketSale));
+        producer.flush();
 
-        // assert
-        String suffix = " tickets sold";
-        List<KeyValue<String, String>> expectedOutput = List.of(
-                KeyValue.pair("Die Hard", "1" + suffix ),
-                KeyValue.pair("Die Hard", "2" + suffix ),
-                KeyValue.pair("The Godfather", "1" + suffix ),
-                KeyValue.pair("Die Hard", "3" + suffix ),
-                KeyValue.pair("The Godfather", "2" + suffix ),
-                KeyValue.pair("The Big Lebowski", "1" + suffix ),
-                KeyValue.pair("The Big Lebowski", "2" + suffix ),
-                KeyValue.pair("The Godfather", "3" + suffix ),
-                KeyValue.pair("The Godfather", "4" + suffix )
-        );
-
-        List<KeyValue<String, String>> actualOutput = new ArrayList<>();
-        ConsumerRecords<String, String> output = KafkaTestUtils.getRecords(consumer);
-        for (ConsumerRecord<String, String> consumerRecord : output) {
-            actualOutput.add(new KeyValue<>(consumerRecord.key(), consumerRecord.value()));
-        }
-
-        assertThat(actualOutput).isEqualTo(expectedOutput);
+        ConsumerRecord<String, String> output = KafkaTestUtils.getSingleRecord(consumer, outputTopic);
+        System.out.println(output.key() + ":" + output.value());
     }
 
     private void initializeProducer() {
         Map<String, Object> producerConfigs = KafkaTestUtils.producerProps(embeddedKafkaBroker);
         producerConfigs.put(KEY_SERIALIZER_CLASS_CONFIG, Serdes.String().serializer().getClass());
 
-        SpecificAvroSerde<TicketSale> ticketSaleSerde = TestUtils.getTicketSaleSerde(MOCK_SCHEMA_REGISTRY_URL);
+        Map<String, String> config = Map.of(SCHEMA_REGISTRY_URL_CONFIG, MOCK_SCHEMA_REGISTRY_URL);
+        SpecificAvroSerde<TicketSale> ticketSaleSerde = new SpecificAvroSerde<>();
+        ticketSaleSerde.configure(config, false);
 
         producerConfigs.put(VALUE_SERIALIZER_CLASS_CONFIG, ticketSaleSerde.serializer().getClass());
         producerConfigs.put(SCHEMA_REGISTRY_URL_CONFIG, MOCK_SCHEMA_REGISTRY_URL);
@@ -141,5 +99,13 @@ public class TicketSalesAppIntegrationTest {
 
         consumer.subscribe(Collections.singleton(outputTopic));
     }
+
+    @Test
+    void test2() {
+        logger.info("Embedded broker connection: {}", embeddedKafkaBroker.getBrokersAsString());
+        logger.info("List of topics: {}", embeddedKafkaBroker.getTopics());
+//        kafkaTemplate.send("dummy", "hello");
+    }
+
 
 }

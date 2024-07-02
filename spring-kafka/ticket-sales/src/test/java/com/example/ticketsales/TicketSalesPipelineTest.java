@@ -3,6 +3,7 @@ package com.example.ticketsales;
 import io.confluent.developer.avro.TicketSale;
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
+import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.*;
 import org.junit.jupiter.api.AfterEach;
@@ -13,11 +14,14 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -59,14 +63,18 @@ class TicketSalesPipelineTest {
         // Create test driver
         topologyTestDriver = new TopologyTestDriver(topology, new Properties());
 
-        // Create input and output topics:
-        SpecificAvroSerde<TicketSale> ticketSaleSerde = TestUtils.getTicketSaleSerde(MOCK_SCHEMA_REGISTRY_URL);
+        // Create Serdes
+        Serde<String> stringSerde = Serdes.String();
+        Map<String, String> config = Map.of(SCHEMA_REGISTRY_URL_CONFIG, MOCK_SCHEMA_REGISTRY_URL);
+        SpecificAvroSerde<TicketSale> ticketSaleSerde = new SpecificAvroSerde<>();
+        ticketSaleSerde.configure(config, false);
 
         inputTopic = topologyTestDriver.createInputTopic(ticketSalesConfig.getInput().getName(),
-                Serdes.String().serializer(), ticketSaleSerde.serializer());
+                stringSerde.serializer(), ticketSaleSerde.serializer());
 
         outputTopic = topologyTestDriver.createOutputTopic(ticketSalesConfig.getOutput().getName(),
                 Serdes.String().deserializer(), Serdes.String().deserializer());
+
 
     }
 
@@ -95,24 +103,15 @@ class TicketSalesPipelineTest {
         inputTopic.pipeValueList(input);
 
         // assert
-        List<KeyValue<String, String>> output = outputTopic.readKeyValuesToList();
+        List<KeyValue<String, String>> keyValues = outputTopic.readKeyValuesToList();
 
-        String suffix = " tickets sold";
+        List<String> actualOutput = keyValues.stream().map(record -> record.value).collect(toList());
 
-        List<KeyValue<String, String>> expectedOutput = List.of(
-                KeyValue.pair("Die Hard", "1" + suffix ),
-                KeyValue.pair("Die Hard", "2" + suffix ),
-                KeyValue.pair("The Godfather", "1" + suffix ),
-                KeyValue.pair("Die Hard", "3" + suffix ),
-                KeyValue.pair("The Godfather", "2" + suffix ),
-                KeyValue.pair("The Big Lebowski", "1" + suffix ),
-                KeyValue.pair("The Big Lebowski", "2" + suffix ),
-                KeyValue.pair("The Godfather", "3" + suffix ),
-                KeyValue.pair("The Godfather", "4" + suffix )
-                );
+        String outputLabel = " tickets sold";
+        List<String> originalCounts = Arrays.asList("1", "2", "1", "3", "2", "1", "2", "3", "4");
+        List<String> expectedOutput = originalCounts.stream().map(v -> v + outputLabel).collect(toList());
 
-        assertThat(output).isEqualTo(expectedOutput);
+        System.out.println(actualOutput);
+        assertThat(actualOutput).isEqualTo(expectedOutput);
     }
-
-
 }

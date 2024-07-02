@@ -4,8 +4,8 @@ spring:
       application-id: ticket-sales
       bootstrap-servers: localhost:19092
       properties:
-        # cache.max.bytes.buffering is deprecated and will be removed in the future
-#        statestore.cache.max.bytes: 0
+        # cache.max.bytes.buffering is deprecated
+        statestore.cache.max.bytes: 0
         schema.registry.url: http://localhost:8081
 
 topics:
