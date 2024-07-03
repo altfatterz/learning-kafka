@@ -9,7 +9,7 @@ spring:
         state.dir: /tmp/kafka-streams
         # Kafka Streams will commit "as soon as possible"
         # cache.max.bytes.buffering is deprecated and will be removed in the future
-        statestore.cache.max.bytes: 0
+#        statestore.cache.max.bytes: 0
 
 
 topics:
