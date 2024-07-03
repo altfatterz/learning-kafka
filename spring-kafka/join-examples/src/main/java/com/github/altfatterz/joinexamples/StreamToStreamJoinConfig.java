@@ -19,17 +19,17 @@ public class StreamToStreamJoinConfig {
     // https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-kafka
 
     @Bean
-    public NewTopic input1() {
+    public NewTopic streamToStreamInput1() {
         return TopicBuilder.name(input1).build();
     }
 
     @Bean
-    public NewTopic input2() {
+    public NewTopic streamToStreamInput2() {
         return TopicBuilder.name(input2).build();
     }
 
     @Bean
-    public NewTopic output() {
+    public NewTopic streamToStreamOutput() {
         return TopicBuilder.name(output).build();
     }
 

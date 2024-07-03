@@ -17,18 +17,18 @@ public class StreamToTableJoinConfig {
     // Spring Boot Apache Kafka Support
     // https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-kafka
 
-    @Bean(name = "dummy1")
-    public NewTopic input1() {
+    @Bean
+    public NewTopic streamToTableInput1() {
         return TopicBuilder.name(input1).build();
     }
 
-    @Bean(name = "dummy2")
-    public NewTopic input2() {
+    @Bean
+    public NewTopic streamToTableInput2() {
         return TopicBuilder.name(input2).build();
     }
 
-    @Bean(name = "dummy3")
-    public NewTopic output() {
+    @Bean
+    public NewTopic streamToTableOutput() {
         return TopicBuilder.name(output).build();
     }
 

@@ -7,17 +7,3 @@ spring:
       properties:
         statestore.cache.max.bytes: 0
 
-topics:
-  stream-to-table:
-    input1:
-      name: user-clicks
-      partitions: 1
-      replicas: 1
-    input2:
-      name: user-regions
-      partitions: 1
-      replicas: 1
-    output:
-      name: clicks-per-region
-      partitions: 1
-      replicas: 1

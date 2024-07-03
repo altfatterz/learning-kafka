@@ -67,9 +67,11 @@ public class StreamToStreamJoinPipelineTest {
         Instant now = Instant.now();
 
         inputTopic1.pipeInput("car-advertisement", "shown", now);
-        inputTopic1.pipeInput("newspaper-advertisement", "shown", now.plusSeconds(config.getWindowSizeInSeconds() + 2));
+        inputTopic1.pipeInput("newspaper-advertisement", "shown",
+                now.plusSeconds(config.getWindowSizeInSeconds() + 2));
 
-        inputTopic2.pipeInput("newspaper-advertisement", "clicked", now.plusSeconds(config.getWindowSizeInSeconds() + 1));
+        inputTopic2.pipeInput("newspaper-advertisement", "clicked",
+                now.plusSeconds(config.getWindowSizeInSeconds() + 1));
 
         final List<KeyValue<String, String>> expectedResults = Arrays.asList(
                 new KeyValue<>("car-advertisement", "shown/not-clicked-yet"),
