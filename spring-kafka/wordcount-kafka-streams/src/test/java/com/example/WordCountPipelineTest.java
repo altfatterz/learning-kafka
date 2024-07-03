@@ -82,7 +82,6 @@ public class WordCountPipelineTest {
 
         assertThat(output).isEqualTo(expectedOutput);
 
-
     }
 
 }
