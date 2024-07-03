@@ -57,6 +57,7 @@ public class TicketSalesPipeline {
         final SpecificAvroSerde<TicketSale> serde = new SpecificAvroSerde<>();
         Map<String, String> config = new HashMap<>();
         String schemaRegistryURL = kafkaProperties.getStreams().getProperties().get(SCHEMA_REGISTRY_URL_CONFIG);
+        logger.info("setting the ticketSaleSerde - schemaRegistryURL:" + schemaRegistryURL);
         config.put(SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
         serde.configure(config, false);
         return serde;

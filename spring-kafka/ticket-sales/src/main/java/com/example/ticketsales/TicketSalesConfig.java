@@ -3,6 +3,7 @@ package com.example.ticketsales;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
@@ -16,7 +17,7 @@ public class TicketSalesConfig {
     // Spring Boot Apache Kafka Support
     // https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-kafka
 
-    //@Bean
+    @Bean
     public NewTopic inputTopic() {
         return TopicBuilder.name(input.getName())
                 .partitions(input.getPartitions())
@@ -24,7 +25,7 @@ public class TicketSalesConfig {
                 .build();
     }
 
-    //@Bean
+    @Bean
     public NewTopic outputTopic() {
         return TopicBuilder.name(output.getName())
                 .partitions(output.getPartitions())
@@ -54,8 +55,10 @@ public class TicketSalesConfig {
         private int partitions;
         private int replicas;
 
-        public Topic(String name) {
+        public Topic(String name, int partitions, int replicas) {
             this.name = name;
+            this.partitions = partitions;
+            this.replicas = replicas;
         }
 
         public String getName() {

@@ -1,6 +1,5 @@
 package com.github.altfatterz.joinexamples;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -106,14 +105,14 @@ public class StreamToStreamTestcontainerIntegrationTest {
     }
 
     private void initializeProducer() {
-        Map<String, Object> producerConfigs1 = new HashedMap();
+        Map<String, Object> producerConfigs1 = new HashMap();
         producerConfigs1.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
         producerConfigs1.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, Serdes.String().serializer().getClass());
         producerConfigs1.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, Serdes.String().serializer().getClass());
         adImpressionsProducer = new DefaultKafkaProducerFactory<>(producerConfigs1,
                 Serdes.String().serializer(), Serdes.String().serializer()).createProducer();
 
-        Map<String, Object> producerConfigs2 = new HashedMap();
+        Map<String, Object> producerConfigs2 = new HashMap();
         producerConfigs2.put(BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
         producerConfigs2.put(KEY_SERIALIZER_CLASS_CONFIG, Serdes.String().serializer().getClass());
         producerConfigs2.put(VALUE_SERIALIZER_CLASS_CONFIG, Serdes.String().serializer().getClass());
@@ -123,7 +122,7 @@ public class StreamToStreamTestcontainerIntegrationTest {
     }
 
     private void initializeConsumer() {
-        Map<String, Object> consumerConfigs = new HashedMap();
+        Map<String, Object> consumerConfigs = new HashMap();
         consumerConfigs.put(BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
         consumerConfigs.put(GROUP_ID_CONFIG, "test-group");
         consumerConfigs.put(KEY_DESERIALIZER_CLASS_CONFIG, Serdes.String().deserializer().getClass());

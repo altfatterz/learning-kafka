@@ -6,13 +6,18 @@ spring:
       properties:
         # cache.max.bytes.buffering is deprecated and will be removed in the future
 #        statestore.cache.max.bytes: 0
+        state.dir: /tmp/kafka-streams
         schema.registry.url: http://localhost:8081
 
 topics:
   input:
     name: movie-ticket-sales
+    partitions: 1
+    replicas: 1
   output:
     name: movie-tickets-sold
+    partitions: 1
+    replicas: 1
 
 
 logging:

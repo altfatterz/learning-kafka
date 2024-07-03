@@ -1,0 +1,9 @@
+spring:
+  kafka:
+    # needed for the admin client to create the initial topics
+    streams:
+      application-id: ${random.uuid}
+      # demonstrate that the test fails without this
+      properties:
+        statestore.cache.max.bytes: 0
+

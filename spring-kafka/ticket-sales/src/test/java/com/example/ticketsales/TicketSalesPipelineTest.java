@@ -43,8 +43,8 @@ class TicketSalesPipelineTest {
 
     @BeforeEach
     void beforeEach() {
-        ticketSalesConfig.setInput(new TicketSalesConfig.Topic("input"));
-        ticketSalesConfig.setOutput(new TicketSalesConfig.Topic("output"));
+        ticketSalesConfig.setInput(new TicketSalesConfig.Topic("input", 1, 1));
+        ticketSalesConfig.setOutput(new TicketSalesConfig.Topic("output", 1, 1));
 
         Mockito.when(kafkaProperties.getStreams().getProperties().
                 get(SCHEMA_REGISTRY_URL_CONFIG)).thenReturn(MOCK_SCHEMA_REGISTRY_URL);
@@ -100,16 +100,16 @@ class TicketSalesPipelineTest {
         String suffix = " tickets sold";
 
         List<KeyValue<String, String>> expectedOutput = List.of(
-                KeyValue.pair("Die Hard", "1" + suffix ),
-                KeyValue.pair("Die Hard", "2" + suffix ),
-                KeyValue.pair("The Godfather", "1" + suffix ),
-                KeyValue.pair("Die Hard", "3" + suffix ),
-                KeyValue.pair("The Godfather", "2" + suffix ),
-                KeyValue.pair("The Big Lebowski", "1" + suffix ),
-                KeyValue.pair("The Big Lebowski", "2" + suffix ),
-                KeyValue.pair("The Godfather", "3" + suffix ),
-                KeyValue.pair("The Godfather", "4" + suffix )
-                );
+                KeyValue.pair("Die Hard", "1" + suffix),
+                KeyValue.pair("Die Hard", "2" + suffix),
+                KeyValue.pair("The Godfather", "1" + suffix),
+                KeyValue.pair("Die Hard", "3" + suffix),
+                KeyValue.pair("The Godfather", "2" + suffix),
+                KeyValue.pair("The Big Lebowski", "1" + suffix),
+                KeyValue.pair("The Big Lebowski", "2" + suffix),
+                KeyValue.pair("The Godfather", "3" + suffix),
+                KeyValue.pair("The Godfather", "4" + suffix)
+        );
 
         assertThat(output).isEqualTo(expectedOutput);
     }
