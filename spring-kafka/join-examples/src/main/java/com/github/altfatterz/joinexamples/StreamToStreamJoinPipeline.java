@@ -14,31 +14,29 @@ import java.time.Duration;
 @Configuration
 public class StreamToStreamJoinPipeline {
 
-    private final StreamToStreamJoinConfig config;
+    private StreamToStreamJoinConfig config;
+    private StreamToStreamValueJoiner joiner;
 
     private static final Logger logger = LoggerFactory.getLogger(StreamToStreamJoinPipeline.class);
 
-    public StreamToStreamJoinPipeline(StreamToStreamJoinConfig config) {
+    public StreamToStreamJoinPipeline(StreamToStreamJoinConfig config, StreamToStreamValueJoiner joiner) {
         this.config = config;
+        this.joiner = joiner;
     }
 
-    @Bean
+    @Bean(name = "stream-to-stream")
     public KStream<String, String> buildPipeline(StreamsBuilder streamsBuilder) {
 
-        KStream<String, String> adImpressions = streamsBuilder.stream(config.getInput1().getName(),
+        KStream<String, String> adImpressions = streamsBuilder.stream(config.getInput1(),
                 Consumed.with(Serdes.String(), Serdes.String()));
 
-        KStream<String, String> adClicks = streamsBuilder.stream(config.getInput2().getName(),
+        KStream<String, String> adClicks = streamsBuilder.stream(config.getInput2(),
                 Consumed.with(Serdes.String(), Serdes.String()));
 
         // Inner Join - only if both sides are available within the defined time window a joined result emitted
         KStream<String, String> adImpressionsAndClicks = adImpressions
-                .outerJoin(adClicks, (readOnlyKey, impressionValue, clickValue) -> {
-                            logger.info("inside value joiner with key: " + readOnlyKey +
-                                    "clickValue:" + clickValue + "impressionValue:" + impressionValue);
-                            return clickValue == null ?
-                                    impressionValue + "/not-clicked-yet" : impressionValue + "/" + clickValue;
-                        },
+                .peek((key, value) -> logger.info("key: {}, value: {}", key, value))
+                .outerJoin(adClicks, joiner,
                         // KStream-KStream joins are always windowed joins, hence we must provide a join window.
                         JoinWindows.ofTimeDifferenceWithNoGrace(Duration.ofSeconds(5)),
                         StreamJoined.with(
@@ -46,10 +44,10 @@ public class StreamToStreamJoinPipeline {
                                 Serdes.String(), /* left value */
                                 Serdes.String()  /* right value */
                         )
-                );
+                ).peek((key, value) -> logger.info("key: {}, value: {}", key, value));
 
         // Write the results to the output topic.
-        adImpressionsAndClicks.to(config.getOutput().getName(), Produced.with(Serdes.String(), Serdes.String()));
+        adImpressionsAndClicks.to(config.getOutput(), Produced.with(Serdes.String(), Serdes.String()));
 
         return adImpressionsAndClicks;
     }

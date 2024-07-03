@@ -14,32 +14,15 @@ spring:
 
 topics:
   stream-to-table:
-    input1:
-      name: user-clicks
-      partitions: 1
-      replicas: 1
-    input2:
-      name: user-regions
-      partitions: 1
-      replicas: 1
-    output:
-      name: clicks-per-region
-      partitions: 1
-      replicas: 1
+    input1: user-clicks
+    input2: user-regions
+    output: clicks-per-region
+
   stream-to-stream:
     window-size-in-seconds: 5
-    input1:
-      name: ad-impressions
-      partitions: 1
-      replicas: 1
-    input2:
-      name: ad-clicks
-      partitions: 1
-      replicas: 1
-    output:
-      name: ad-impressions-and-clicks
-      partitions: 1
-      replicas: 1
+    input1: ad-impressions
+    input2: ad-clicks
+    output: ad-impressions-and-clicks
 
 
 management:

@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -20,25 +19,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class StreamToStreamJoinPipelineTest {
 
     private TopologyTestDriver topologyTestDriver;
-
-    private StreamToStreamJoinConfig config = new StreamToStreamJoinConfig();
-
     private TestInputTopic<String, String> inputTopic1;
     private TestInputTopic<String, String> inputTopic2;
-
     private TestOutputTopic<String, String> outputTopic;
+
+    // dependencies
+    private StreamToStreamValueJoiner joiner = new StreamToStreamValueJoiner();
+    private StreamToStreamJoinConfig config = new StreamToStreamJoinConfig();
 
     // under test
     private StreamToStreamJoinPipeline streamToStreamJoinPipeline;
 
     @BeforeEach
     void beforeEach() {
-        config.setInput1(new StreamToStreamJoinConfig.Topic("input1", 1, 1));
-        config.setInput2(new StreamToStreamJoinConfig.Topic("input2", 1, 1));
-        config.setOutput(new StreamToStreamJoinConfig.Topic("output", 1, 1));
+        config.setInput1("input1");
+        config.setInput2("input2");
+        config.setOutput("output");
         config.setWindowSizeInSeconds(5);
 
-        streamToStreamJoinPipeline = new StreamToStreamJoinPipeline(config);
+        streamToStreamJoinPipeline = new StreamToStreamJoinPipeline(config, joiner);
 
         // Create topology
         StreamsBuilder streamsBuilder = new StreamsBuilder();
@@ -48,13 +47,13 @@ public class StreamToStreamJoinPipelineTest {
         // Create test driver
         topologyTestDriver = new TopologyTestDriver(topology, new Properties());
 
-        inputTopic1 = topologyTestDriver.createInputTopic(config.getInput1().getName(),
+        inputTopic1 = topologyTestDriver.createInputTopic(config.getInput1(),
                 Serdes.String().serializer(), Serdes.String().serializer());
 
-        inputTopic2 = topologyTestDriver.createInputTopic(config.getInput2().getName(),
+        inputTopic2 = topologyTestDriver.createInputTopic(config.getInput2(),
                 Serdes.String().serializer(), Serdes.String().serializer());
 
-        outputTopic = topologyTestDriver.createOutputTopic(config.getOutput().getName(),
+        outputTopic = topologyTestDriver.createOutputTopic(config.getOutput(),
                 Serdes.String().deserializer(), Serdes.String().deserializer());
     }
 

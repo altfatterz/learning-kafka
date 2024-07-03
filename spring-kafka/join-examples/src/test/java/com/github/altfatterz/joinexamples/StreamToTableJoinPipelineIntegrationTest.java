@@ -31,22 +31,22 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 import static org.assertj.core.api.Assertions.assertThat;
 
 @EmbeddedKafka(kraft = true, partitions = 1,
-        topics = {"${topics.stream-to-table.input1.name}",
-                "${topics.stream-to-table.input2.name}",
-                "${topics.stream-to-table.output.name}"})
+        topics = {"${topics.stream-to-table.input1}",
+                "${topics.stream-to-table.input2}",
+                "${topics.stream-to-table.output}"})
 @SpringBootTest
 @ActiveProfiles("test")
 public class StreamToTableJoinPipelineIntegrationTest {
 
     private static Logger logger = LoggerFactory.getLogger(StreamToTableJoinPipelineIntegrationTest.class);
 
-    @Value("${topics.stream-to-table.input1.name}")
+    @Value("${topics.stream-to-table.input1}")
     private String userClicksTopic;
 
-    @Value("${topics.stream-to-table.input2.name}")
+    @Value("${topics.stream-to-table.input2}")
     private String userRegionsTopic;
 
-    @Value("${topics.stream-to-table.output.name}")
+    @Value("${topics.stream-to-table.output}")
     private String outputTopic;
 
     @Autowired

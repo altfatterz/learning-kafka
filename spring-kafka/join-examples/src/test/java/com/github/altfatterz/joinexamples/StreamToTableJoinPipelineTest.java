@@ -32,9 +32,9 @@ class StreamToTableJoinPipelineTest {
 
     @BeforeEach
     void beforeEach() {
-        config.setInput1(new StreamToTableJoinConfig.Topic("input1" ,1, 1));
-        config.setInput2(new StreamToTableJoinConfig.Topic("input2", 1, 1));
-        config.setOutput(new StreamToTableJoinConfig.Topic("output", 1,1));
+        config.setInput1("input1");
+        config.setInput2("input2");
+        config.setOutput("output");
 
         streamToTableJoinPipeline = new StreamToTableJoinPipeline(config);
 
@@ -46,13 +46,13 @@ class StreamToTableJoinPipelineTest {
         // Create test driver
         topologyTestDriver = new TopologyTestDriver(topology, new Properties());
 
-        inputTopic1 = topologyTestDriver.createInputTopic(config.getInput1().getName(),
+        inputTopic1 = topologyTestDriver.createInputTopic(config.getInput1(),
                 Serdes.String().serializer(), Serdes.Long().serializer());
 
-        inputTopic2 = topologyTestDriver.createInputTopic(config.getInput2().getName(),
+        inputTopic2 = topologyTestDriver.createInputTopic(config.getInput2(),
                 Serdes.String().serializer(), Serdes.String().serializer());
 
-        outputTopic = topologyTestDriver.createOutputTopic(config.getOutput().getName(),
+        outputTopic = topologyTestDriver.createOutputTopic(config.getOutput(),
                 Serdes.String().deserializer(), Serdes.Long().deserializer());
     }
 

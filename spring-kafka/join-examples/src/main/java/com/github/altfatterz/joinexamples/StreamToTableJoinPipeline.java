@@ -23,10 +23,10 @@ public class StreamToTableJoinPipeline {
     @Bean
     public KTable<String, Long> buildPipeline(StreamsBuilder streamsBuilder) {
 
-        KStream<String, Long> userClicksStream = streamsBuilder.stream(config.getInput1().getName(),
+        KStream<String, Long> userClicksStream = streamsBuilder.stream(config.getInput1(),
                 Consumed.with(Serdes.String(), Serdes.Long()));
 
-        KTable<String, String> userRegionsTable = streamsBuilder.table(config.getInput2().getName(),
+        KTable<String, String> userRegionsTable = streamsBuilder.table(config.getInput2(),
                 Consumed.with(Serdes.String(), Serdes.String()));
 
         KTable<String, Long> clicksPerRegion = userClicksStream.leftJoin(
@@ -43,7 +43,7 @@ public class StreamToTableJoinPipeline {
                 .reduce(Long::sum, Materialized.as("region-to-clicks-reducer"));
 
         // Write the (continuously updating) results to the output topic.
-        clicksPerRegion.toStream().to(config.getOutput().getName(), Produced.with(Serdes.String(), Serdes.Long()));
+        clicksPerRegion.toStream().to(config.getOutput(), Produced.with(Serdes.String(), Serdes.Long()));
 
         return clicksPerRegion;
     }

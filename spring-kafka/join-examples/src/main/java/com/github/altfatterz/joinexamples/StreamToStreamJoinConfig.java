@@ -10,9 +10,9 @@ import org.springframework.kafka.config.TopicBuilder;
 @ConfigurationProperties("topics.stream-to-stream")
 public class StreamToStreamJoinConfig {
 
-    private Topic input1;
-    private Topic input2;
-    private Topic output;
+    private String input1;
+    private String input2;
+    private String output;
     private Integer windowSizeInSeconds;
 
     // Spring Boot Apache Kafka Support
@@ -20,49 +20,40 @@ public class StreamToStreamJoinConfig {
 
     @Bean
     public NewTopic input1() {
-        return TopicBuilder.name(input1.getName())
-                .partitions(input1.getPartitions())
-                .replicas(input1.getReplicas())
-                .build();
+        return TopicBuilder.name(input1).build();
     }
 
     @Bean
     public NewTopic input2() {
-        return TopicBuilder.name(input2.getName())
-                .partitions(input2.getPartitions())
-                .replicas(input2.getReplicas())
-                .build();
+        return TopicBuilder.name(input2).build();
     }
 
     @Bean
     public NewTopic output() {
-        return TopicBuilder.name(output.getName())
-                .partitions(output.getPartitions())
-                .replicas(output.getReplicas())
-                .build();
+        return TopicBuilder.name(output).build();
     }
 
-    public Topic getInput1() {
+    public String getInput1() {
         return input1;
     }
 
-    public Topic getInput2() {
-        return input2;
-    }
-
-    public Topic getOutput() {
-        return output;
-    }
-
-    public void setInput1(Topic input1) {
+    public void setInput1(String input1) {
         this.input1 = input1;
     }
 
-    public void setInput2(Topic input2) {
+    public String getInput2() {
+        return input2;
+    }
+
+    public void setInput2(String input2) {
         this.input2 = input2;
     }
 
-    public void setOutput(Topic output) {
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
         this.output = output;
     }
 
@@ -72,31 +63,5 @@ public class StreamToStreamJoinConfig {
 
     public void setWindowSizeInSeconds(Integer windowSizeInSeconds) {
         this.windowSizeInSeconds = windowSizeInSeconds;
-    }
-
-    public static class Topic {
-
-        private String name;
-        private int partitions;
-        private int replicas;
-
-        public Topic(String name, int partitions, int replicas) {
-            this.name = name;
-            this.partitions = partitions;
-            this.replicas = replicas;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getPartitions() {
-            return partitions;
-        }
-
-        public int getReplicas() {
-            return replicas;
-        }
-
     }
 }

@@ -10,84 +10,49 @@ import org.springframework.kafka.config.TopicBuilder;
 @ConfigurationProperties("topics.stream-to-table")
 public class StreamToTableJoinConfig {
 
-    private Topic input1;
-    private Topic input2;
-    private Topic output;
+    private String input1;
+    private String input2;
+    private String output;
 
     // Spring Boot Apache Kafka Support
     // https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-kafka
 
-    @Bean
+    @Bean(name = "dummy1")
     public NewTopic input1() {
-        return TopicBuilder.name(input1.getName())
-                .partitions(input1.getPartitions())
-                .replicas(input1.getReplicas())
-                .build();
+        return TopicBuilder.name(input1).build();
     }
 
-    @Bean
+    @Bean(name = "dummy2")
     public NewTopic input2() {
-        return TopicBuilder.name(input2.getName())
-                .partitions(input2.getPartitions())
-                .replicas(input2.getReplicas())
-                .build();
+        return TopicBuilder.name(input2).build();
     }
 
-    @Bean
+    @Bean(name = "dummy3")
     public NewTopic output() {
-        return TopicBuilder.name(output.getName())
-                .partitions(output.getPartitions())
-                .replicas(output.getReplicas())
-                .build();
+        return TopicBuilder.name(output).build();
     }
 
-    public Topic getInput1() {
+    public String getInput1() {
         return input1;
     }
 
-    public Topic getInput2() {
-        return input2;
-    }
-
-    public Topic getOutput() {
-        return output;
-    }
-
-    public void setInput1(Topic input1) {
+    public void setInput1(String input1) {
         this.input1 = input1;
     }
 
-    public void setInput2(Topic input2) {
+    public String getInput2() {
+        return input2;
+    }
+
+    public void setInput2(String input2) {
         this.input2 = input2;
     }
 
-    public void setOutput(Topic output) {
-        this.output = output;
+    public String getOutput() {
+        return output;
     }
 
-    public static class Topic {
-
-        private String name;
-        private int partitions;
-        private int replicas;
-
-        public Topic(String name, int partitions, int replicas) {
-            this.name = name;
-            this.partitions = partitions;
-            this.replicas = replicas;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getPartitions() {
-            return partitions;
-        }
-
-        public int getReplicas() {
-            return replicas;
-        }
-
+    public void setOutput(String output) {
+        this.output = output;
     }
 }
