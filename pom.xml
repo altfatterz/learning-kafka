@@ -14,7 +14,6 @@
 
         <module>kafka-streams/kafka-streams-getting-started</module>
         <module>kafka-streams/json-payload</module>
-        <module>kafka-streams/join-example</module>
         <module>kafka-streams/count-example</module>
 
         <module>schema-registry/avro-examples</module>
