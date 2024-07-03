@@ -10,6 +10,7 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.utility.DockerImageName;
 
 import java.math.BigDecimal;
@@ -33,6 +34,11 @@ class ProductPriceChangedEventHandlerTest {
     @Container
     @ServiceConnection
     static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+
+    // start containers in parallel
+    static {
+        Startables.deepStart(postgres, kafka).join();
+    }
 
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
