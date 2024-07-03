@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -47,9 +48,6 @@ public class TicketSalesAppIntegrationTest {
 
     private static Logger logger = LoggerFactory.getLogger(TicketSalesAppIntegrationTest.class);
 
-    private static final String SCHEMA_REGISTRY_SCOPE = TicketSalesAppIntegrationTest.class.getName();
-    private static final String MOCK_SCHEMA_REGISTRY_URL = "mock://" + SCHEMA_REGISTRY_SCOPE;
-
     @Value("${topics.input.name}")
     private String inputTopic;
 
@@ -60,7 +58,10 @@ public class TicketSalesAppIntegrationTest {
     // the embedded broker is cached in test application context
     private EmbeddedKafkaBroker embeddedKafkaBroker;
 
-    private Producer<Object, Object> producer;
+    @Autowired
+    private KafkaProperties kafkaProperties;
+
+    private Producer<String, TicketSale> producer;
     private Consumer<String, String> consumer;
 
     @BeforeEach
@@ -122,12 +123,14 @@ public class TicketSalesAppIntegrationTest {
         Map<String, Object> producerConfigs = KafkaTestUtils.producerProps(embeddedKafkaBroker);
         producerConfigs.put(KEY_SERIALIZER_CLASS_CONFIG, Serdes.String().serializer().getClass());
 
-        SpecificAvroSerde<TicketSale> ticketSaleSerde = TestUtils.getTicketSaleSerde(MOCK_SCHEMA_REGISTRY_URL);
+        SpecificAvroSerde<TicketSale> ticketSaleSerde = TestUtils
+                .getTicketSaleSerde(kafkaProperties.getStreams().getProperties().get(SCHEMA_REGISTRY_URL_CONFIG));
 
         producerConfigs.put(VALUE_SERIALIZER_CLASS_CONFIG, ticketSaleSerde.serializer().getClass());
-        producerConfigs.put(SCHEMA_REGISTRY_URL_CONFIG, MOCK_SCHEMA_REGISTRY_URL);
+        producerConfigs.put(SCHEMA_REGISTRY_URL_CONFIG,
+                kafkaProperties.getStreams().getProperties().get(SCHEMA_REGISTRY_URL_CONFIG));
 
-        producer = new DefaultKafkaProducerFactory<>(producerConfigs).createProducer();
+        producer = new DefaultKafkaProducerFactory<String, TicketSale>(producerConfigs).createProducer();
     }
 
     private void initializeConsumer() {

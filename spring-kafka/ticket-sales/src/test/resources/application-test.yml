@@ -6,9 +6,4 @@ spring:
       # demonstrate that the test fails without this
       properties:
         statestore.cache.max.bytes: 0
-
-topics:
-  input:
-    name: movie-ticket-sales
-  output:
-    name: movie-tickets-sold
+        schema.registry.url: mock://schema-registry:8081
