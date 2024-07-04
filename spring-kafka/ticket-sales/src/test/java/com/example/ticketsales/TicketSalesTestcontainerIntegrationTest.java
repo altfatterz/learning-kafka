@@ -34,10 +34,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 import static io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG;
@@ -45,6 +42,7 @@ import static java.util.Arrays.asList;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Testcontainers
@@ -133,10 +131,13 @@ public class TicketSalesTestcontainerIntegrationTest {
                 KeyValue.pair("The Godfather", "4" + suffix)
         );
 
-        ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(30));
-        for (ConsumerRecord<String, String> record : records) {
-            System.out.println(record.key() + ":" + record.value());
+        List<KeyValue<String, String>> actualOutput = new ArrayList<>();
+        ConsumerRecords<String, String> output = KafkaTestUtils.getRecords(consumer);
+        for (ConsumerRecord<String, String> consumerRecord : output) {
+            actualOutput.add(new KeyValue<>(consumerRecord.key(), consumerRecord.value()));
         }
+
+        assertThat(actualOutput).isEqualTo(expectedOutput);
 
     }
 

@@ -8,9 +8,11 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +24,9 @@ public class TicketSalesPipeline {
 
     private final KafkaProperties kafkaProperties;
     private final TicketSalesConfig ticketSalesConfig;
+
+    @Autowired
+    private Environment env;
 
     private static final Logger logger = LoggerFactory.getLogger(TicketSalesPipeline.class);
 
@@ -56,7 +61,13 @@ public class TicketSalesPipeline {
     private SpecificAvroSerde<TicketSale> ticketSaleSerde() {
         final SpecificAvroSerde<TicketSale> serde = new SpecificAvroSerde<>();
         Map<String, String> config = new HashMap<>();
+
+        // This does not work with testcontainers, the @DynamicPropertySource is
+        // not updating the KafkaProperties only the Environment
         String schemaRegistryURL = kafkaProperties.getStreams().getProperties().get(SCHEMA_REGISTRY_URL_CONFIG);
+
+        // String schemaRegistryURL = env.getProperty("spring.kafka.streams.properties[0].schema.registry.url");
+
         logger.info("setting the ticketSaleSerde - schemaRegistryURL:" + schemaRegistryURL);
         config.put(SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
         serde.configure(config, false);
