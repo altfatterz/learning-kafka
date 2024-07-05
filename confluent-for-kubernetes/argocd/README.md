@@ -28,6 +28,12 @@ $ kubectl port-forward svc/argocd-server 8080:443
 
 Access https://localhost:8080
 
+### ArgoCD Swagger UI
+
+Access https://localhost:8080/swagger-ui
+
+
+
 ### Login Using the CLI
 
 ```bash
@@ -60,5 +66,15 @@ $ argocd app create guestbook \
 
 ```bash
 $ argocd app get guestbook
+$ argocd app sync guestbook --dry-run
 $ argocd app sync guestbook
 ```
+
+### Check the application
+
+```bash
+$ kubectl get all -n default
+$ kubectl port-forward service/guestbook-ui 8081:80 -n default 
+```
+
+Access http://localhost:8081
