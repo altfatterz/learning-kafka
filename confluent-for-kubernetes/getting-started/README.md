@@ -1,7 +1,7 @@
 ### Create k8s cluster and namespace
 
 ```bash
-$ k3d cluster create confluent
+$ k3d cluster create confluent -p "9021:80@loadbalancer"
 $ kubectl cluster-info
 $ kubectl get nodes
 NAME                     STATUS   ROLES                  AGE   VERSION
@@ -205,6 +205,14 @@ or
 ```bash
 $ kubectl confluent dashboard controlcenter
 ```
+
+### Expose Control Center via Ingress using Traefik Controller (built in using k3d)
+
+```bash
+$ kubectl apply -f ingress.yaml
+```
+
+Access http://localhost:9021
 
 ### Storage
 
