@@ -8,6 +8,8 @@ spec:
   replicas: 1
   partitionCount: 1
   configs:
+    # it is set to 2 by default
+    min.insync.replicas: "1"
     cleanup.policy: "delete"
   kafkaClusterRef:
     name: kafka

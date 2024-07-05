@@ -19,9 +19,9 @@ Certificate Authority (CA).
 Generate a CA pair to use:
 
 ```
-openssl genrsa -out ca-key.pem 2048
+$ openssl genrsa -out ca-key.pem 2048
 
-openssl req -new -key ca-key.pem -x509 \
+$ openssl req -new -key ca-key.pem -x509 \
   -days 1000 \
   -out ca.pem \
   -subj "/CN=ca1.mimacom.com/OU=development/O=mimacom/L=Zurich/C=CH"
@@ -31,8 +31,14 @@ Create a Kubernetes secret for the certificate authority:
 
 ```
 $ kubectl create secret tls ca-pair-sslcerts --cert=ca.pem --key=ca-key.pem
-$ kubectl get secret ca-pair-sslcerts -o yaml 
+$ kubectl get secret ca-pair-sslcerts -o yaml
+
+data:
+ tls.crt:
+ tls.key:
 ```
+
+
 
 ### Install Confluent For Kubernetes using Helm
 
@@ -89,14 +95,35 @@ data:
   truststore.jks
 ```
 
+```bash
+$ kubectl confluent cluster kafka listeners
+
+COMPONENT  NAME   LISTENER-NAME  ACCESS    ADDRESS                                 TLS    AUTH  AUTHORIZATION
+Kafka      kafka  controller     INTERNAL  kafka.confluent.svc.cluster.local:9074  true
+Kafka      kafka  external       INTERNAL  kafka.confluent.svc.cluster.local:9092  false
+Kafka      kafka  internal       INTERNAL  kafka.confluent.svc.cluster.local:9071  true
+Kafka      kafka  replication    INTERNAL  kafka.confluent.svc.cluster.local:9072  true
+```
+
 ```bash 
 $ kubectl describe kafka
-
+...
     Internal:
       Client:  bootstrap.servers=kafka.confluent.svc.cluster.local:9071
 security.protocol=SSL
 ssl.truststore.location=/mnt/sslcerts/truststore.jks
 ssl.truststore.password=<<jksPassword>>
+```
+
+```bash
+$ kubectl get svc
+$ kubectl describe svc
+```
+
+Check the configuration within the brokers / controller pods:
+
+```bash
+$ cat /opt/confluentinc/etc/kafka/kafka.properties
 ```
 
 ```bash
@@ -125,6 +152,14 @@ $ kubectl apply -f secure-producer.yaml
 
 Check the data in Control Center to verify that the `elastic-0` topic is populated.
 
+```bash
+$ kubectl logs -f elastic-0
+
+322 records sent, 64.2 records/sec (32.12 MB/sec), 120.1 ms avg latency, 791.0 ms max latency.
+321 records sent, 64.1 records/sec (32.04 MB/sec), 3.0 ms avg latency, 30.0 ms max latency.
+320 records sent, 63.8 records/sec (31.92 MB/sec), 3.0 ms avg latency, 38.0 ms max latency.
+321 records sent, 64.1 records/sec (32.06 MB/sec), 2.9 ms avg latency, 33.0 ms max latency.
+```
 
 ### Cleanup
 
