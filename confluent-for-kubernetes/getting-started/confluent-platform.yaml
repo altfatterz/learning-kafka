@@ -4,7 +4,7 @@ metadata:
   name: kraftcontroller
   namespace: confluent
 spec:
-  replicas: 3
+  replicas: 1
   dataVolumeCapacity: 10Gi
   image:
     application: docker.io/confluentinc/cp-server:7.6.1
