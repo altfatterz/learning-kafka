@@ -7,6 +7,8 @@ metadata:
 spec:
   replicas: 3
   partitionCount: 1
+  configs:
+    compression.type: gzip
   kafkaClusterRef:
     name: kafka
     namespace: confluent

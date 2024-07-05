@@ -93,6 +93,10 @@ Verify the created pods
 $ kubectl get pods
 ```
 
+Notice that `connect` and `schemaregistry` start early and don't wait until broker and controller nodes are up causing
+this way they restart couple of times.
+
+
 ### Create the pageviews topic
 
 ```bash
@@ -108,7 +112,7 @@ $ kubectl apply -f datagen-source-connector.yaml
 ### Show the topics and connector 
 
 ```bash
-$ kubectl get topics
+$ kubectl get topic
 NAME        REPLICAS   PARTITION   STATUS    CLUSTERID                AGE
 pageviews   3          1           CREATED   8688bde1-9bf6-4c53-b5Q   131m
 $ kubectl get connector
@@ -171,6 +175,23 @@ ControlCenter    controlcenter    0/1    PROVISIONING  2m28s
 KRaftController  kraftcontroller  3/3    RUNNING       2m29s
 ```
 
+```bash
+$ kubectl confluent  cluster kafka listeners
+COMPONENT  NAME   LISTENER-NAME  ACCESS    ADDRESS                                 TLS    AUTH  AUTHORIZATION
+Kafka      kafka  replication    INTERNAL  kafka.confluent.svc.cluster.local:9072  false
+Kafka      kafka  controller     INTERNAL  kafka.confluent.svc.cluster.local:9074  false
+Kafka      kafka  external       INTERNAL  kafka.confluent.svc.cluster.local:9092  false
+Kafka      kafka  internal       INTERNAL  kafka.confluent.svc.cluster.local:9071  false
+```
+
+```bash
+$ kubectl confluent connector list
+$ kubectl confluent connector pause
+$ kubectl confluent connector resume
+$ kubectl confluent connector restart
+```
+
+
 ### Control Center
 
 Expose: 
@@ -209,7 +230,7 @@ data0-kafka-1             Bound    pvc-2b417886-27fd-4983-8f03-c65789ed15f7   10
 data0-controlcenter-0     Bound    pvc-6b5c78da-a39c-42fd-8f6b-f988c9a2c08c   10Gi       RWO            local-path     137m
 ```
 
-Notice that for the volumes the RECLAIM_POLICY is 'Delete', this is not a production setyp.
+Notice that for the volumes the RECLAIM_POLICY is 'Delete', this is not a production setup.
 
 ### Tear down:
 
