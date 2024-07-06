@@ -1,0 +1,18 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Connector
+metadata:
+  name: debezium-source-connector
+  namespace: confluent
+spec:
+  class: io.debezium.connector.postgresql.PostgresConnector
+  taskMax: 1
+  connectClusterRef:
+    name: connect
+  configs:
+    topic.prefix: prefix
+    database.hostname: my-postgresql
+    database.user: postgres
+    database.password: <TODO>
+    database.dbname: postgres
+    plugin.name: pgoutput
