@@ -7,6 +7,20 @@ $ kubectl create ns confluent
 $ kubectl config set-context --current --namespace confluent
 ```
 
+### Pulling images
+
+Makes sure you these images already on the Docker environment
+
+```bash
+./import-images.sh
+```
+
+Verify imported images:
+
+```bash
+$ docker exec k3d-confluent-server-0 crictl images | grep 7.6.1
+```
+
 ### Install PostgresSQL
 
 ```bash
