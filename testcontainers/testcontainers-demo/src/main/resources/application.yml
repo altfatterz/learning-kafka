@@ -10,7 +10,7 @@ spring:
   sql.init.mode: always
 
   # docker run -p 5432:5432 -e POSTGRES_PASSWORD=secret -d postgres
-#  datasource:
-#    url: jdbc:postgresql://localhost:5432/postgres
-#    username: postgres
-#    password: secret
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: sv5ZABbFIC

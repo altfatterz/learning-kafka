@@ -49,7 +49,7 @@ metadata:
   name: connect
   namespace: confluent
 spec:
-  replicas: 1
+  replicas: 2
   image:
     application: confluentinc/cp-server-connect:7.6.1
     init: confluentinc/confluent-init-container:2.8.0

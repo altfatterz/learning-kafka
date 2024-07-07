@@ -2,7 +2,52 @@
 apiVersion: platform.confluent.io/v1beta1
 kind: KafkaTopic
 metadata:
-  name: prefix.public.customers
+  name: prefix.public.buzzwords
+  namespace: confluent
+spec:
+  configs:
+    # it is set to 2 by default
+    min.insync.replicas: "1"
+  replicas: 1
+  partitionCount: 1
+  kafkaClusterRef:
+    name: kafka
+    namespace: confluent
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: prefix.public.heros
+  namespace: confluent
+spec:
+  configs:
+    # it is set to 2 by default
+    min.insync.replicas: "1"
+  replicas: 1
+  partitionCount: 1
+  kafkaClusterRef:
+    name: kafka
+    namespace: confluent
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: prefix.public.catchphrases
+  namespace: confluent
+spec:
+  configs:
+    # it is set to 2 by default
+    min.insync.replicas: "1"
+  replicas: 1
+  partitionCount: 1
+  kafkaClusterRef:
+    name: kafka
+    namespace: confluent
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: prefix.public.facts
   namespace: confluent
 spec:
   configs:

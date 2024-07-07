@@ -136,6 +136,36 @@ In topic:
 ```
 
 
+### Check failover of the tasks
+
+After running, scale down the connect cluster (updating the replicas to 1), you should see in the logs that tasks moves to the other worker
+
+```bash
+[INFO] 2024-07-07 19:52:24,396 [SourceTaskOffsetCommitter-1] org.apache.kafka.connect.runtime.WorkerSourceTask commitOffsets - WorkerSourceTask{id=debezium-source-connector-0} Committing offsets for 40 acknowledged messages
+```
+
+```bash
+$ http :8083/connectors/debezium-source-connector/tasks/0/status
+{
+    "id": 0,
+    "state": "RUNNING",
+    "worker_id": "connect-1.connect.confluent.svc.cluster.local:8083"
+}
+```
+
+and later moves to the `connect-0`
+
+```bash
+$ http :8083/connectors/debezium-source-connector/tasks/0/status
+{
+    "id": 0,
+    "state": "RUNNING",
+    "worker_id": "connect-0.connect.confluent.svc.cluster.local:8083"
+}
+```
+
+
+
 Resources:
 
 - Configure Kafka Connect for CFK https://docs.confluent.io/operator/current/co-configure-connect.html
