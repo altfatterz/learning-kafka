@@ -1,7 +1,7 @@
 ### Create k8s cluster and namespace
 
 ```bash
-$ k3d cluster create confluent
+$ k3d cluster create confluent -p "9021:80@loadbalancer"
 $ kubectl cluster-info
 $ kubectl create ns confluent
 $ kubectl config set-context --current --namespace confluent
@@ -19,6 +19,13 @@ Verify imported images:
 
 ```bash
 $ docker exec k3d-confluent-server-0 crictl images | grep 7.6.1
+$ docker exec k3d-confluent-server-0 crictl images | grep 2.8.0
+```
+
+### Expose Control Center via Ingress using Traefik Controller (built in using k3d)
+
+```bash
+$ kubectl apply -f ingress.yaml
 ```
 
 ### Install PostgresSQL
@@ -79,7 +86,9 @@ $ kubectl get all
 ### Install Confluent Platform
 
 ```bash
-$ kubectl apply -f confluent-platform.yaml
+$ kubectl apply -f confluent-platform-base.yaml
+# wait until controller and broker nodes are up
+# kubectl apply -f confluent-platform-addon.yaml
 ```
 
 ### Trouble shoot connect-0 debezium install
@@ -176,6 +185,15 @@ $ http :8083/connectors/debezium-source-connector/tasks/0/status
     "state": "RUNNING",
     "worker_id": "connect-0.connect.confluent.svc.cluster.local:8083"
 }
+```
+
+### Check the Connect topics:
+
+```bash
+$ kubectl exec -it kafka-0 -- sh
+$ kafka-console-consumer --bootstrap-server kafka:9092 --topic confluent.connect-offsets --from-beginning
+$ kafka-console-consumer --bootstrap-server kafka:9092 --topic confluent.connect-status --from-beginning
+$ kafka-console-consumer --bootstrap-server kafka:9092 --topic confluent.connect-config --from-beginning
 ```
 
 

@@ -14,6 +14,6 @@ spec:
     topic.prefix: prefix
     database.hostname: my-postgresql
     database.user: postgres
-    database.password: <TODO>
+    database.password: cUoF1d0pWC
     database.dbname: postgres
     plugin.name: pgoutput
