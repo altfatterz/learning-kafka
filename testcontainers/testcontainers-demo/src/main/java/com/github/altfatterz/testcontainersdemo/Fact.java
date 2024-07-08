@@ -14,6 +14,11 @@ public class Fact {
     public Fact() {
     }
 
+    public Fact(Long id, String value) {
+        this.id = id;
+        this.value = value;
+    }
+
     public Fact(String value) {
         this.value = value;
     }

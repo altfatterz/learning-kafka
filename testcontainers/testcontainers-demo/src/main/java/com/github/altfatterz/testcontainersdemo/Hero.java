@@ -14,6 +14,11 @@ public class Hero {
     public Hero() {
     }
 
+    public Hero(Long id, String value) {
+        this.id = id;
+        this.value = value;
+    }
+
     public Hero(String value) {
         this.value = value;
     }

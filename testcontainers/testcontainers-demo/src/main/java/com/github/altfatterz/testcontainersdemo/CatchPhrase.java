@@ -14,6 +14,11 @@ public class CatchPhrase {
     public CatchPhrase() {
     }
 
+    public CatchPhrase(Long id, String value) {
+        this.id = id;
+        this.value = value;
+    }
+
     public CatchPhrase(String value) {
         this.value = value;
     }
