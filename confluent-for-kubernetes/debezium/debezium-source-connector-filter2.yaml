@@ -1,0 +1,27 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Connector
+metadata:
+  name: debezium-source-connector-filter2
+  namespace: confluent
+spec:
+  class: io.debezium.connector.postgresql.PostgresConnector
+  # not possible to scale
+  taskMax: 1
+  connectClusterRef:
+    name: connect
+  configs:
+    topic.prefix: prefix
+    table.include.list: public.buzzwords, public.heros
+    # If you deploy multiple instances of the Debezium Postgres connector, you must make sure to use distinct
+    # replication slot names otherwise you get following exception:
+    # org.postgresql.util.PSQLException: ERROR: replication slot "debezium" is active for PID 2311
+    # https://debezium.io/documentation/reference/stable/connectors/postgresql.html
+    slot.name: filter2
+    publication.name: filter2
+
+    database.hostname: my-postgresql
+    database.user: postgres
+    database.password: secret
+    database.dbname: postgres
+    plugin.name: pgoutput

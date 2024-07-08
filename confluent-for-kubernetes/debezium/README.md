@@ -88,7 +88,9 @@ $ kubectl get all
 ```bash
 $ kubectl apply -f confluent-platform-base.yaml
 # wait until controller and broker nodes are up
-# kubectl apply -f confluent-platform-addon.yaml
+$ kubectl apply -f confluent-platform-schemaregistry.yaml
+$ kubectl apply -f confluent-platform-connect.yaml
+$ kubectl apply -f confluent-platform-controlcenter.yaml
 ```
 
 ### Trouble shoot connect-0 debezium install
@@ -194,6 +196,21 @@ $ kubectl exec -it kafka-0 -- sh
 $ kafka-console-consumer --bootstrap-server kafka:9092 --topic confluent.connect-offsets --from-beginning
 $ kafka-console-consumer --bootstrap-server kafka:9092 --topic confluent.connect-status --from-beginning
 $ kafka-console-consumer --bootstrap-server kafka:9092 --topic confluent.connect-config --from-beginning
+```
+
+### Scale with multiple connector instances
+
+```bash
+$ kubectl apply -f debezium-source-connector-filter1.yaml
+$ kubectl apply -f debezium-source-connector-filter1.yaml
+```
+
+```bash
+$ kubeclt get connectors -o wide 
+
+NAME                                STATUS    CONNECTORSTATUS   TASKS-READY   AGE     CONNECTENDPOINT                                   TASKS-FAILED   WORKERID                                             RESTARTPOLICY   KAFKACLUSTERID
+debezium-source-connector-filter1   CREATED   RUNNING           1/1           3m54s   http://connect.confluent.svc.cluster.local:8083                  connect-1.connect.confluent.svc.cluster.local:8083   OnFailure       3b240be5-cb23-4d82-85Q
+debezium-source-connector-filter2   CREATED   RUNNING           1/1           3m43s   http://connect.confluent.svc.cluster.local:8083                  connect-0.connect.confluent.svc.cluster.local:8083   OnFailure       3b240be5-cb23-4d82-85Q
 ```
 
 
