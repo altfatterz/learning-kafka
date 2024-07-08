@@ -213,6 +213,35 @@ debezium-source-connector-filter1   CREATED   RUNNING           1/1           3m
 debezium-source-connector-filter2   CREATED   RUNNING           1/1           3m43s   http://connect.confluent.svc.cluster.local:8083                  connect-0.connect.confluent.svc.cluster.local:8083   OnFailure       3b240be5-cb23-4d82-85Q
 ```
 
+### Error scenario1 : PostgreSQL becomes unavailable
+
+Connection issue within Connector and Postgresql
+
+```bash
+$ kubectl scale sts my-postgresql --replicas 0 
+```
+
+The connector task will fail and stop. Error can be check via
+
+http://localhost:8083/connectors/debezium-source-connector-filter0/tasks/0/status
+http://localhost:8083/connectors/debezium-source-connector-filter1/tasks/0/status
+
+When the server is available again, restart the connector using ControlCenter or CLI
+
+### Terms
+
+#### LSN
+- Log Sequence Number
+- The PostgreSQL connector externally stores the last processed offset in the form of a PostgreSQL LSN.
+- After a connector restarts and connects to a server instance, the connector communicates with the server to continue streaming from that particular offset.
+- This offset is available as long as the Debezium replication slot remains intact.
+- Never drop a replication slot on the primary server or you will lose data.
+
+#### WAL
+- Write Ahead Log, used interchangeably with transaction log
+
+#### PgOutput
+
 
 
 Resources:
