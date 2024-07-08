@@ -230,7 +230,25 @@ When the server is available again, restart the connector using ControlCenter or
 
 ### Terms
 
+#### Debezium PostgreSQL connector
+
+- Debezium is a distributed system that captures all changes in multiple upstream databases; it never misses or loses an event.
+- When the system is operating normally or being managed carefully then Debezium provides exactly once delivery of every change event record.
+- If a fault does happen then the system does not lose any events.
+- However, while it is recovering from the fault, it’s possible that the connector might emit some duplicate change events.
+- In these abnormal situations, Debezium, like Kafka, provides at least once delivery of change events.
+
+- Debezium uses PostgreSQL’s logical decoding, which uses replication slots.
+- Replication slots are guaranteed to retain all WAL segments required for Debezium even during Debezium outages.
+
+- The first time it connects to a PostgreSQL server or cluster, the connector takes a consistent snapshot of all schemas
+- After that snapshot is complete, the connector continuously captures row-level changes that insert, update, and delete database content and that were committed to a PostgreSQL database.
+- The connector is using the logical decoding feature - which has limitations
+  - Logical decoding does not support DDL changes, the connector is unable to report DDL change events back to consumers.
+  - Logical decoding replication slots are supported on only primary servers, if the primary server fails you need to restart the connector
+
 #### LSN
+
 - Log Sequence Number
 - The PostgreSQL connector externally stores the last processed offset in the form of a PostgreSQL LSN.
 - After a connector restarts and connects to a server instance, the connector communicates with the server to continue streaming from that particular offset.
@@ -238,13 +256,25 @@ When the server is available again, restart the connector using ControlCenter or
 - Never drop a replication slot on the primary server or you will lose data.
 
 #### WAL
+
 - Write Ahead Log, used interchangeably with transaction log
 
 #### PgOutput
 
+- Is the standard logical decoding output plug-in in PostgreSQL 10+
+- It is maintained by the PostgreSQL community, and used by PostgreSQL itself for logical replication.
+- This plug-in is always present so no additional libraries need to be installed.
 
+### Publications
+
+- Debezium streams change events for PostgreSQL source tables from publications that are created for the tables.
+- There are several options for determining how publications are created.
+In general, it is best to manually create publications for the tables that you want to capture, before you set up the connector.
+-  However, you can configure your environment in a way that permits Debezium to create publications automatically, and to specify the data that is added to them. (See publication.autocreate.mode)
+- 
 
 Resources:
 
+- Debezium Postgresql: https://debezium.io/documentation/reference/stable/connectors/postgresql.html
 - Configure Kafka Connect for CFK https://docs.confluent.io/operator/current/co-configure-connect.html
 - How to install connector plugins in Kafka Connect: https://rmoff.net/2020/06/19/how-to-install-connector-plugins-in-kafka-connect/
