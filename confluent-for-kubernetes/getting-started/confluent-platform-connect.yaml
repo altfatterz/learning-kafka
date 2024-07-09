@@ -1,0 +1,28 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Connect
+metadata:
+  name: connect
+  namespace: confluent
+spec:
+  replicas: 1
+  image:
+    application: confluentinc/cp-server-connect:7.6.1
+    init: confluentinc/confluent-init-container:2.8.0
+  configOverrides:
+    log4j:
+      - log4j.rootLogger=INFO, stdout
+  build:
+    type: onDemand
+    onDemand:
+      plugins:
+        confluentHub:
+          - name: kafka-connect-datagen
+            owner: confluentinc
+            version: 0.6.5
+
+  dependencies:
+    kafka:
+      bootstrapEndpoint: kafka:9071
+    schemaRegistry:
+      url: http://schemaregistry.confluent.svc.cluster.local:8081

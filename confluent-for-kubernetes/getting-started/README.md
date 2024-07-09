@@ -84,7 +84,11 @@ For production is recommended:
 ### Install the Confluent Platform
 
 ```bash
-$ kubectl apply -f confluent-platform.yaml
+$ kubectl apply -f confluent-platform-base.yaml
+$ kubectl apply -f confluent-platform-schemaregistry.yaml
+$ kubectl apply -f confluent-platform-restproxy.yaml
+$ kubectl apply -f confluent-platform-connect.yaml
+$ kubectl apply -f confluent-platform-controlcenter.yaml
 ```
 
 Verify the created pods
@@ -209,10 +213,28 @@ $ kubectl confluent dashboard controlcenter
 ### Expose Control Center via Ingress using Traefik Controller (built in using k3d)
 
 ```bash
+~ $ traefik version
+Version:      2.10.5
+Codename:     saintmarcelin
+Go version:   go1.21.3
+Built:        2023-10-11T13:54:02Z
+OS/Arch:      linux/amd64
+```
+
+```bash
 $ kubectl apply -f ingress.yaml
 ```
 
 Access http://localhost:9021
+
+### Rest Proxy
+
+```bash
+$ kubectl port-forward svc/kafkarestproxy 8082:8082
+$ http :8082/topics
+$ http :8082/v3/clusters
+```
+
 
 ### Storage
 
