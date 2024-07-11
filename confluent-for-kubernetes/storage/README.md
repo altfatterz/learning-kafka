@@ -195,6 +195,13 @@ In this case the PVCs are gone, and the PVs will be there with `Released` status
 
 TODO, how to reuse the already existing PVCs? Solution: We need to keep the PVCs somehow.
 
+
+Delete all PVs:
+
+```bash
+$ kubectl delete pv --all
+```
+
 ### More info
 
 - Configure Storage for Confluent Platform Using Confluent for Kubernetes: https://docs.confluent.io/operator/current/co-storage.html
