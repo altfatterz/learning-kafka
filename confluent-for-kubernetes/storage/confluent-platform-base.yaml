@@ -5,7 +5,9 @@ metadata:
   namespace: confluent
 spec:
   replicas: 1
-  dataVolumeCapacity: 10Gi
+  dataVolumeCapacity: 2Gi
+  storageClass:
+    name: production-storage-class
   image:
     application: confluentinc/cp-server:7.6.1
     init: confluentinc/confluent-init-container:2.8.0
@@ -17,7 +19,9 @@ metadata:
   namespace: confluent
 spec:
   replicas: 3
-  dataVolumeCapacity: 10Gi
+  dataVolumeCapacity: 2Gi
+  storageClass:
+    name: production-storage-class
   metricReporter:
     enabled: true
   image:
