@@ -39,6 +39,42 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
+  name: ca-schemaregistry-cert
+  namespace: confluent
+spec:
+  commonName: schemaregistry
+  dnsNames:
+    - schemaregistry
+    - schemaregistry.confluent
+    - schemaregistry.confluent.svc.cluster.local
+    - '*.confluent.svc.cluster.local'
+    - '*.schemaregistry.confluent.svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: ca-issuer
+  secretName: schemaregistry-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ca-connect-cert
+  namespace: confluent
+spec:
+  commonName: connect
+  dnsNames:
+    - connect
+    - connect.confluent
+    - connect.confluent.svc.cluster.local
+    - '*.confluent.svc.cluster.local'
+    - '*.connect.confluent.svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: ca-issuer
+  secretName: connect-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
   name: ca-c3-cert
   namespace: confluent
 spec:

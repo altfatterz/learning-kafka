@@ -23,14 +23,12 @@ $ openssl x509 -in security/tls.crt -text -noout
 $ k3d cluster create confluent
 $ kubectl cluster-info
 $ kubectl create ns confluent
-```
-
-### Set the `confluent` namespace current
-```bash  
 $ kubectl config set-context --current --namespace confluent
 ```
 
 ### Install `cert-manager`
+
+It will be installed in the `cert-manager` namespace
 
 ```bash
 $ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.2/cert-manager.yaml
@@ -75,9 +73,11 @@ $ kubectl apply -k  `pwd`/security
 
 secret/ca-key-pair created
 certificate.cert-manager.io/ca-c3-cert created
+certificate.cert-manager.io/ca-connect-cert created
 certificate.cert-manager.io/ca-controller-cert created
 certificate.cert-manager.io/ca-kafka-cert created
-issuer.cert-manager.io/ca-issuer created
+certificate.cert-manager.io/ca-schemaregistry-cert created
+issuer.cert-manager.io/ca-issuer create
 ```
 
 ### Verify the created certificates / issuers
@@ -85,10 +85,12 @@ issuer.cert-manager.io/ca-issuer created
 ```bash
 $ kubectl get certificates
 
-NAME                 READY   SECRET              AGE
-ca-controller-cert   True    controller-tls      26s
-ca-c3-cert           True    controlcenter-tls   26s
-ca-kafka-cert        True    kafka-tls           26s
+NAME                     READY   SECRET               AGE
+ca-c3-cert               True    controlcenter-tls    14s
+ca-kafka-cert            True    kafka-tls            14s
+ca-controller-cert       True    controller-tls       14s
+ca-connect-cert          True    connect-tls          14s
+ca-schemaregistry-cert   True    schemaregistry-tls   14s
 ```
 
 ```bash
@@ -103,20 +105,21 @@ ca-issuer   True    55s
 ```bash
 $ kubectl get secret
 
-NAME                TYPE                DATA   AGE
-ca-key-pair         kubernetes.io/tls   2      77s
-controller-tls      kubernetes.io/tls   3      77s
-controlcenter-tls   kubernetes.io/tls   3      77s
-kafka-tls           kubernetes.io/tls   3      75s
+ca-key-pair          kubernetes.io/tls   2      111s
+controlcenter-tls    kubernetes.io/tls   3      111s
+kafka-tls            kubernetes.io/tls   3      109s
+controller-tls       kubernetes.io/tls   3      107s
+connect-tls          kubernetes.io/tls   3      107s
+schemaregistry-tls   kubernetes.io/tls   3      107s
 ```
 
 ```bash
-$ kubectl get secret kafka-tls -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
-$ kubectl get secret kafka-tls -o jsonpath='{.data.tls\.crt}' | base64 -d > tls.crt
-$ kubectl get secret kafka-tls -o jsonpath='{.data.tls\.key}' | base64 -d > tls.key
-$ openssl x509 -in ca.crt -text -noout
-$ openssl x509 -in tls.crt -text -noout
-$ openssl x509 -in tls.key -text -noout
+$ kubectl describe secret ca-key-pair  
+$ kubectl describe secret controlcenter-tls
+$ kubectl describe secret kafka-tls
+$ kubectl describe secret controller-tls
+$ kubectl describe secret connect-tls 
+$ kubectl describe secret schemaregistry-tls
 ```
 
 Better inspect with the [cmctl](https://cert-manager.io/docs/reference/cmctl/#renew tool
@@ -125,16 +128,11 @@ $ brew install cmctl
 $ cmctl inspect secret kafka-tls
 ```
 
-### Set up the Helm Chart
+### Install Confluent For Kubernetes using Helm
 
 ```bash
 $ helm repo add confluentinc https://packages.confluent.io/helm
 $ helm repo update
-```
-
-### Install Confluent For Kubernetes using Helm
-
-```bash
 $ helm upgrade --install confluent-operator confluentinc/confluent-for-kubernetes --set kRaftEnabled=true
 ```
 
@@ -161,7 +159,7 @@ zookeepers.platform.confluent.io              2024-02-12T20:03:59Z
 Check that the Confluent For Kubernetes operator pod comes up and is running:
 
 ```bash
-$ kubectl get pods
+$ watch kubectl get pods
 
 NAME                                  READY   STATUS    RESTARTS   AGE
 confluent-operator-6c7bb75484-k294m   1/1     Running   0          22s
@@ -170,34 +168,10 @@ confluent-operator-6c7bb75484-k294m   1/1     Running   0          22s
 ### Deploy the Confluent Platform
 
 ```bash
-$ kubectl apply -f confluent-platform.yaml
-```
-
-### Verify pods
-
-Wait until the pods are up
-
-```bash
-$ kubectl get pods
-
-```
-
-Check services
-
-```bash
-$ kubectl get svc
-```
-
-Check statefulsets
-
-```bash
-$ kubectl get sts
-```
-
-### Create a topic
-
-```bash
-$ kubectl apply -f topic.yaml
+$ kubectl apply -f confluent-platform-core.yaml
+$ kubectl apply -f confluent-platform-schemaregistry.yaml
+$ kubectl apply -f confluent-platform-connect.yaml
+$ kubectl apply -f confluent-platform-controlcenter.yaml
 ```
 
 ### Control Center
@@ -210,6 +184,20 @@ $ kubectl confluent dashboard controlcenter
 
 Access the https://localhost:9021 and check the certificate in the browser
 
+
+### Analyse config how to connect a client 
+
+```bash
+$ kubectl describe kafka kafka
+...
+Client:  
+bootstrap.servers=kafka.confluent.svc.cluster.local:9071
+security.protocol=SSL
+ssl.truststore.location=/mnt/sslcerts/truststore.p12
+ssl.truststore.password=<<jksPassword>>
+```
+
+
 ```bash
 Common Name (CN)	controlcenter
 Organisation (O)	<Not part of certificate>
@@ -221,39 +209,36 @@ Issued On	Monday 17 June 2024 at 16:53:04
 Expires On	Sunday 15 September 2024 at 16:53:04
 ```
 
---------------------------- TODO ---------------------------------------
-Caused by: java.security.cert.CertificateException: No subject alternative DNS name matching kafka-2.kafka.confluent.svc.cluster.local found.
-at java.base/sun.security.util.HostnameChecker.matchDNS(HostnameChecker.java:212)
-at java.base/sun.security.util.HostnameChecker.match(HostnameChecker.java:103)
-at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:461)
-at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:421)
-at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:283)
-at java.base/sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:141)
-at java.base/sun.security.ssl.CertificateMessage$T12CertificateConsumer.checkServerCerts(CertificateMessage.java:632)
-... 20 more
---------------------------------------------------------------------------
-
-
-
-Produce and consume from the topics:
-
-```bash
-$ kubectl exec -it kafka-0 -- bash
-$ seq 5 | kafka-console-producer --topic demotopic --bootstrap-server kafka.confluent.svc.cluster.local:9092
-$ kafka-console-consumer --from-beginning --topic demotopic --bootstrap-server  kafka.confluent.svc.cluster.local:9092
-1
-2
-3
-4
-5
+```
+$ kubectl get secret
+$ kubectl describe secret kafka-pkcs12
+...
+Data
+====
+truststore.p12:   1186 bytes
+cacerts.pem:      1318 bytes
+fullchain.pem:    1375 bytes
+jksPassword.txt:  27 bytes
+keystore.p12:     3555 bytes
+privkey.pem:      1679 bytes
+secretHash.json:  55 bytes
 ```
 
-Access it 
+```bash
+$ kubectl get secret kafka-pkcs12 -o jsonpath='{.data.jksPassword\.txt}' | base64 -d
+```
 
-Install the sample producer app and topic.
+### Create a configuration secret for client applications to use:
 
 ```bash
-$ kubectl apply -f kraft/producer-app-data.yaml
+$ kubectl create secret generic kafka-client-config-secure --from-file=kafka.properties
+$ kubectl get secret kafka-client-config-secure -o jsonpath='{.data.kafka\.properties}' | base64 -d 
+```
+
+### Install the sample producer app and topic.
+
+```bash
+$ kubectl apply -f producer-app-data.yaml
 ```
 
 Check the logs for the created demo and view the Controll Center demo how the messages are flowing in
@@ -262,22 +247,21 @@ Check the logs for the created demo and view the Controll Center demo how the me
 $ kubectl logs -f elastic-0
 ```
 
-Cleanup
+Analyse the mount directory
 
+```bash
+$ kubectl exec -it elastic-0 -- sh
+ls -l /mnt
+lrwxrwxrwx 1 root root  23 Jul 12 09:02 kafka.properties -> ..data/kafka.properties
+drwxrwxrwt 3 root root 220 Jul 12 09:02 sslcerts
 ```
-$ kubectl delete -f kraft/producer-app-data.yaml
-$ kubectl delete -f kraft/control-center.yaml
-$ kubectl delete -f kraft/kraft-broker-controller.yaml
 
-$ helm uninstall confluent-operator
-$ kubectl delete namespace confluent
+### Cleanup
 
+```bash
 $ k3d cluster delete confluent
 ```
-
-
 ------------------------------------------------------------------------------------------------------------------------
-
 
 
 Re-issuance triggered by user actions. By default, the private key won't be rotated automatically.

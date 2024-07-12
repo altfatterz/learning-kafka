@@ -1,11 +1,3 @@
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kafka-client-config
-  namespace: confluent
-type: Opaque
-data:
-  kafka.properties: Ym9vdHN0cmFwLnNlcnZlcnM9a2Fma2EuY29uZmx1ZW50LnN2Yy5jbHVzdGVyLmxvY2FsOjkwNzEKc2VjdXJpdHkucHJvdG9jb2w9UExBSU5URVhU
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -41,6 +33,8 @@ spec:
             - name: kafka-properties
               mountPath: /mnt
               readOnly: true
+            - name: kafka-ssl
+              mountPath: /mnt/sslcerts
           resources:
             requests:
               memory: 512Mi # 768Mi
@@ -48,7 +42,10 @@ spec:
       volumes:
         - name: kafka-properties # Create secret with name `kafka-client-config` with client configurations
           secret:
-            secretName: kafka-client-config
+            secretName: kafka-client-config-secure
+        - name: kafka-ssl
+          secret:
+            secretName: kafka-pkcs12
 ---
 apiVersion: v1
 kind: Service
