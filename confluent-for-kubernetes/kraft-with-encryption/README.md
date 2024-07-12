@@ -83,14 +83,14 @@ issuer.cert-manager.io/ca-issuer create
 ### Verify the created certificates / issuers
 
 ```bash
-$ kubectl get certificates
+$ kubectl get certificates -o wide
 
-NAME                     READY   SECRET               AGE
-ca-c3-cert               True    controlcenter-tls    14s
-ca-kafka-cert            True    kafka-tls            14s
-ca-controller-cert       True    controller-tls       14s
-ca-connect-cert          True    connect-tls          14s
-ca-schemaregistry-cert   True    schemaregistry-tls   14s
+NAME                     READY   SECRET               ISSUER      STATUS                                          AGE
+ca-c3-cert               True    controlcenter-tls    ca-issuer   Certificate is up to date and has not expired   85m
+ca-controller-cert       True    controller-tls       ca-issuer   Certificate is up to date and has not expired   85m
+ca-connect-cert          True    connect-tls          ca-issuer   Certificate is up to date and has not expired   85m
+ca-schemaregistry-cert   True    schemaregistry-tls   ca-issuer   Certificate is up to date and has not expired   85m
+ca-kafka-cert            True    kafka-tls            ca-issuer   Certificate is up to date and has not expired   85m
 ```
 
 ```bash
@@ -256,18 +256,30 @@ lrwxrwxrwx 1 root root  23 Jul 12 09:02 kafka.properties -> ..data/kafka.propert
 drwxrwxrwt 3 root root 220 Jul 12 09:02 sslcerts
 ```
 
-### Cleanup
 
-```bash
-$ k3d cluster delete confluent
-```
-------------------------------------------------------------------------------------------------------------------------
+### Re-issuance triggered by user actions. By default, the private key won't be rotated automatically.
 
 
-Re-issuance triggered by user actions. By default, the private key won't be rotated automatically.
 ```bash
 $ cmctl renew ca-kafka-cert
+$ kubectl describe cert ca-kafka-cert
+
+Events:
+  Normal  Reused     5m50s                cert-manager-certificates-key-manager      Reusing private key stored in existing Secret resource "kafka-tls"
+  Normal  Requested  5m50s                cert-manager-certificates-request-manager  Created new CertificateRequest resource "ca-kafka-cert-2"
+  Normal  Issuing    5m50s (x2 over 87m)  cert-manager-certificates-issuing          The certificate has been successfully issued
+  
+$ kubectl get certificaterequests
+
+ca-c3-cert-1               True                True    ca-issuer   system:serviceaccount:cert-manager:cert-manager   88m
+ca-kafka-cert-1            True                True    ca-issuer   system:serviceaccount:cert-manager:cert-manager   88m
+ca-controller-cert-1       True                True    ca-issuer   system:serviceaccount:cert-manager:cert-manager   88m
+ca-connect-cert-1          True                True    ca-issuer   system:serviceaccount:cert-manager:cert-manager   88m
+ca-schemaregistry-cert-1   True                True    ca-issuer   system:serviceaccount:cert-manager:cert-manager   88m
+ca-kafka-cert-2            True                True    ca-issuer   system:serviceaccount:cert-manager:cert-manager   7m2s
 ```
+
+Notice that the kafka brokers are restarted.
 
 Using the setting `rotationPolicy: Always`, the private key Secret associated with a Certificate
 object can be configured to be rotated as soon as an the Certificate is reissued
@@ -277,3 +289,9 @@ object can be configured to be rotated as soon as an the Certificate is reissued
 whenever a mounted Secret changes.
 
 ------------------------------------------------------------------------------------------------------------------------
+
+### Cleanup
+
+```bash
+$ k3d cluster delete confluent
+```
