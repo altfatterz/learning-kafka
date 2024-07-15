@@ -5,7 +5,7 @@ metadata:
   namespace: confluent
 spec:
   replicas: 1
-  dataVolumeCapacity: 10Gi
+  dataVolumeCapacity: 2Gi
   image:
     application: confluentinc/cp-server:7.6.1
     init: confluentinc/confluent-init-container:2.8.0
@@ -17,13 +17,65 @@ metadata:
   namespace: confluent
 spec:
   replicas: 3
-  dataVolumeCapacity: 10Gi
+  dataVolumeCapacity: 2Gi
   metricReporter:
     enabled: true
   image:
     application: confluentinc/cp-server:7.6.1
     init: confluentinc/confluent-init-container:2.8.0
+  listeners:
+    internal:
+      authentication:
+        type: ldap
+        jaasConfig:
+          secretRef: credential
+  authorization:
+    type: rbac
+    superUsers:
+      - User:kafka
+  services:
+    mds:
+      tokenKeyPair:
+        secretRef: mds-token
+      provider:
+        type: ldap
+        ldap:
+          address: ldap://ldap.confluent.svc.cluster.local:389
+          authentication:
+            type: simple
+            simple:
+              secretRef: credential
+          configurations:
+            groupNameAttribute: cn
+            groupObjectClass: group
+            groupMemberAttribute: member
+            groupMemberAttributePattern: CN=(.*),DC=test,DC=com
+            groupSearchBase: dc=test,dc=com
+            groupSearchScope: 1
+            userNameAttribute: cn
+            userMemberOfAttributePattern: CN=(.*),DC=test,DC=com
+            userObjectClass: organizationalRole
+            userSearchBase: dc=test,dc=com
+            userSearchScope: 1
   dependencies:
     kRaftController:
       clusterRef:
         name: kraftcontroller
+    kafkaRest:
+      authentication:
+        type: bearer
+        bearer:
+          secretRef: kafka-mds-client
+
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaRestClass
+metadata:
+  name: default
+  namespace: confluent
+spec:
+  kafkaRest:
+    authentication:
+      type: bearer
+      bearer:
+        secretRef: rest-credential

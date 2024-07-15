@@ -36,3 +36,30 @@ Run an LDAP search command
 $ ldapsearch -LLL -x -H ldap://ldap.confluent.svc.cluster.local:389 -b 'dc=test,dc=com' -D "cn=mds,dc=test,dc=com" -w 'Developer!'
 ```
 
+
+When RBAC is enabled (`spec.authorization.type: rbac`) CFK always uses the `Bearer` authentication for Confluent 
+components, ignoring the `spec.authentication` setting.
+
+### Create client-side Bearer credentials for MDS
+
+The expected key is `bearer.txt`.
+
+```bash
+$ kubectl create secret generic kafka-mds-client --from-file=bearer.txt=credentials/kafka-mds-client.txt
+$ kubectl create secret generic c3-mds-client --from-file=bearer.txt=credentials/c3-mds-client.txt
+$ kubectl create secret generic rest-client --from-file=bearer.txt=credentials/rest-client.txt
+```
+
+Creat the `mds-token`
+```bash
+kubectl create secret generic mds-token \
+--from-file=mdsPublicKey.pem=mds/mds-publickey.txt \
+--from-file=mdsTokenKeyPair.pem=mds/mds-tokenkeypair.txt 
+```
+
+#### Resources:
+
+- RBAC in Confluent Platform: https://docs.confluent.io/platform/current/security/rbac/index.html
+- Configure RBAC for CFK: https://docs.confluent.io/operator/current/co-rbac.html
+
+
