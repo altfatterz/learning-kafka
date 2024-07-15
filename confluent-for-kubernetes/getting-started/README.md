@@ -262,6 +262,34 @@ data0-controlcenter-0     Bound    pvc-6b5c78da-a39c-42fd-8f6b-f988c9a2c08c   10
 
 Notice that for the volumes the RECLAIM_POLICY is 'Delete', this is not a production setup.
 
+### CFK pulls down images from DockerHub from `confluentinc` repositories
+
+https://docs.confluent.io/operator/current/co-custom-registry.html
+
+```bash
+docker.io/confluentinc/confluent-init-container:<init-tag>
+docker.io/confluentinc/confluent-operator:<cfk-tag>
+docker.io/confluentinc/cp-enterprise-control-center:<tag>
+docker.io/confluentinc/cp-enterprise-replicator:<tag>
+docker.io/confluentinc/cp-kafka-rest:<tag>
+docker.io/confluentinc/cp-ksqldb-server:<tag>
+docker.io/confluentinc/cp-schema-registry:<tag>
+docker.io/confluentinc/cp-server:<tag>
+docker.io/confluentinc/cp-server-connect:<tag>
+docker.io/confluentinc/cp-zookeeper:<tag>
+```
+
+Current versions:
+
+```bash
+tag=7.6.1
+init-tag=2.8.0
+cfk-tag=0.921.20
+```
+
+Use custom docker registry: https://docs.confluent.io/operator/current/co-custom-registry.html
+
+
 ### Tear down:
 
 ```bash

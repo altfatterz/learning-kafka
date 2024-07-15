@@ -1,6 +1,3 @@
-------------- TODO again not working properly ----------------------------------------
---------------------------------------------------------------------------------------
-
 # Setup a Kafka cluster in Kraft mode and enable encryption using cert-manager 
 
 ### The `tls.key` and `tls.crt` where generated via 
