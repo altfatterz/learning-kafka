@@ -145,6 +145,20 @@ ssl.truststore.location=/mnt/sslcerts/truststore.p12
 ssl.truststore.password=<<jksPassword>>
 ```
 
+### Connect via a producer
+
+```bash
+$ kubectl get secret kafka-pkcs12 -o yaml -o jsonpath='{.data.jksPassword\.txt}' | base64 -d
+jksPassword=mystorepassword
+```
+
+### Create a configuration secret for client applications to use:
+
+```bash
+$ kubectl create secret generic kafka-client-config-secure --from-file=kafka.properties
+$ kubectl get secret kafka-client-config-secure -o yaml
+```
+
 
 
 ------------------------------------------------------------------------------------------------------------------------
