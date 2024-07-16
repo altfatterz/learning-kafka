@@ -57,6 +57,12 @@ kubectl create secret generic mds-token \
 --from-file=mdsTokenKeyPair.pem=mds/mds-tokenkeypair.txt 
 ```
 
+
+------------------------------------------------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------------------------------------------------
+
+
 #### Resources:
 
 - RBAC in Confluent Platform: https://docs.confluent.io/platform/current/security/rbac/index.html

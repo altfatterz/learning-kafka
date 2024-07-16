@@ -27,3 +27,17 @@ spec:
     kRaftController:
       clusterRef:
         name: kraftcontroller
+---
+
+# https://docs.confluent.io/operator/current/co-manage-rest-api.html#
+
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaRestClass
+metadata:
+  name: default
+  namespace: confluent
+spec:
+  kafkaClusterRef:
+    name: kafka
+    namespace: confluent
+

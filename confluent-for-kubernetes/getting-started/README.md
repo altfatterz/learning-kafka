@@ -195,6 +195,33 @@ $ kubectl confluent connector resume
 $ kubectl confluent connector restart
 ```
 
+### Check ConfigMaps and Secrets
+
+```bash
+$ kubectl get cm
+
+kube-root-ca.crt                1      16h
+kraftcontroller-shared-config   6      8m12s
+kraftcontroller-init-config     3      8m12s
+kafka-shared-config             6      7m27s
+kafka-init-config               3      7m27s
+schemaregistry-shared-config    4      5m21s
+schemaregistry-init-config      3      5m21s
+kafkarestproxy-shared-config    4      3m51s
+kafkarestproxy-init-config      3      3m51s
+connect-shared-config           6      2m21s
+connect-init-config             3      2m21s
+controlcenter-shared-config     5      12s
+controlcenter-init-config       3      12s
+```
+
+```bash
+$ kubectl get secret
+
+NAME                                       TYPE                 DATA   AGE
+confluent-operator-licensing               Opaque               0      16h
+sh.helm.release.v1.confluent-operator.v1   helm.sh/release.v1   1      16h
+```
 
 ### Control Center
 
