@@ -101,13 +101,32 @@ $ kubectl confluent dashboard controlcenter
 
 ### Install prometheus and grafana
 
-Using the helm chart: https://github.com/prometheus-community/helm-charts/
-
+Using the helm chart: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 
 ```bash
 $ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 $ helm repo update
-$ helm install prom prometheus-community/kube-prometheus-stack -f prom-values.yaml
+$ helm show values prometheus-community/kube-prometheus-stack > default-values.yaml
+$ helm upgrade --install prom prometheus-community/kube-prometheus-stack -f prom-values.yaml
+```
+
+```bash
+$ kubectl get crds | grep coreos
+$ kubectl get prometheuses.monitoring.coreos.com -o yaml | grep monitoring
+```
+
+### Expose PostgreSQL and Grafana
+
+```bash
+$ kubectl port-forward svc/prometheus-operated 9090:9090 
+$ kubectl port-forward svc/prom-grafana 3000:80  
+```
+
+### Install ServiceMonitor
+
+```bash
+$ kubectl get servicemonitor
+$ kubectl apply -f kafka-service-monitor.yaml
 ```
 
 ### Install podmonitor resource
@@ -174,4 +193,4 @@ Resources:
 - Code: https://github.com/confluentinc/jmx-monitoring-stacks/tree/main/jmxexporter-prometheus-grafana
 - Code: https://github.com/confluentinc/cp-demo
 - Health+: https://confluent.cloud/health-plus/welcome
-
+- Kubernetes Monitoring Made Easy with Prometheus | KodeKloud: https://www.youtube.com/watch?v=6xmWr7p5TE0
