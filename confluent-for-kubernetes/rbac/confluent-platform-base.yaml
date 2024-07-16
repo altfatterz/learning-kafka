@@ -1,3 +1,4 @@
+---
 apiVersion: platform.confluent.io/v1beta1
 kind: KRaftController
 metadata:
@@ -9,6 +10,10 @@ spec:
   image:
     application: confluentinc/cp-server:7.6.1
     init: confluentinc/confluent-init-container:2.8.0
+  tls:
+    secretRef: tls-group1
+
+---
 ---
 apiVersion: platform.confluent.io/v1beta1
 kind: Kafka
@@ -18,25 +23,47 @@ metadata:
 spec:
   replicas: 3
   dataVolumeCapacity: 2Gi
-  metricReporter:
-    enabled: true
   image:
     application: confluentinc/cp-server:7.6.1
     init: confluentinc/confluent-init-container:2.8.0
+  tls:
+    secretRef: tls-group1
   listeners:
     internal:
       authentication:
-        type: ldap
+        type: plain
         jaasConfig:
           secretRef: credential
+      tls:
+        enabled: true
+#    external:
+#      authentication:
+#        type: plain
+#        jaasConfig:
+#          secretRef: credential
+#      externalAccess:
+#        type: loadBalancer
+#        loadBalancer:
+#          domain: my.domain
+#          brokerPrefix: rb
+#          bootstrapPrefix: rb
+#      tls:
+#        enabled: true
   authorization:
     type: rbac
     superUsers:
       - User:kafka
   services:
     mds:
+      tls:
+        enabled: true
       tokenKeyPair:
         secretRef: mds-token
+#      externalAccess:
+#        type: loadBalancer
+#        loadBalancer:
+#          domain: my.domain
+#          prefix: rb-mds
       provider:
         type: ldap
         ldap:
@@ -65,7 +92,15 @@ spec:
       authentication:
         type: bearer
         bearer:
-          secretRef: kafka-mds-client
+          secretRef: mds-client
+#    zookeeper:
+#      endpoint: zookeeper.confluent.svc.cluster.local:2182
+#      authentication:
+#        type: digest
+#        jaasConfig:
+#          secretRef: credential
+#      tls:
+#        enabled: true
 
 ---
 apiVersion: platform.confluent.io/v1beta1
