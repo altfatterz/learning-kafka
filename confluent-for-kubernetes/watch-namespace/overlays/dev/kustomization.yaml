@@ -8,8 +8,8 @@ configMapGenerator:
   - name: confluent-config
     envs:
       - env.properties
-#patches:
-#  - path: increase-kafka-replicas.yaml
-
+patches:
+  - path: increase-kafka-replicas.yaml
 replacements:
-  - path: replacement.yaml
+  - path: confluent-image-replacement.yaml
+  - path: confluent-init-image-replacement.yaml

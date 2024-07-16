@@ -1,0 +1,15 @@
+source:
+  name: confluent-config
+  kind: ConfigMap
+  fieldPath: data.CONFLUENT_INIT_IMAGE
+targets:
+  - select:
+      kind: Kafka
+      name: kafka
+    fieldPaths:
+      - spec.image.init
+  - select:
+      kind: KRaftController
+      name: kraftcontroller
+    fieldPaths:
+      - spec.image.init

@@ -8,3 +8,8 @@ targets:
       name: kafka
     fieldPaths:
       - spec.image.application
+  - select:
+      kind: KRaftController
+      name: kraftcontroller
+    fieldPaths:
+      - spec.image.application
