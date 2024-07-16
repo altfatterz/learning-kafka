@@ -1,52 +1,85 @@
 ### Create k8s cluster and namespace
 
 ```bash
-$ k3d cluster create confluent
+$ k3d cluster create confluent -p "9021:80@loadbalancer"
 $ kubectl cluster-info
 $ kubectl create ns confluent
 $ kubectl config set-context --current --namespace confluent
+# install ingress to expose control center easily at http://localhost:9021
+$ kubectl apply -f ingress.yaml
 ```
+
+### Import images and verify imported images
+
+```bash
+$ ./import-images
+$ docker exec k3d-confluent-server-0 crictl images | grep 7.6.1
+$ docker exec k3d-confluent-server-0 crictl images | grep 2.8.0
+```
+
+### Install the CFK operator
 
 ```bash
 $ helm repo add confluentinc https://packages.confluent.io/helm
 $ helm repo update
 $ helm upgrade --install confluent-operator confluentinc/confluent-for-kubernetes --set kRaftEnabled=true
-## wait until the operator is up and running
-$ kubectl get pods
 ```
+
+### Verify running pods
 
 ```bash
-$ kubectl apply -f confluent-platform.yaml
+# wait until the operator is up and running
+$ watch kubectl get pods --all-namespaces
 ```
 
-```bash
-$ kubectl get svc
+### JMX Metrics
 
-NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                                   AGE
-confluent-operator           ClusterIP   10.43.64.27     <none>        7778/TCP                                                                  38m
-kraftcontroller              ClusterIP   None            <none>        9074/TCP,7203/TCP,7777/TCP,7778/TCP,9072/TCP                              37m
-connect                      ClusterIP   None            <none>        8083/TCP,7203/TCP,7777/TCP,7778/TCP                                       37m
-kraftcontroller-0-internal   ClusterIP   10.43.174.127   <none>        9074/TCP,7203/TCP,7777/TCP,7778/TCP,9072/TCP                              37m
-connect-0-internal           ClusterIP   10.43.63.54     <none>        8083/TCP,7203/TCP,7777/TCP,7778/TCP                                       37m
-kafka                        ClusterIP   None            <none>        9074/TCP,9092/TCP,8090/TCP,9071/TCP,7203/TCP,7777/TCP,7778/TCP,9072/TCP   36m
-kafka-0-internal             ClusterIP   10.43.226.23    <none>        9074/TCP,9092/TCP,8090/TCP,9071/TCP,7203/TCP,7777/TCP,7778/TCP,9072/TCP   36m
-controlcenter                ClusterIP   None            <none>        9021/TCP,7203/TCP,7777/TCP,7778/TCP                                       35m
-schemaregistry               ClusterIP   None            <none>        8081/TCP,7203/TCP,7777/TCP,7778/TCP                                       35m
-controlcenter-0-internal     ClusterIP   10.43.48.218    <none>        9021/TCP,7203/TCP,7777/TCP,7778/TCP                                       35m
-schemaregistry-0-internal    ClusterIP   10.43.213.81    <none>        8081/TCP,7203/TCP,7777/TCP,7778/TCP                                       35m
-kafka-1-internal             ClusterIP   10.43.101.15    <none>        9074/TCP,9092/TCP,8090/TCP,9071/TCP,7203/TCP,7777/TCP,7778/TCP,9072/TCP   15m
-kafka-2-internal             ClusterIP   10.43.209.219   <none>        9074/TCP,9092/TCP,8090/TCP,9071/TCP,7203/TCP,7777/TCP,7778/TCP,9072/TCP   15m
-```
+CFK deploys all Confluent components with JMX metrics enabled by default. 
+These JMX metrics are made available on all pods at the following endpoints:
 
 - JMX metrics are available on port 7203 of each pod.
 - Jolokia (a REST interface for JMX metrics) is available on port 7777 of each pod.
 - JMX Prometheus exporter is available on port 7778.
 
 ```bash
+$ kubectl describe svc kafka
+
+Port:              controller  9074/TCP
+TargetPort:        9074/TCP
+Endpoints:         10.42.0.19:9074,10.42.0.20:9074,10.42.0.21:9074
+Port:              external  9092/TCP
+TargetPort:        9092/TCP
+Endpoints:         10.42.0.19:9092,10.42.0.20:9092,10.42.0.21:9092
+Port:              http-external  8090/TCP
+TargetPort:        8090/TCP
+Endpoints:         10.42.0.19:8090,10.42.0.20:8090,10.42.0.21:8090
+Port:              internal  9071/TCP
+TargetPort:        9071/TCP
+Endpoints:         10.42.0.19:9071,10.42.0.20:9071,10.42.0.21:9071
+Port:              jmx  7203/TCP
+TargetPort:        7203/TCP
+Endpoints:         10.42.0.19:7203,10.42.0.20:7203,10.42.0.21:7203
+Port:              jolokia  7777/TCP
+TargetPort:        7777/TCP
+Endpoints:         10.42.0.19:7777,10.42.0.20:7777,10.42.0.21:7777
+Port:              prometheus  7778/TCP
+TargetPort:        7778/TCP
+Endpoints:         10.42.0.19:7778,10.42.0.20:7778,10.42.0.21:7778
+Port:              replication  9072/TCP
+TargetPort:        9072/TCP
+Endpoints:         10.42.0.19:9072,10.42.0.20:9072,10.42.0.21:9072
+```
+
+Authentication / encryption is not supported for Prometheus exporter.
+
+More info here: https://docs.confluent.io/operator/current/co-monitor-cp.html
+
+```bash
 $ kubectl exec -it kafka-0 -- bash
 ```
 
 Jolokia (https://jolokia.org/ -  is remote JMX with JSON over HTTP)
+
 ```bash
 $ curl localhost:7777/jolokia/read/java.lang:type=Memory/HeapMemoryUsage
 
@@ -54,9 +87,10 @@ $ curl localhost:7777/jolokia/read/java.lang:type=Memory/HeapMemoryUsage
 ```
 
 JMX Prometheus exporter (https://github.com/prometheus/jmx_exporter)
+
 ```bash
 $ curl localhost:7778
-$ curl localhost:7778 | grep 
+$ curl localhost:7778 | grep kafka
 ```
 
 ### Expose control center using
@@ -67,10 +101,36 @@ $ kubectl confluent dashboard controlcenter
 
 ### Install prometheus and grafana
 
+Using the helm chart: https://github.com/prometheus-community/helm-charts/
+
+
 ```bash
 $ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 $ helm repo update
 $ helm install prom prometheus-community/kube-prometheus-stack -f prom-values.yaml
+```
+
+### Install podmonitor resource
+
+```bash
+$ kubectl apply -f pm-confluent.yaml -n confluent
+```
+
+Check the installed CRDs
+
+```bash
+$ kubectl get crds | grep coreos
+
+alertmanagerconfigs.monitoring.coreos.com     2024-07-16T18:42:53Z
+alertmanagers.monitoring.coreos.com           2024-07-16T18:42:53Z
+podmonitors.monitoring.coreos.com             2024-07-16T18:42:53Z
+probes.monitoring.coreos.com                  2024-07-16T18:42:53Z
+prometheusagents.monitoring.coreos.com        2024-07-16T18:42:53Z
+prometheuses.monitoring.coreos.com            2024-07-16T18:42:54Z
+prometheusrules.monitoring.coreos.com         2024-07-16T18:42:54Z
+scrapeconfigs.monitoring.coreos.com           2024-07-16T18:42:54Z
+servicemonitors.monitoring.coreos.com         2024-07-16T18:42:54Z
+thanosrulers.monitoring.coreos.com            2024-07-16T18:42:54Z
 ```
 
 ### Install PodMonitor resource
