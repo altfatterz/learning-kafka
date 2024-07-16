@@ -88,6 +88,17 @@ $ kubectl get all
 ```bash
 $ kubectl apply -f confluent-platform-base.yaml
 # wait until controller and broker nodes are up
+```
+
+### Create secret for 
+
+```bash
+$ kubectl create secret generic sqlcreds --from-file=sqlcreds.txt=sqlcreds.txt
+$ kubectl get secret sqlcreds -o yaml
+```
+
+
+```bash
 $ kubectl apply -f confluent-platform-schemaregistry.yaml
 $ kubectl apply -f confluent-platform-connect.yaml
 $ kubectl apply -f confluent-platform-controlcenter.yaml

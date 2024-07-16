@@ -5,7 +5,7 @@ metadata:
   name: connect
   namespace: confluent
 spec:
-  replicas: 2
+  replicas: 1
   image:
     application: confluentinc/cp-server-connect:7.6.1
     init: confluentinc/confluent-init-container:2.8.0
@@ -23,9 +23,10 @@ spec:
           - name: debezium-connector-postgresql
             owner: debezium
             version: 2.5.4
-
   dependencies:
     kafka:
       bootstrapEndpoint: kafka:9071
     schemaRegistry:
       url: http://schemaregistry.confluent.svc.cluster.local:8081
+  mountedSecrets:
+    - secretRef: sqlcreds

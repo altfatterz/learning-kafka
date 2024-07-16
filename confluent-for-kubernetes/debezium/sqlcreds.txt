@@ -1,0 +1,4 @@
+hostname=my-postgresql
+dbname=postgres
+user=postgres
+password=secret

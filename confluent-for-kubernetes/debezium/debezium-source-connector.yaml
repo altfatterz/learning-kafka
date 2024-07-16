@@ -12,8 +12,10 @@ spec:
     name: connect
   configs:
     topic.prefix: prefix
-    database.hostname: my-postgresql
-    database.user: postgres
-    database.password: secret
-    database.dbname: postgres
+    database.hostname: ${file:/mnt/secrets/sqlcreds/sqlcreds.txt:hostname}
+    database.dbname: ${file:/mnt/secrets/sqlcreds/sqlcreds.txt:dbname}
+
+    # https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-permissions
+    database.user: ${file:/mnt/secrets/sqlcreds/sqlcreds.txt:user}
+    database.password: ${file:/mnt/secrets/sqlcreds/sqlcreds.txt:password}
     plugin.name: pgoutput
