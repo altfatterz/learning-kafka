@@ -6,5 +6,5 @@ spec:
   replicas: 1
   dataVolumeCapacity: 10Gi
   image:
-    application: docker.io/confluentinc/cp-server:7.6.1
-    init: confluentinc/confluent-init-container:2.8.0
+    application: TODO
+    init: TODO

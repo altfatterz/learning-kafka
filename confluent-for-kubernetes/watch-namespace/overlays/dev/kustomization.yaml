@@ -4,6 +4,12 @@ kind: Kustomization
 resources:
   - ../../base
 namespace: dev
-patches:
-  - path: increase-kafka-replicas.yaml
+configMapGenerator:
+  - name: confluent-config
+    envs:
+      - env.properties
+#patches:
+#  - path: increase-kafka-replicas.yaml
 
+replacements:
+  - path: replacement.yaml

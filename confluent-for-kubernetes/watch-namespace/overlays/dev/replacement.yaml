@@ -1,0 +1,10 @@
+source:
+  name: confluent-config
+  kind: ConfigMap
+  fieldPath: data.CONFLUENT_IMAGE
+targets:
+  - select:
+      kind: Kafka
+      name: kafka
+    fieldPaths:
+      - spec.image.application
