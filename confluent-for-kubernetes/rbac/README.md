@@ -159,7 +159,9 @@ $ kubectl create secret generic kafka-client-config-secure --from-file=kafka.pro
 $ kubectl get secret kafka-client-config-secure -o yaml
 ```
 
-
+```bash
+$ kubectl apply -f secure-clients.yaml
+```
 
 ------------------------------------------------------------------------------------------------------------------------
 

@@ -39,7 +39,7 @@ spec:
         - -c
         - |
           kafka-producer-perf-test \
-            --topic ${HOSTNAME}  \
+            --topic elastic-0  \
             --record-size 524288 \
             --throughput 64 \
             --producer.config /mnt/kafka.properties \
@@ -62,6 +62,55 @@ spec:
         - name: kafka-ssl
           secret:
             secretName: kafka-pkcs12
+---
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elastic-consumer
+spec:
+  serviceName: elastic-consumer
+  podManagementPolicy: Parallel
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elastic-consumer
+  template:
+    metadata:
+      labels:
+        app: elastic-consumer
+    spec:
+      containers:
+        - name: elastic-consumer
+          image: confluentinc/cp-server:7.6.1
+          command:
+            - /bin/sh
+            - -c
+            - |
+              kafka-consumer-perf-test \
+                --topic elastic-0  \
+                --messages 100
+                --consumer.config /mnt/kafka.properties \
+                --num-records 230400
+          volumeMounts:
+            - name: kafka-properties
+              mountPath: /mnt
+            - name: kafka-ssl
+              mountPath: /mnt/sslcerts
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 500m
+      volumes:
+        # This application pod will mount a volume for Kafka client properties from
+        # the secret `kafka-client-config-secure`
+        - name: kafka-properties
+          secret:
+            secretName: kafka-client-config-secure
+        - name: kafka-ssl
+          secret:
+            secretName: kafka-pkcs12
+
 ---
 apiVersion: v1
 kind: Service
