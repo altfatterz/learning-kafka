@@ -1,0 +1,13 @@
+apiVersion: platform.confluent.io/v1beta1
+kind: Schema
+metadata:
+  name: hierarchy-example-schema
+  namespace: confluent
+spec:
+  # https://docs.confluent.io/platform/current/schema-registry/fundamentals/schema-evolution.html#schema-evolution-and-compatibility
+  compatibilityLevel: BACKWARD
+  # https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#schema-normalization
+  normalize: true
+  data:
+    configRef: hierarchy-example-schema-config
+    format: avro
