@@ -57,6 +57,13 @@ $ kubectl apply -f hierarchy-example-schema-config.yaml
 $ kubectl apply -f hierarchy-example-schema.yaml
 ```
 
+Other way to create the Config Maps
+
+```bash
+$ kubectl create cm payment-value-schema-config --from-file=data.schema=payment-value-schema.json --dry-run=client -o yaml
+$ kubectl create cm hierarchy-example-schema-config --from-file=data.schema=hierarchy-example-schema.json --dry-run=client -o yaml
+```
+
 ## Validation
 
 ```bash
