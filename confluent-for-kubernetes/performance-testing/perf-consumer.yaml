@@ -2,24 +2,23 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: perf-producer
+  name: perf-consumer
 spec:
   template:
     spec:
       restartPolicy: Never
       containers:
-        - name: perf-producer
+        - name: perf-consumer
           image: confluentinc/cp-server:7.6.1
           command:
             - /bin/sh
             - -c
             - |
-              kafka-producer-perf-test \
+              kafka-consumer-perf-test \
+                --bootstrap-server kafka.confluent.svc.cluster.local:9071 \
                 --topic perf-testing-topic  \
-                --record-size 1024 \
-                --throughput -1 \
-                --producer.config /mnt/kafka.properties \
-                --num-records 3000000
+                --messages 3000000 \
+                --consumer.config /mnt/kafka.properties
           volumeMounts:
             - name: kafka-properties
               mountPath: /mnt

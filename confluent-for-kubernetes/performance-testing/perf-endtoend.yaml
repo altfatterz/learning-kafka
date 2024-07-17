@@ -2,24 +2,27 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: perf-producer
+  name: perf-endtoend
 spec:
   template:
     spec:
       restartPolicy: Never
       containers:
-        - name: perf-producer
+        - name: perf-endtoend
           image: confluentinc/cp-server:7.6.1
           command:
             - /bin/sh
             - -c
             - |
-              kafka-producer-perf-test \
-                --topic perf-testing-topic  \
-                --record-size 1024 \
-                --throughput -1 \
-                --producer.config /mnt/kafka.properties \
-                --num-records 3000000
+              kafka-run-class org.apache.kafka.tools.EndToEndLatency \
+                kafka.confluent.svc.cluster.local:9071 \
+                perf-testing-topic  \
+                10000 \
+                1 \
+                10024 \
+                /mnt/kafka.properties
+          # produce 10k messages of each 1KB with acks set to 1 (leader broker) and encrypted data transfer via SSL
+          # java org.apache.kafka.tools.EndToEndLatency broker_list topic num_messages producer_acks message_size_bytes [optional] properties_file
           volumeMounts:
             - name: kafka-properties
               mountPath: /mnt

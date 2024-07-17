@@ -32,7 +32,6 @@ $ helm upgrade --install confluent-operator confluentinc/confluent-for-kubernete
 $ watch kubectl get pods --all-namespaces
 ```
 
-
 ### Generate a CA pair to use:
 
 ```
@@ -78,7 +77,7 @@ $ kubectl apply -f topic.yaml
 ### Deploy perf producer
 
 ```bash
-$ kubectl logs -f perf-producer.yaml
+$ kubectl logs -f perf-producer-54c97bb5f7-tzt57
 
 251281 records sent, 50256.2 records/sec (49.08 MB/sec), 460.2 ms avg latency, 980.0 ms max latency.
 609645 records sent, 121929.0 records/sec (119.07 MB/sec), 258.3 ms avg latency, 507.0 ms max latency.
@@ -88,4 +87,43 @@ $ kubectl logs -f perf-producer.yaml
 3000000 records sent, 101102.011930 records/sec (98.73 MB/sec), 291.27 ms avg latency, 980.00 ms max latency, 275 ms 50th, 425 ms 95th, 614 ms 99th, 916 ms 99.9th.
 ```
 
-### 
+### Deploy perf consumer
+
+```bash
+$ kubectl apply -f perf-consumer.yaml 
+$ kubectl logs -f perf-consumer-f69qc
+
+start.time: 2024-07-17 19:57:43:209 
+end.time: 2024-07-17 19:57:56:271
+data.consumed.in.MB: 2930.1025 
+MB.sec: 224.3227
+data.consumed.in.nMsg: 3000425 
+nMsg.sec: 229706.4002
+rebalance.time.ms: 3758
+fetch.time.ms: 9304 
+fetch.MB.sec: 314.9293
+fetch.nMsg.sec: 322487.6397
+```
+
+### Deploy perf end-to-end
+
+```bash
+$ kubectl apply -f perf-endtoend-yaml
+$ kubectl logs -f perf-endtoend-562hm
+
+0	91.077158
+1000	1.993549
+2000	1.812902
+3000	1.79668
+4000	1.662695
+5000	1.829755
+6000	1.7018440000000001
+7000	3.380487
+8000	1.913619
+9000	2.254422
+Avg latency: 2.1601 ms
+Percentiles: 50th = 1, 99th = 5, 99.9th = 44
+```
+
+Resources:
+- 99th Percentile Latency at Scale with Apache Kafka https://www.confluent.io/blog/configure-kafka-to-minimize-latency/
