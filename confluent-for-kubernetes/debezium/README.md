@@ -58,13 +58,17 @@ CREATE TABLE customers (
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
+  foo1 NUMERIC(1) NOT NULL,
+  foo2 NUMERIC(2) NOT NULL,
+  foo3 INTEGER NOT NULL,
+  foo4 NUMERIC NOT NULL,
   PRIMARY KEY(id)
 );
   
-INSERT INTO customers(first_name, last_name, email) VALUES ('John', 'Doe', 'johndoe@gmail.com');
+INSERT INTO customers(first_name, last_name, email, foo1, foo2, foo3, foo4) VALUES ('John', 'Doe', 'johndoe@gmail.com', 1, 1, 1, 1);
 COMMIT;
 
-INSERT INTO customers(first_name, last_name, email) VALUES ('Jane', 'Doe', 'janedoe@gmail.com');
+INSERT INTO customers(first_name, last_name, email, foo1, foo2, foo3, foo4) VALUES ('Jane', 'Doe', 'janedoe@gmail.com', 1, 1, 1, 1);
 COMMIT;
 
 SELECT * FROM CUSTOMERS;

@@ -14,7 +14,10 @@ spec:
     topic.prefix: prefix
     database.hostname: ${file:/mnt/secrets/sqlcreds/sqlcreds.txt:hostname}
     database.dbname: ${file:/mnt/secrets/sqlcreds/sqlcreds.txt:dbname}
-
+    # https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-decimal-handling-mode
+    # decimal.handling.mode: string
+    decimal.handling.mode: double
+    # decimal.handling.mode: precise
     # https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-permissions
     database.user: ${file:/mnt/secrets/sqlcreds/sqlcreds.txt:user}
     database.password: ${file:/mnt/secrets/sqlcreds/sqlcreds.txt:password}
