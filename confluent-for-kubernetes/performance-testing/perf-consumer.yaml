@@ -15,6 +15,7 @@ spec:
             - -c
             - |
               kafka-consumer-perf-test \
+                --group perf-consumer \
                 --bootstrap-server kafka.confluent.svc.cluster.local:9071 \
                 --topic perf-testing-topic  \
                 --messages 3000000 \
