@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-pvc
+spec:
+  storageClassName: prometheus-sc
+  accessModes:
+    # Mount a volume as read-write by a single node
+    # More pods on a single node can still use the same volume.
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

@@ -1,0 +1,8 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: prometheus-sc
+provisioner: rancher.io/local-path
+reclaimPolicy: Retain
+# will delay the binding and provisioning of a PersistentVolume until a Pod using the PersistentVolumeClaim is created.
+volumeBindingMode: WaitForFirstConsumer
