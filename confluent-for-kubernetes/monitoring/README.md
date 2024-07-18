@@ -41,6 +41,7 @@ These JMX metrics are made available on all pods at the following endpoints:
 - Jolokia (a REST interface for JMX metrics) is available on port 7777 of each pod.
 - JMX Prometheus exporter is available on port 7778.
 
+
 ```bash
 $ kubectl describe svc kafka
 
@@ -91,6 +92,31 @@ JMX Prometheus exporter (https://github.com/prometheus/jmx_exporter)
 ```bash
 $ curl localhost:7778
 $ curl localhost:7778 | grep kafka
+$ curl localhost:7778/metrics | grep kafka
+```
+
+### Check the JMX Exporter
+
+Current CFK 2.8.3 (confluent-for-kubernetes-0.921.40) is using the JMX exporter 0.18.0 https://github.com/prometheus/jmx_exporter/
+
+```bash
+...-javaagent:/usr/share/java/cp-base-new/jmx_prometheus_javaagent-0.18.0.jar=7778:/mnt/config/shared/jmx-exporter.yaml
+```
+
+```bash
+$ kubectl exec -it kafka-0 -- bash
+$ ps aux | grep java
+
+1001         1 17.1 17.4 10885160 2946532 ?    Ssl  06:41   1:20 java -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dkafka.logs.dir=/var/log/kafka -Dlog4j.configuration=file:/opt/confluentinc/etc/kafka/log4j.properties -cp /usr/bin/../ce-broker-plugins/build/libs/*:/usr/bin/../ce-broker-plugins/build/dependant-libs/*:/usr/bin/../ce-auth-providers/build/libs/*:/usr/bin/../ce-auth-providers/build/dependant-libs/*:/usr/bin/../ce-rest-server/build/libs/*:/usr/bin/../ce-rest-server/build/dependant-libs/*:/usr/bin/../ce-audit/build/libs/*:/usr/bin/../ce-audit/build/dependant-libs/*:/usr/bin/../ce-authorizer/build/libs/*:/usr/bin/../ce-authorizer/build/dependant-libs/*:/usr/bin/../ce-licensing/build/libs/*:/usr/bin/../ce-licensing/build/dependant-libs/*:/usr/bin/../share/java/kafka/*:/usr/bin/../share/java/confluent-metadata-service/*:/usr/bin/../share/java/rest-utils/*:/usr/bin/../share/java/confluent-common/*:/usr/bin/../share/java/ce-kafka-http-server/*:/usr/bin/../share/java/ce-kafka-rest-servlet/*:/usr/bin/../share/java/ce-kafka-rest-extensions/*:/usr/bin/../share/java/kafka-rest-lib/*:/usr/bin/../share/java/ce-kafka-queues/*:/usr/bin/../share/java/kafka-queues-lib/*:/usr/bin/../share/java/confluent-security/kafka-rest/*:/usr/bin/../share/java/confluent-security/schema-validator/*:/usr/bin/../support-metrics-client/build/dependant-libs-2.13.12/*:/usr/bin/../support-metrics-client/build/libs/*:/usr/bin/../share/java/confluent-telemetry/*:/usr/share/java/support-metrics-client/* -Djava.rmi.server.hostname=kafka-2.kafka.confluent.svc.cluster.local -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.port=7203 -Dcom.sun.management.jmxremote.rmi.port=7203 -Dcom.sun.management.jmxremote.ssl=false -Djava.awt.headless=true -Djdk.tls.ephemeralDHKeySize=2048 -Djdk.tls.server.enableSessionTicketExtension=false -XX:+ExplicitGCInvokesConcurrent -XX:+PrintFlagsFinal -XX:+UnlockDiagnosticVMOptions -XX:+UseG1GC -XX:ConcGCThreads=1 -XX:G1HeapRegionSize=16M -XX:InitiatingHeapOccupancyPercent=35 -XX:MaxGCPauseMillis=20 -XX:MaxMetaspaceFreeRatio=80 -XX:MetaspaceSize=96m -XX:MinMetaspaceFreeRatio=50 -XX:ParallelGCThreads=1 -server -javaagent:/usr/share/java/cp-base-new/disk-usage-agent-7.6.1.jar=/opt/confluentinc/etc/kafka/disk-usage-agent.properties -javaagent:/usr/share/java/cp-base-new/jolokia-jvm-1.7.1.jar=port=7777,host=0.0.0.0 -javaagent:/usr/share/java/cp-base-new/jmx_prometheus_javaagent-0.18.0.jar=7778:/mnt/config/shared/jmx-exporter.yaml kafka.Kafka /opt/confluentinc/etc/kafka/kafka.properties
+```
+
+With the `spec.metrics.prometheus` part of `Kafka` resource you can controll what ends up in the `/mnt/config/shared/jmx-exporter.yaml` 
+file, which by default contains:
+
+```bash
+lowercaseOutputLabelNames: false
+lowercaseOutputName: true
+ssl: false
 ```
 
 ### Expose control center using
