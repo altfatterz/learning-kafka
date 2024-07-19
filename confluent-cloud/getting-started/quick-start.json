@@ -1,0 +1,11 @@
+{
+  "name" : "DatagenSourceConnector_users",
+  "connector.class": "DatagenSource",
+  "kafka.auth.mode": "KAFKA_API_KEY",
+  "kafka.api.key": "CI4JADFSDFQZXO3U",
+  "kafka.api.secret" : "hZYCSSfDYnaz0/n+IgBLwkvxx6hnzMy5aLOgJ1kadX7YVdmoy5uBR80lg177ElXb",
+  "kafka.topic" : "users",
+  "output.data.format" : "JSON_SR",
+  "quickstart" : "USERS",
+  "tasks.max" : "1"
+}
