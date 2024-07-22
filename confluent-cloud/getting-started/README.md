@@ -174,3 +174,26 @@ $ confluent kafka topic delete users
 $ confluent kafka cluster delete lkc-0w6755
 $ confluent api-key delete CI4JADFSDFQZXO3U
 ```
+
+------------------------------------ API Keys --------------------------------------------------------------------------
+
+- API keys for Confluent Cloud can be created with user and service accounts.
+- A service account is intended to provide an identity for an application or service that needs to perform programmatic operations within Confluent Cloud.
+- In production ensure that only service account API keys are used
+- Avoid user account API keys, except for development and testing. 
+- Regularly review and clean up your existing API keys and service accounts.
+- Confluent Cloud audit logs - monitor authorization and authentication events
+
+
+List service accounts and their api keys
+
+```bash
+$ confluent iam service-account list
+$ confluent iam 
+```
+
+List users
+
+```bash
+$ confluent iam user list
+```
