@@ -83,6 +83,7 @@ https://developer.confluent.io/courses/confluent-cloud-networking
 - Drawbacks:
   - Cross-region peering setup is not supported through CC console. (reach out to Confluent Support team to set this up)
   - no transitive connectivity
+  - if we add more VPC networks, peering connections grow exponentially
 - AWS VPC / Azure VNet peerings are regional
 - Google VPCs are global and can span multiple regions - despite this Confluent Cloud on GCP only accepts connection from the same region
 - 
@@ -107,8 +108,71 @@ Target: The Peering Connection
 
 #### Setup https://getfoxyproxy.org/ to access the cluster in Confluent Cloud Console 
 
+```bash
+$ confluent network peering list
+```
 
+```bash
+$ sudo apt update
+$ sudo apt install nginx
+```
 
 ### AWS Transit Gateway
 
+- Connect the Confluent Cloud network with AWS Transit Gateway
+- Connect AWS VPC-s with the AWS Transit Gateway
+- Connect on premise networks with the AWS Transit Gateway
+
+- AWS Transit Gateway - is a network transit hub that interconnects attachments (VPCs and VPNs) within the same AWS account or across AWS accounts.
+- 
+
 ### Private Link
+
+- this is unidirectional connection (from your cluster to confluent cloud)
+- we cannot use fully managed connectors
+- Private DNS Resolution - setting
+  If checked, your cluster's endpoints will resolve solely through your private DNS zone. If disabled, you will require public DNS resolution.
+- Only requires 3 IP addresses in your VPC or VNet
+- On the Confluent Cloud side the is a customer layer of routing and proxies that is able to use the TLS SNI (Server Name Indication extension) on each packet to forward messages to the right broker.
+- On your network you are required to setup wildcard DNS records to forward all traffic to the correct Private Link endpoint that exists
+in your VPC (for AWS this is CNAME (translate domain name to domain name) record, for Azure is an A (translate domain name to ip address) record)
+- In Route53 or Azure DNS you will need to create a custom private DNS zone.
+- You need to setup a number of wildcard dns records to resolve all broker DNS names to the Private Link endpoint IPs
+- If you provision a cluster like this you will get:
+
+`Connection types`: PrivateLink
+`Zone`:	euw1-az1, euw1-az3, euw1-az2
+`Confluent Cloud VPC ID`: vpc-0f45eb5c84964f3f2
+`Confluent Cloud AWS Account ID`:390327825978
+`VPC Endpoint service name`: com.amazonaws.vpce.eu-west-1.vpce-svc-06bc29ea8ba3f64a2
+`DNS resolution`:	Private
+`DNS domain`: dom1w4jrl6w.eu-west-1.aws.confluent.cloud
+`DNS subdomain`: euw1-az1: euw1-az1.dom1w4jrl6w.eu-west-1.aws.confluent.cloud
+                 euw1-az2: euw1-az2.dom1w4jrl6w.eu-west-1.aws.confluent.cloud
+                 euw1-az3: euw1-az3.dom1w4jrl6w.eu-west-1.aws.confluent.cloud
+
+Then you add a `PrivateLink Access` providing:
+- AWS account number
+- and a name
+
+You need to wait until the PrivateLink Access status is `Ready` (initiall is in `Provisioning` state)  
+
+In AWS you will need to create an `Endpoint` using the `VPC Endpoint service name` using the `PrivateLink Ready partner service`
+
+`Service Name`: com.amazonaws.vpce.eu-west-1.vpce-svc-06bc29ea8ba3f64a2
+`DNS Names`:
+vpce-0dcb6593dd7d29ac1-rabj5mnu.vpce-svc-06bc29ea8ba3f64a2.eu-west-1.vpce.amazonaws.com
+vpce-0dcb6593dd7d29ac1-rabj5mnu-eu-west-1a.vpce-svc-06bc29ea8ba3f64a2.eu-west-1.vpce.amazonaws.com
+vpce-0dcb6593dd7d29ac1-rabj5mnu-eu-west-1b.vpce-svc-06bc29ea8ba3f64a2.eu-west-1.vpce.amazonaws.com
+vpce-0dcb6593dd7d29ac1-rabj5mnu-eu-west-1c.vpce-svc-06bc29ea8ba3f64a2.eu-west-1.vpce.amazonaws.com
+
+`Subnets`:
+subnet-0add76291d0d87641 (Simple Public Subnet 0) eu-west-1a (euw1-az3) 10.0.1.238
+subnet-0b453c7911623ecc6 (Simple Public Subnet 2) eu-west-1c (euw1-az2) 10.0.3.138
+subnet-05bf6759290c2f75d (Simple Public Subnet 1) eu-west-1b (euw1-az1) 10.0.2.236
+
+In `Route53` you will need to create a `Private Hosted Zone` with 4 CNAME records
+
+
+
+
