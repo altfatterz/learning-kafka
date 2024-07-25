@@ -221,6 +221,8 @@ $ confluent iam rbac role-binding list --kafka-cluster b6c53b39-2274-43d7-96w --
 $ confluent iam rbac role list
 ```
 
+The MDS maintains a local cache of authorization data that is persisted to an internal Kafka topic named `_confluent-metadata-auth`.
+
 ### Validate
 
 Verify broker properties
