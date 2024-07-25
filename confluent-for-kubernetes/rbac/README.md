@@ -1,11 +1,27 @@
 ### Create k8s cluster and namespace
 
 ```bash
-$ k3d cluster create confluent -p "9021:80@loadbalancer"
+$ k3d cluster create confluent -p "9021:80@agent:0,1,2" -p "30000-30003:30000-30003@agent:0,1,2" --agents 3
 $ kubectl cluster-info
 $ kubectl get nodes
+
 NAME                     STATUS   ROLES                  AGE   VERSION
-k3d-confluent-server-0   Ready    control-plane,master   73s   v1.27.4+k3s1
+k3d-confluent-server-0   Ready    control-plane,master   16s   v1.28.8+k3s1
+k3d-confluent-agent-1    Ready    <none>                 13s   v1.28.8+k3s1
+k3d-confluent-agent-2    Ready    <none>                 12s   v1.28.8+k3s1
+k3d-confluent-agent-0    Ready    <none>                 12s   v1.28.8+k3s1
+
+$  docker ps
+
+CONTAINER ID   IMAGE                            COMMAND                  CREATED          STATUS          PORTS                                                                                                                      NAMES
+481840cb55d8   ghcr.io/k3d-io/k3d-tools:5.6.3   "/app/k3d-tools noop"    46 seconds ago   Up 45 seconds                                                                                                                              k3d-confluent-tools
+db8052df29db   ghcr.io/k3d-io/k3d-proxy:5.6.3   "/bin/sh -c nginx-pr…"   46 seconds ago   Up 34 seconds   0.0.0.0:9021->80/tcp, 0.0.0.0:50693->6443/tcp, 0.0.0.0:8000->30000/tcp, 0.0.0.0:8001->30001/tcp, 0.0.0.0:8002->30002/tcp   k3d-confluent-serverlb
+4d4ce6a84871   rancher/k3s:v1.28.8-k3s1         "/bin/k3d-entrypoint…"   46 seconds ago   Up 39 seconds                                                                                                                              k3d-confluent-agent-2
+1197f60a32f6   rancher/k3s:v1.28.8-k3s1         "/bin/k3d-entrypoint…"   46 seconds ago   Up 39 seconds                                                                                                                              k3d-confluent-agent-1
+98a53806ed54   rancher/k3s:v1.28.8-k3s1         "/bin/k3d-entrypoint…"   46 seconds ago   Up 39 seconds                                                                                                                              k3d-confluent-agent-0
+fcd5fe8433dc   rancher/k3s:v1.28.8-k3s1         "/bin/k3d-entrypoint…"   46 seconds ago   Up 43 seconds                                                                                                                              k3d-confluent-server-0
+
+$ kubectl taint nodes k3d-confluent-server-0 key1=value1:NoSchedule
 $ kubectl create ns confluent
 $ kubectl config set-context --current --namespace confluent
 ```
@@ -152,8 +168,7 @@ bearer.txt:  37 bytes
 * Create Kafka REST credential
  
 ```bash
-$ kubectl create secret generic rest-credential \
---from-file=bearer.txt=assets/credentials/bearer.txt 
+$ kubectl create secret generic rest-credential --from-file=bearer.txt=assets/credentials/bearer.txt 
 $ kubectl describe secret rest-credential
 
 Name:         rest-credential
@@ -261,6 +276,13 @@ $ kubectl get secret kafka-client-config-secure -o yaml
 
 ```bash
 $ kubectl apply -f secure-clients.yaml
+```
+
+### Nodeport
+
+```bash
+$ kafka-topics --bootstrap-server localhost:30000 --create --topic demo
+$ kafka-topics --bootstrap-server localhost:30000 --list
 ```
 
 

@@ -31,6 +31,12 @@ spec:
   tls:
     secretRef: tls-group
   listeners:
+    external:
+      externalAccess:
+        type: nodePort
+        nodePort:
+          host: localhost
+          nodePortOffset: 30000
     internal:
       authentication:
         # Valid options are plain, digest, mtls, and ldap.
