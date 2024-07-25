@@ -1,16 +1,16 @@
 {
-  "CN": "TestCA",
+  "CN": "RootCA",
   "key": {
     "algo": "rsa",
     "size": 2048
   },
   "names": [
     {
-      "C": "Universe",
-      "L": "Earth",
-      "O": "Acme",
-      "ST": "Pangea",
-      "OU": "MyOrg"
+      "C": "CH",
+      "S": "Zurich",
+      "L": "Zurich",
+      "O": "Mimacom",
+      "OU": "Mimacom Data Engineering"
     }
   ]
 }

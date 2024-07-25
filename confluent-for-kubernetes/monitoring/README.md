@@ -48,24 +48,31 @@ $ kubectl describe svc kafka
 Port:              controller  9074/TCP
 TargetPort:        9074/TCP
 Endpoints:         10.42.0.19:9074,10.42.0.20:9074,10.42.0.21:9074
+
 Port:              external  9092/TCP
 TargetPort:        9092/TCP
 Endpoints:         10.42.0.19:9092,10.42.0.20:9092,10.42.0.21:9092
+
 Port:              http-external  8090/TCP
 TargetPort:        8090/TCP
 Endpoints:         10.42.0.19:8090,10.42.0.20:8090,10.42.0.21:8090
+
 Port:              internal  9071/TCP
 TargetPort:        9071/TCP
 Endpoints:         10.42.0.19:9071,10.42.0.20:9071,10.42.0.21:9071
+
 Port:              jmx  7203/TCP
 TargetPort:        7203/TCP
 Endpoints:         10.42.0.19:7203,10.42.0.20:7203,10.42.0.21:7203
+
 Port:              jolokia  7777/TCP
 TargetPort:        7777/TCP
 Endpoints:         10.42.0.19:7777,10.42.0.20:7777,10.42.0.21:7777
+
 Port:              prometheus  7778/TCP
 TargetPort:        7778/TCP
 Endpoints:         10.42.0.19:7778,10.42.0.20:7778,10.42.0.21:7778
+
 Port:              replication  9072/TCP
 TargetPort:        9072/TCP
 Endpoints:         10.42.0.19:9072,10.42.0.20:9072,10.42.0.21:9072

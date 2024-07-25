@@ -70,13 +70,24 @@ openssl x509 -in assets/certs/generated/server.pem -text -noout
 ## Provide component TLS certificates
 
 ```
-$ kubectl create secret generic tls-group1 \
+$ kubectl create secret generic tls-group \
 --from-file=fullchain.pem=assets/certs/generated/server.pem \
 --from-file=cacerts.pem=assets/certs/generated/ca.pem \
---from-file=privkey.pem=assets/certs/generated/server-key.pem 
+--from-file=privkey.pem=assets/certs/generated/server-key.pem  
 
-$ kubectl get secret tls-group1 -o yaml
+$ kubectl describe secret tls-group
+
+Name:         tls-group
+Namespace:    confluent
+Data
+====
+cacerts.pem:    1306 bytes
+fullchain.pem:  1749 bytes
+privkey.pem:    1679 bytes
 ```
+
+More info here: https://docs.confluent.io/operator/current/co-manage-certificates.html#rotate-user-provided-server-certificates
+
 
 ## Provide authentication credentials
 
@@ -89,40 +100,69 @@ credentials.
 ```
 $ kubectl create secret generic credential \
 --from-file=plain-users.json=assets/credentials/creds-kafka-sasl-users.json \
---from-file=digest-users.json=assets/credentials/creds-zookeeper-sasl-digest-users.json \
---from-file=digest.txt=assets/credentials/creds-kafka-zookeeper-credentials.txt \
---from-file=plain.txt=assets/credentials/creds-client-kafka-sasl-user.txt \
 --from-file=ldap.txt=assets/credentials/ldap.txt
 
-$ kubectl get secret credential -o yaml 
+$ kubectl describe secret credential
+
+Name:         credential
+Namespace:    confluent
+Type:  Opaque
+Data
+====
+ldap.txt:          51 bytes
+plain-users.json:  91 bytes 
 ```
 
 ## Provide RBAC principal credentials
 
 * Create a Kubernetes secret object for MDS:
-```
+
+```bash
+$ openssl x509 -in assets/mds/mds-publickey.txt -text -noout
+
 $ kubectl create secret generic mds-token \
 --from-file=mdsPublicKey.pem=assets/mds/mds-publickey.txt \
 --from-file=mdsTokenKeyPair.pem=assets/mds/mds-tokenkeypair.txt
 
-$ kubectl get secret mds-token 
+$ kubectl describe secret mds-token
+
+Name:         mds-token
+Namespace:    confluent
+Type:  Opaque
+Data
+====
+mdsPublicKey.pem:     450 bytes
+mdsTokenKeyPair.pem:  1678 bytes 
 ```
 
 * Create Kafka RBAC credential
-```
+
+```bash
 $ kubectl create secret generic mds-client --from-file=bearer.txt=assets/credentials/bearer.txt 
-$ kubectl get secret mds-client -o yaml
+$ kubectl describe secret mds-client
+
+Name:         mds-client
+Namespace:    confluent
+Type:  Opaque
+Data
+====
+bearer.txt:  37 bytes
 ```
 
 * Create Kafka REST credential
-* 
-```
+ 
+```bash
 $ kubectl create secret generic rest-credential \
---from-file=bearer.txt=assets/credentials/bearer.txt \
---from-file=basic.txt=assets/credentials/bearer.txt
-$ kubectl get secret rest-credential -o yaml 
-```
+--from-file=bearer.txt=assets/credentials/bearer.txt 
+$ kubectl describe secret rest-credential
 
+Name:         rest-credential
+Namespace:    confluent
+Type:  Opaque
+Data
+====
+bearer.txt:  37 bytes 
+```
 
 ### Deploy Confluent Platform
 
@@ -130,7 +170,65 @@ $ kubectl get secret rest-credential -o yaml
 $ kubectl apply -f confluent-platform-base.yaml
 ```
 
+### Access MDS Openapi
+
+```bash
+$ kubectl port-forward svc/kafka 8090:8090
+```
+
+Open browser
+
+https://localhost:8090/security/openapi/swagger-ui/index.html
+
+
+### Confluent Login
+
+```bash
+$ confluent login --url https://localhost:8090 --ca-cert-path assets/certs/generated/server.pem
+```
+
+Username: kafka
+Password: kafka-secret
+
+```bash
+$ confluent cluster describe --url https://localhost:8090 --ca-cert-path assets/certs/generated/server.pem
+
+Confluent Resource Name: b6c53b39-2274-43d7-96w
+
+Scope:
+      Type      |           ID
+----------------+-------------------------
+  kafka-cluster | b6c53b39-2274-43d7-96w
+```
+
+```bash
+$ kubectl apply -f testadmin-rb.yaml
+$ kubectl get confluentrolebindings
+
+NAME           STATUS    KAFKACLUSTERID           PRINCIPAL        ROLE           KAFKARESTCLASS      AGE
+testadmin-rb   CREATED   b6c53b39-2274-43d7-96w   User:testadmin   ClusterAdmin   confluent/default   13s
+```
+
+```bash
+$ confluent iam rbac role-binding list --kafka-cluster b6c53b39-2274-43d7-96w --role ClusterAdmin
+
+    Principal
+------------------
+  User:testadmin
+```
+
+```bash
+$ confluent iam rbac role list
+```
+
 ### Validate
+
+Verify broker properties
+
+```bash
+$ kubectl exec kafka-0 -- sh
+cat /opt/confluentinc/etc/kafka/kafka.properties
+```
 
 ```bash
 $ kubectl describe kafka
@@ -162,6 +260,26 @@ $ kubectl get secret kafka-client-config-secure -o yaml
 ```bash
 $ kubectl apply -f secure-clients.yaml
 ```
+
+
+### Configure authentication to access Kafka
+
+#### SASL/PLAIN
+
+#### SASL/PLAIN with LDAP authentication
+
+- Confluent does not recommend using SASL/PLAIN with LDAP for interbroker communication because intermittent LDAP errors
+  can cause significant broker performance issues, use instead mTLS, SASL/PLAIN
+
+### ConfluentRolebinding
+
+- CFK provides the ConfluentRolebinding CRD with which you can declaratively create and manage RBAC for users and groups
+as CRs in Kubernetes
+
+More info: https://docs.confluent.io/operator/current/co-manage-rbac.html
+
+------------------------------------------------------------------------------------------------------------------------
+
 
 ------------------------------------------------------------------------------------------------------------------------
 
