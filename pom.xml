@@ -39,7 +39,6 @@
 
         <module>testcontainers/testcontainers-demo</module>
         <module>testcontainers/product-service</module>
-        <module>testcontainers/postgresql-r2dbc</module>
 
     </modules>
 
