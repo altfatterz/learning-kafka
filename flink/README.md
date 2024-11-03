@@ -98,6 +98,12 @@ WITH (
 );
 ```
 
+### Cleanup
+
+```bash
+docker compose down -v
+```
+
 Resources:
 - https://developer.confluent.io/courses/apache-flink/intro/
 - https://developer.confluent.io/courses/flink-java/overview/
