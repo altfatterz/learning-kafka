@@ -189,4 +189,4 @@ $ confluent environment delete <ENVIRONMENT_ID>
 
 ### Resources:
 
-Quick start Conflent Cloud for Apache Flink: https://developer.confluent.io/quickstart/flink-on-confluent-cloud/
+Quick start Confluent Cloud for Apache Flink: https://developer.confluent.io/quickstart/flink-on-confluent-cloud/
