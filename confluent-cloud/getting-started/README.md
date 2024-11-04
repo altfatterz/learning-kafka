@@ -97,7 +97,7 @@ $ confluent api-key create --resource lksqlc-123456
 We need now an API key with full access to the Kafka cluster
 
 ```bash
-$ confluent confluent api-key create --resource lkc-0w6755
+$ confluent api-key create --resource lkc-0w6755
 
 +------------+------------------------------------------------------------------+
 | API Key    | CI4JADFSDFQZXO3U                                                 |
