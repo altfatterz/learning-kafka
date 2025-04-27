@@ -11,26 +11,28 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CustomCunsumerRebalanceListener implements ConsumerRebalanceListener {
+public class CustomConsumerRebalanceListener implements ConsumerRebalanceListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(CustomCunsumerRebalanceListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(CustomConsumerRebalanceListener.class);
 
-    private long startTimestamp;
-    private Consumer<String, String> consumer;
+    private final long startTimestamp;
+    private final Consumer<String, String> consumer;
 
-    public CustomCunsumerRebalanceListener(Consumer consumer, long startTimestamp) {
+    public CustomConsumerRebalanceListener(Consumer<String, String> consumer, long startTimestamp) {
         this.consumer = consumer;
         this.startTimestamp = startTimestamp;
     }
 
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+        logger.info("onPartitionsAssigned called with: {}", partitions);
 
         // Build a map key=partition value=startTimestamp
         final Map<TopicPartition, Long> timestampsToSearch = new HashMap<>();
         for (TopicPartition partition : partitions) {
             timestampsToSearch.put(partition, startTimestamp);
         }
+        logger.info("timestampsToSearch: {}", timestampsToSearch);
 
         // Request the offsets for the start timestamp
         final Map<TopicPartition, OffsetAndTimestamp> startOffsets = consumer.offsetsForTimes(timestampsToSearch);

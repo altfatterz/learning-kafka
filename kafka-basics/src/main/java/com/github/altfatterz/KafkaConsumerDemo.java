@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -40,12 +40,12 @@ public class KafkaConsumerDemo {
 
         try {
             final long startTimestamp = Long.parseLong(props.getProperty("read-from-timestamp"));
-            // consumer.subscribe with ConsumerRebalanceListener
-            consumer.subscribe(Arrays.asList(topic), new CustomCunsumerRebalanceListener(consumer, startTimestamp));
+            logger.info("consumer subscribe with ConsumerRebalanceListener");
+            consumer.subscribe(Collections.singletonList(topic), new CustomConsumerRebalanceListener(consumer, startTimestamp));
         } catch (NumberFormatException e) {
             logger.info("Could not parse `read-from-timestamp` property using instead `auto.offset.reset` property");
             // subscribe consumer to topic
-            consumer.subscribe(Arrays.asList(topic));
+            consumer.subscribe(Collections.singletonList(topic));
         }
 
         // Get metadata about the partitions for a given topic
@@ -56,9 +56,10 @@ public class KafkaConsumerDemo {
 
         // poll for new data
         while (true) {
+            // max.poll.records (default 500)
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(200));
 
-            logger.info("Fetched nr of records:" + records.count());
+            logger.info("poll() returned nr of records:{}", records.count());
 
             for (ConsumerRecord<String, String> record : records) {
                 logger.info("Key: {},  Partition: {}, Offset: {}, Value:{},", record.key(), record.partition(),
