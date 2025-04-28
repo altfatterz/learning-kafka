@@ -74,8 +74,7 @@ public class SimpleConsumerApplication {
                 .collect(Collectors.toSet());
     }
 
-    @KafkaListener(groupId = "messages-group", topics = TOPIC,
-            clientIdPrefix="${spring.application.name}", concurrency = "3")
+    @KafkaListener(groupId = "messages-group", topics = TOPIC, clientIdPrefix="${spring.application.name}", concurrency = "3")
     public void consume(String message) {
         if (message.startsWith("poison-pill")) {
             throw new RuntimeException("failed processing message:" + message);
@@ -83,8 +82,7 @@ public class SimpleConsumerApplication {
         logger.info("Consumed message -> {}", message);
     }
 
-    @KafkaListener(groupId = "messages-dlt-group", topics = TOPIC_DLT,
-            clientIdPrefix = "${spring.application.name}")
+    @KafkaListener(groupId = "messages-dlt-group", topics = TOPIC_DLT, clientIdPrefix = "${spring.application.name}")
     public void dltConsume(String message) {
         logger.info("Received from {} : {}", TOPIC_DLT, message);
     }

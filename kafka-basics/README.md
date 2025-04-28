@@ -98,9 +98,25 @@ the timestamp in Kafka is stored in UTC format.
 
 # Running with Confluent Cloud
 
-1. Install Confluent CLI: https://docs.confluent.io/confluent-cli/current/install.html
+1. Install Confluent CLI: https://docs.co   nfluent.io/confluent-cli/current/install.html
 2. Connect the CLI to your Confluent Cloud cluster: https://docs.confluent.io/confluent-cli/current/connect.html
 
+
+# Version
+
+```bash
+
+confluent version
+
+Version:     v4.26.0
+Git Ref:     d2facf65
+Build Date:  2025-04-21T23:27:56Z
+Go Version:  go1.22.7 (darwin/arm64)
+Development: false
+
+confluent update
+
+```
 
 # Confluent Shell
 

@@ -47,8 +47,7 @@ public class SimpleProducerApplication {
 
         logger.info("Sending payload {}", payload);
 
-        CompletableFuture<SendResult<String, String>> future =
-                kafkaTemplate.send(TOPIC, payload);
+        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(TOPIC, payload);
 
         future.whenComplete((result, throwable) -> {
             if (result != null) {
