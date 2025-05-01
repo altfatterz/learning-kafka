@@ -1,3 +1,8 @@
+## Spring With Kafka
+
+- https://developer.confluent.io/courses/spring/apache-kafka-intro/
+- https://spring.io/projects/spring-kafka
+
 ## Cluster Setup
 
 ```bash
