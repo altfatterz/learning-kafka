@@ -1,10 +1,7 @@
 package com.example;
 
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.kstream.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +57,8 @@ public class StatelessStreamProcessingExample {
                 .mapValues(value -> value.toUpperCase().replaceAll("\\s+", " "))
                 // keep only those which value is longer than 5 characters
                 .filter((key, value) -> value.length() > 5)
+                // there is no repartition topic ???
+                .map((key, value) -> new KeyValue<>(value, value))
                 .peek((key, value) -> logger.info("Outgoing record - key:{} value:{}", key, value))
                 .to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.String()));
 

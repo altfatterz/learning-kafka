@@ -1,4 +1,90 @@
-Start up the cluster:
+------------------------------------------------------------------------------------------------------------------------
+
+- `Task assignment` 
+  - related to the consumer group and rebalancing protocol
+  - `StreamThread` -  
+  - `Task` - correspond to topic partitions (can be `active` or `standby`)
+  - if you assign a task to a node which didn't work on it yet, need to restore the state from `changelog` topic (long delay)
+    --> `standby` tasks - only maintain state and they don't do any processing
+
+------------------------------------------------------------------------------------------------------------------------
+
+`KStream`
+
+```java
+Stream<String, String> stream = builder.stream(inputTopic, Consumed.with(Serdes.String(), Serdes.String())); 
+```
+
+`KTable` (Update Stream)
+- can only be subscribed to a single topic unlike `KStream`
+- represents the latest value of each record
+- backed by a state store (can lookup the latest value) - RocksDB
+- buffer the updates, only when flushed the updates get forwarded further down the processor topology
+  - (30 seconds by default - how quickly you want to see updates from this `KTable`)
+- KTable sees one partition of that topic at a time
+
+```java
+KTable<String, String> ktable = builder.table(inputTopic, Materialized.with(Serdes.String(), Serdes.String()));
+```
+
+`GlobalKTable`
+
+```java
+GlobalKTable<String, String> globalKTable = builder.globalTable(inputTopic, Materialized.with(Serdes.String(), Serdes.String()));
+```
+
+- The main difference between a `KTable` and a `GlobalKTable`
+  - `KTable` shards data between Kafka Streams instances,
+  - `GlobalKTable` extends a full copy of the data to each instance.
+- You typically use a `GlobalKTable` with lookup data, smaller in size and don't change over time that much
+
+------------------------------------------------------------------------------------------------------------------------
+
+Serdes (Serialization / Deserialization)
+
+------------------------------------------------------------------------------------------------------------------------
+
+`Joins`   
+ - join events with the `same key`
+ - stream-stream join -> new stream 
+   - windowed join - records that arrive are joined with other records of the same key within a defined window of time
+   - all the is stored in local state store to keep track what data has arrived during this time
+   - keys cannot be changed, can be computed a new value
+   - join types:
+     - inner - produce only a record if both sides had a record within the defined window
+     - outer - opposite, both sides produce an output record 
+       - left-value + right-value
+       - left-value + NULL
+       - NULL + right-value
+     - left-outer - only the left value will produce a record (you can decide which stream is the left)
+       - left-value + right-value
+       - left-value + NULL
+ - stream-table join -> new stream
+   - not windowed, when you get new stream event will be join with the latest value from the table -> produces the output record
+   - KStream-KTable join
+   - KStream-GlobalKTable join
+   - join types:
+     - inner - only produce a record if both sides are available
+     - left-outer join - left is the stream (the stream drives the join)
+   - GlobalKTables all information is bootstrapped in ahead of time 
+     - read all events from topic as soon as they occur into the GlobalKTable 
+   - KTables events and join are timestamp driven 
+     - events in KTable with a higher timestamp than events in KStream are not going to be joined with those earlier events
+ - table-table join -> new `table`
+   - not windowed
+
+`ValueJoiner`
+`ValueJoinerWithKey`
+
+```bash
+leftStream.join(rightStream, valueJoiner, JoinWindows.of(Duration.ofSeconds(10)))
+- window duration - amount of time that two events can differ between the left side and the right side 
+```
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+### Stateless Demo 
 
 ```bash
 $ docker compose up -d
@@ -17,7 +103,7 @@ kafka-topics --bootstrap-server broker:9092 --delete --topic ktable-input-topic
 kafka-topics --bootstrap-server broker:9092 --delete --topic ktable-output-topic 
 
 kafka-topics --bootstrap-server broker:9092 --topic stateless-demo-input-topic --create --partitions 3 --replication-factor 1
-kafka-topics --bootstrap-server broker:9092 --topic stateless-demo-output-topic --create --partitions 1 --replication-factor 1
+kafka-topics --bootstrap-server broker:9092 --topic stateless-demo-output-topic --create --partitions 3 --replication-factor 1
 kafka-topics --bootstrap-server broker:9092 --topic stateful-demo-input-topic --create --partitions 3 --replication-factor 1 
 kafka-topics --bootstrap-server broker:9092 --topic stateful-demo-output-topic --create --partitions 1 --replication-factor 1
 kafka-topics --bootstrap-server broker:9092 --topic ktable-input-topic --create --partitions 3 --replication-factor 1
@@ -214,33 +300,6 @@ drwxr-xr-x@ 4 altfatterz  wheel  128 May  1 14:13 1_2
 ```
 
 
-------------------------------------------------------------------------------------------------------------------------
-
-`KStream`
-
-```java
-Stream<String, String> stream = builder.stream(inputTopic, Consumed.with(Serdes.String(), Serdes.String())); 
-```
-
-`KTable`
-
-```java
-KTable<String, String> ktable = builder.table(inputTopic, Materialized.with(Serdes.String(), Serdes.String()));
-```
-
-`GlobalKTable`
-
-```java
-GlobalKTable<String, String> globalKTable = builder.globalTable(inputTopic, Materialized.with(Serdes.String(), Serdes.String()));
-```
-
-- The main difference between a `KTable` and a `GlobalKTable` 
-  - `KTable` shards data between Kafka Streams instances, 
-  - `GlobalKTable` extends a full copy of the data to each instance. 
-- You typically use a `GlobalKTable` with lookup data.
-
-
-------------------------------------------------------------------------------------------------------------------------
 
 ### KTableExample
 
