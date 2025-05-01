@@ -18,7 +18,7 @@ public class KTableExample {
     private static final Logger logger = LoggerFactory.getLogger(StatelessStreamProcessingExample.class);
 
     private final static String APPLICATION_ID = "ktable-example";
-    private final static String BOOTSTRAP_SERVERS = "localhost:29092";
+    private final static String BOOTSTRAP_SERVERS = "localhost:9092";
 
     private final static String INPUT_TOPIC = "ktable-input-topic";
     private final static String OUTPUT_TOPIC = "ktable-output-topic";
@@ -44,6 +44,8 @@ public class KTableExample {
 
         settings.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams");
 
+        settings.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
+
         return settings;
     }
 
@@ -56,13 +58,13 @@ public class KTableExample {
                 Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("ktable-store")
                         .withKeySerde(Serdes.String()).withValueSerde(Serdes.String()));
 
-        String orderNumberPrefix = "orderNumber-";
+        String orderNumberPrefix = "id-";
 
         kTable.filter(((key, value) -> value.contains(orderNumberPrefix)))
                 .mapValues(value -> value.substring(value.indexOf("-") + 1))
                 .filter((key, value) -> Long.parseLong(value) > 1000)
                 .toStream()
-                .peek((key, value) -> logger.info("Outgoing record - key:" + key + " value:" + value))
+                .peek((key, value) -> logger.info("Outgoing record - key:{} value:{}", key, value))
                 .to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.String()));
 
         return builder.build();

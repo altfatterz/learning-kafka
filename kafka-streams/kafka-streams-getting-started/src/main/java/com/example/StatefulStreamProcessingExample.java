@@ -16,7 +16,7 @@ public class StatefulStreamProcessingExample {
     private static final Logger logger = LoggerFactory.getLogger(StatefulStreamProcessingExample.class);
 
     private final static String APPLICATION_ID = "stateful-kafka-streams-example";
-    private final static String BOOTSTRAP_SERVERS = "localhost:29092";
+    private final static String BOOTSTRAP_SERVERS = "localhost:9092";
 
     private final static String INPUT_TOPIC = "stateful-demo-input-topic";
     private final static String OUTPUT_TOPIC = "stateful-demo-output-topic";
@@ -62,6 +62,9 @@ public class StatefulStreamProcessingExample {
         KStream<byte[], String> sentences = builder.stream(INPUT_TOPIC);
 
         sentences
+                // Create a new KStream by transforming the value of each record in this stream into
+                // zero or more values with the same key in the new stream.
+
                 .flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\s+")))
                 .peek((key, value) -> logger.info("record after flatMapValues: [key: {}, value: {}]", key, value))
                 .groupBy((key, value) -> value, Grouped.keySerde(Serdes.String()))
