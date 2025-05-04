@@ -81,6 +81,9 @@ leftStream.join(rightStream, valueJoiner, JoinWindows.of(Duration.ofSeconds(10))
 - window duration - amount of time that two events can differ between the left side and the right side 
 ```
 
+------------------------------------------------------------------------------------------------------------------------
+
+Otter Romp: Shallow Dives into Kafka Streams (A. Sophie Blee-Goldman, Responsive) https://www.youtube.com/watch?v=uzr-MDrDqJg
 
 ------------------------------------------------------------------------------------------------------------------------
 
