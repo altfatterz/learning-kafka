@@ -1,27 +1,107 @@
 services:
+  controller-1:
+    image: apache/kafka:4.0.0
+    container_name: controller-1
+    environment:
+      KAFKA_NODE_ID: 9991
+      CLUSTER_ID: ${CLUSTER_ID}
+      KAFKA_PROCESS_ROLES: controller
+      # listeners
+      KAFKA_LISTENERS: CONTROLLER://controller-1:19093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAMES: CONTROLLER
+      # controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 9991@controller-1:19093,9992@controller-2:29093,9993@controller-3:39093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # jmx
+      KAFKA_JMX_PORT: 10001
+      KAFKA_JMX_HOSTNAME: localhost
+    networks:
+      - kafka-net
+    ports:
+      - 19093:19093
+      - 10001:10001
+
+  controller-2:
+    image: apache/kafka:4.0.0
+    container_name: controller-2
+    environment:
+      KAFKA_NODE_ID: 9992
+      CLUSTER_ID: ${CLUSTER_ID}
+      KAFKA_PROCESS_ROLES: controller
+      # listeners
+      KAFKA_LISTENERS: CONTROLLER://controller-2:29093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAMES: CONTROLLER
+      # controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 9991@controller-1:19093,9992@controller-2:29093,9993@controller-3:39093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # jmx
+      KAFKA_JMX_PORT: 10002
+      KAFKA_JMX_HOSTNAME: localhost
+    networks:
+      - kafka-net
+    ports:
+      - 29093:29093
+      - 10002:10002
+
+  controller-3:
+    image: apache/kafka:4.0.0
+    container_name: controller-3
+    environment:
+      KAFKA_NODE_ID: 9993
+      CLUSTER_ID: ${CLUSTER_ID}
+      KAFKA_PROCESS_ROLES: controller
+      # listeners
+      KAFKA_LISTENERS: CONTROLLER://controller-3:39093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAMES: CONTROLLER
+      # controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 9991@controller-1:19093,9992@controller-2:29093,9993@controller-3:39093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # jmx
+      KAFKA_JMX_PORT: 10003
+      KAFKA_JMX_HOSTNAME: localhost
+    networks:
+      - kafka-net
+    ports:
+      - 39093:39093
+      - 10003:10003
+
   broker-1:
     image: apache/kafka:4.0.0
     container_name: broker-1
     environment:
       KAFKA_NODE_ID: 101
       CLUSTER_ID: ${CLUSTER_ID}
-      KAFKA_PROCESS_ROLES: "broker,controller"
-      KAFKA_LISTENERS: INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:19092
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-1:9092,EXTERNAL://localhost:19092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_PROCESS_ROLES: broker
+
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:19092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-3:9092,EXTERNAL://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 9991@controller-1:19093,9992@controller-2:29093,9993@controller-3:39093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 101@broker-1:9093,102@broker-2:9093,103@broker-3:9093
+      # jmx
+      KAFKA_JMX_PORT: 10004
+      KAFKA_JMX_HOSTNAME: localhost
     volumes:
       - /var/lib/kafka/data
     networks:
       - kafka-net
     ports:
-      - "19092:19092"
+      - 19092:19092
+      - 10004:10004
+    depends_on:
+      - controller-1
+      - controller-2
+      - controller-3
 
   broker-2:
     image: apache/kafka:4.0.0
@@ -29,23 +109,34 @@ services:
     environment:
       KAFKA_NODE_ID: 102
       CLUSTER_ID: ${CLUSTER_ID}
-      KAFKA_PROCESS_ROLES: "broker,controller"
-      KAFKA_LISTENERS: INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:19092
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-2:9092,EXTERNAL://localhost:19092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_PROCESS_ROLES: broker
+
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:29092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-2:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 9991@controller-1:19093,9992@controller-2:29093,9993@controller-3:39093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 101@broker-1:9093,102@broker-2:9093,103@broker-3:9093
+      # jmx
+      KAFKA_JMX_PORT: 10005
+      KAFKA_JMX_HOSTNAME: localhost
     volumes:
       - /var/lib/kafka/data
     networks:
       - kafka-net
     ports:
-      - "19093:19092"
+      - 29092:29092
+      - 10005:10005
+    depends_on:
+      - controller-1
+      - controller-2
+      - controller-3
 
   broker-3:
     image: apache/kafka:4.0.0
@@ -53,23 +144,34 @@ services:
     environment:
       KAFKA_NODE_ID: 103
       CLUSTER_ID: ${CLUSTER_ID}
-      KAFKA_PROCESS_ROLES: "broker,controller"
-      KAFKA_LISTENERS: INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:19092
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-3:9092,EXTERNAL://localhost:19092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_PROCESS_ROLES: broker
+
+      KAFKA_LISTENERS: INTERNAL://:9092,EXTERNAL://:39093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-3:9092,EXTERNAL://localhost:39093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 9991@controller-1:19093,9992@controller-2:29093,9993@controller-3:39093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 101@broker-1:9093,102@broker-2:9093,103@broker-3:9093
+      # jmx
+      KAFKA_JMX_PORT: 10006
+      KAFKA_JMX_HOSTNAME: localhost
     volumes:
       - /var/lib/kafka/data
     networks:
       - kafka-net
     ports:
-      - "19094:19092"
+      - 39092:39092
+      - 10006:10006
+    depends_on:
+      - controller-1
+      - controller-2
+      - controller-3
 
   kafdrop:
     image: obsidiandynamics/kafdrop:4.1.0
