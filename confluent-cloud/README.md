@@ -66,3 +66,9 @@ $ confluent kafka cluster list
 ```
 
 
+
+### Commercial Workshops from Confluent
+
+https://github.com/confluentinc/commercial-workshops/
+
+
