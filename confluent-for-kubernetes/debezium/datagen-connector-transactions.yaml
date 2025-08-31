@@ -1,0 +1,16 @@
+apiVersion: platform.confluent.io/v1beta1
+kind: Connector
+metadata:
+  name: datagen-connector-transactions
+  namespace: confluent
+spec:
+  class: io.confluent.kafka.connect.datagen.DatagenConnector
+  taskMax: 1
+  connectClusterRef:
+    name: connect
+  configs:
+    kafka.topic: prefix.public.transactions
+    quickstart: transactions
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    max.interval: "1000"  # milliseconds between messages

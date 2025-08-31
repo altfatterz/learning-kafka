@@ -6,8 +6,7 @@ metadata:
   namespace: confluent
 spec:
   class: io.debezium.connector.postgresql.PostgresConnector
-  # not possible to scale
-  taskMax: 2
+  taskMax: 1
   connectClusterRef:
     name: connect
   configs:

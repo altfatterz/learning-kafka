@@ -1,28 +1,32 @@
-### Create k8s cluster and namespace
+### CFK example with Connector
+
+### Docker 
+
+Have a docker environment. In this example Docker Desktop was used with 8 CPU / 16 GB Memory.  
+
+### Create a k8s cluster and 'confluent' namespace
 
 ```bash
 $ k3d cluster create confluent -p "9021:80@loadbalancer"
-$ kubectl cluster-info
 $ kubectl create ns confluent
 $ kubectl config set-context --current --namespace confluent
 ```
 
-### Pulling images
-
-Makes sure you these images already on the Docker environment
+### Pull confluent images first into the single node k8s cluster
 
 ```bash
 ./import-images.sh
 ```
 
-Verify imported images:
+### Verify imported images:
 
 ```bash
-$ docker exec k3d-confluent-server-0 crictl images | grep 7.6.1
-$ docker exec k3d-confluent-server-0 crictl images | grep 2.8.0
+$ docker exec k3d-confluent-server-0 crictl images | grep confluentinc
 ```
 
-### Expose Control Center via Ingress using Traefik Controller (built in using k3d)
+### Expose Control Center via Ingress using Traefik Controller (built in using k3d) 
+
+You will be able to access Control Center on `http://localhost:9021` without any port-forwarding 
 
 ```bash
 $ kubectl apply -f ingress.yaml
@@ -31,7 +35,7 @@ $ kubectl apply -f ingress.yaml
 ### Install PostgresSQL
 
 ```bash
-$ helm install my-postgresql bitnami/postgresql -f postgresql-values.yaml
+$ helm install my-postgresql oci://registry-1.docker.io/bitnamicharts/postgresql -f postgresql-values.yaml 
 $ helm status my-postgresql
 ```
 
@@ -58,17 +62,11 @@ CREATE TABLE customers (
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
-  foo1 NUMERIC(1) NOT NULL,
-  foo2 NUMERIC(2) NOT NULL,
-  foo3 INTEGER NOT NULL,
-  foo4 NUMERIC NOT NULL,
   PRIMARY KEY(id)
 );
   
-INSERT INTO customers(first_name, last_name, email, foo1, foo2, foo3, foo4) VALUES ('John', 'Doe', 'johndoe@gmail.com', 1, 1, 1, 1);
-COMMIT;
-
-INSERT INTO customers(first_name, last_name, email, foo1, foo2, foo3, foo4) VALUES ('Jane', 'Doe', 'janedoe@gmail.com', 1, 1, 1, 1);
+INSERT INTO customers(first_name, last_name, email) VALUES ('John', 'Doe', 'johndoe@gmail.com');
+INSERT INTO customers(first_name, last_name, email) VALUES ('Jane', 'Doe', 'janedoe@gmail.com');
 COMMIT;
 
 SELECT * FROM CUSTOMERS;
@@ -79,10 +77,10 @@ SELECT * FROM CUSTOMERS;
 ```bash
 $ helm repo add confluentinc https://packages.confluent.io/helm
 $ helm repo update
-$ helm upgrade --install confluent-operator confluentinc/confluent-for-kubernetes --set kRaftEnabled=true
+$ helm upgrade --install confluent-operator confluentinc/confluent-for-kubernetes
 $ helm list
 NAME              	NAMESPACE	REVISION	UPDATED                              	STATUS  	CHART                            	APP VERSION
-confluent-operator	confluent	1       	2024-06-17 10:06:45.422168 +0200 CEST	deployed	confluent-for-kubernetes-0.921.20	2.8.2
+confluent-operator	confluent	1       	2025-08-31 12:41:50.2496 +0200 CEST  	deployed	confluent-for-kubernetes-0.1263.8	3.0.0
 $ kubectl get all
 # wait until the confluent-operator pod is started 
 ```
@@ -90,55 +88,131 @@ $ kubectl get all
 ### Install Confluent Platform
 
 ```bash
-$ kubectl apply -f confluent-platform-base.yaml
-# wait until controller and broker nodes are up
-```
-
-### Create secret for 
-
-```bash
+# Create secret for used by the 'connector' and 'debezium-source-connector'
 $ kubectl create secret generic sqlcreds --from-file=sqlcreds.txt=sqlcreds.txt
 $ kubectl get secret sqlcreds -o yaml
 ```
 
-
 ```bash
+$ kubectl apply -f confluent-platform-base.yaml
+# wait until controller kafka nodes are up
 $ kubectl apply -f confluent-platform-schemaregistry.yaml
 $ kubectl apply -f confluent-platform-connect.yaml
 $ kubectl apply -f confluent-platform-controlcenter.yaml
+
+$ kubectl get pods
+NAME                                  READY   STATUS    RESTARTS   AGE
+confluent-operator-7584795cfd-s6jll   1/1     Running   0          7m15s
+connect-0                             1/1     Running   0          80s
+controlcenter-0                       1/1     Running   0          5m6s
+kafka-0                               1/1     Running   0          6m6s
+kafka-1                               1/1     Running   0          6m6s
+kafka-2                               1/1     Running   0          6m6s
+kraftcontroller-0                     1/1     Running   0          6m51s
+my-postgresql-0                       1/1     Running   0          10m
+schemaregistry-0                      1/1     Running   0          5m13s
 ```
 
 ### Trouble shoot connect-0 debezium install
 
 ```bash
+$ kubectl get connect 
+
+NAME      REPLICAS   READY   STATUS    AGE    KAFKA
+connect   1          1       RUNNING   2m1s   kafka:9071
+
 $ kubectl logs -f connect-0 -c config-init-container
 $ kubectl logs -f connect-0
 ```
 
-### Create Topic:
+### Create topics
 
 ```bash
-$ kubectl apply -f topic.yaml
+$ kubectl apply -f topics.yaml
+$ kubectl get topic
+NAME                         REPLICAS   PARTITION   STATUS    CLUSTERID                AGE
+prefix.public.buzzwords      1          1           CREATED   ZjQwOWM0NjQtMDczMS00Ng   7s
+prefix.public.catchphrases   1          1           CREATED   ZjQwOWM0NjQtMDczMS00Ng   7s
+prefix.public.customers      1          1           CREATED   ZjQwOWM0NjQtMDczMS00Ng   7s
+prefix.public.facts          1          1           CREATED   ZjQwOWM0NjQtMDczMS00Ng   7s
+prefix.public.heros          1          1           CREATED   ZjQwOWM0NjQtMDczMS00Ng   7s
+
+$ kubectl exec kafka-0 -c kafka -- kafka-topics --bootstrap-server localhost:9092  --list | grep prefix
+
+$ kubectl exec kafka-0 -c kafka -- kafka-topics --bootstrap-server localhost:9092  --list | grep connect
 ```
 
 ### Install connector
 
 ```bash
 $ kubectl apply -f debezium-source-connector.yaml
-$ kubectl get connectors
+$ kubectl get connectors -o wide 
 
-NAME                        STATUS    CONNECTORSTATUS   TASKS-READY   AGE
-debezium-source-connector   CREATED   RUNNING           1/1           2m18s
+NAME                        STATUS    CONNECTORSTATUS   TASKS-READY   AGE   CONNECTENDPOINT   TASKS-FAILED   WORKERID                                             RESTARTPOLICY   KAFKACLUSTERID
+debezium-source-connector   CREATED   RUNNING           1/1           13s                                    connect-0.connect.confluent.svc.cluster.local:8083   OnFailure       ZjQwOWM0NjQtMDczMS00Ng
+
 ```
 
 ### Check topic: (initial load)
 
 ```bash
-$ kubectl exec -it kafka-0 -- sh
-$ kafka-console-consumer --bootstrap-server localhost:9092 --topic prefix.public.customers --from-beginning
+$ 
+$ kubectl exec kafka-0 -c kafka -- kafka-console-consumer --bootstrap-server localhost:9092 --topic prefix.public.customers --from-beginning
+```
 
-{"before":null,"after":{"id":1,"first_name":"John","last_name":"Doe","email":"johndoe@gmail.com"},"source":{"version":"2.5.4.Final","connector":"postgresql","name":"prefix","ts_ms":1720271497008,"snapshot":"first","db":"postgres","sequence":"[null,\"22401960\"]","schema":"public","table":"customers","txId":750,"lsn":22401960,"xmin":null},"op":"r","ts_ms":1720271497074,"transaction":null}
-{"before":null,"after":{"id":2,"first_name":"Jane","last_name":"Doe","email":"janedoe@gmail.com"},"source":{"version":"2.5.4.Final","connector":"postgresql","name":"prefix","ts_ms":1720271497008,"snapshot":"last","db":"postgres","sequence":"[null,\"22401960\"]","schema":"public","table":"customers","txId":750,"lsn":22401960,"xmin":null},"op":"r","ts_ms":1720271497075,"transaction":null}
+```json
+{
+  "before": null,
+  "after": {
+    "id": 1,
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "johndoe@gmail.com"
+  },
+  "source": {
+    "version": "2.5.4.Final",
+    "connector": "postgresql",
+    "name": "prefix",
+    "ts_ms": 1756639185525,
+    "snapshot": "false",
+    "db": "postgres",
+    "sequence": "[\"22301472\",\"22501792\"]",
+    "schema": "public",
+    "table": "customers",
+    "txId": 757,
+    "lsn": 22501792,
+    "xmin": null
+  },
+  "op": "c",
+  "ts_ms": 1756639324348,
+  "transaction": null
+},
+{
+  "before": null,
+  "after": {
+    "id": 2,
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "email": "janedoe@gmail.com"
+  },
+  "source": {
+    "version": "2.5.4.Final",
+    "connector": "postgresql",
+    "name": "prefix",
+    "ts_ms": 1756639193806,
+    "snapshot": "false",
+    "db": "postgres",
+    "sequence": "[\"22502088\",\"22502088\"]",
+    "schema": "public",
+    "table": "customers",
+    "txId": 758,
+    "lsn": 22502088,
+    "xmin": null
+  },
+  "op": "c",
+  "ts_ms": 1756639324351,
+  "transaction": null
+}
 ```
 
 ### Capture a delete
@@ -147,10 +221,35 @@ $ kafka-console-consumer --bootstrap-server localhost:9092 --topic prefix.public
 $ delete from customers where id = 1;
 ```
 
-Topic information:
+Event in `prefix.public.customers` topic
 
-```bash
-{"before":{"id":1,"first_name":"","last_name":"","email":""},"after":null,"source":{"version":"2.5.4.Final","connector":"postgresql","name":"prefix","ts_ms":1720271727393,"snapshot":"false","db":"postgres","sequence":"[null,\"22402288\"]","schema":"public","table":"customers","txId":751,"lsn":22402288,"xmin":null},"op":"d","ts_ms":1720271727769,"transaction":null}
+```json
+{
+  "before": {
+    "id": 1,
+    "first_name": "",
+    "last_name": "",
+    "email": ""
+  },
+  "after": null,
+  "source": {
+    "version": "2.5.4.Final",
+    "connector": "postgresql",
+    "name": "prefix",
+    "ts_ms": 1756639658304,
+    "snapshot": "false",
+    "db": "postgres",
+    "sequence": "[\"22502288\",\"22502608\"]",
+    "schema": "public",
+    "table": "customers",
+    "txId": 759,
+    "lsn": 22502608,
+    "xmin": null
+  },
+  "op": "d",
+  "ts_ms": 1756639658641,
+  "transaction": null
+}
 ```
 
 ### Capture an update 
@@ -159,8 +258,33 @@ Topic information:
 $ update customers set first_name = 'Mary' where id = 2; 
 ```
 
-```bash
-{"before":null,"after":{"id":2,"first_name":"Mary","last_name":"Doe","email":"janedoe@gmail.com"},"source":{"version":"2.5.4.Final","connector":"postgresql","name":"prefix","ts_ms":1720271832655,"snapshot":"false","db":"postgres","sequence":"[\"22402552\",\"22402608\"]","schema":"public","table":"customers","txId":752,"lsn":22402608,"xmin":null},"op":"u","ts_ms":1720271833082,"transaction":null}
+```json
+{
+  "before": null,
+  "after": {
+    "id": 2,
+    "first_name": "Mary",
+    "last_name": "Doe",
+    "email": "janedoe@gmail.com"
+  },
+  "source": {
+    "version": "2.5.4.Final",
+    "connector": "postgresql",
+    "name": "prefix",
+    "ts_ms": 1756639742575,
+    "snapshot": "false",
+    "db": "postgres",
+    "sequence": "[\"22502872\",\"22503136\"]",
+    "schema": "public",
+    "table": "customers",
+    "txId": 760,
+    "lsn": 22503136,
+    "xmin": null
+  },
+  "op": "u",
+  "ts_ms": 1756639742951,
+  "transaction": null
+}
 ```
 
 ### Capture an insert:
@@ -171,61 +295,56 @@ INSERT INTO customers(first_name, last_name, email) VALUES ('XXX', 'Doe', 'johnd
 
 In topic:
 
-```bash
-{"before":null,"after":{"id":3,"first_name":"XXX","last_name":"Doe","email":"johndoe@gmail.com"},"source":{"version":"2.5.4.Final","connector":"postgresql","name":"prefix","ts_ms":1720271920769,"snapshot":"false","db":"postgres","sequence":"[\"22402760\",\"22403152\"]","schema":"public","table":"customers","txId":753,"lsn":22403152,"xmin":null},"op":"c","ts_ms":1720271920962,"transaction":null}
-```
-
-
-### Check failover of the tasks
-
-After running, scale down the connect cluster (updating the replicas to 1), you should see in the logs that tasks moves to the other worker
-
-```bash
-[INFO] 2024-07-07 19:52:24,396 [SourceTaskOffsetCommitter-1] org.apache.kafka.connect.runtime.WorkerSourceTask commitOffsets - WorkerSourceTask{id=debezium-source-connector-0} Committing offsets for 40 acknowledged messages
-```
-
-```bash
-$ http :8083/connectors/debezium-source-connector/tasks/0/status
+```json
 {
-    "id": 0,
-    "state": "RUNNING",
-    "worker_id": "connect-1.connect.confluent.svc.cluster.local:8083"
-}
-```
-
-and later moves to the `connect-0`
-
-```bash
-$ http :8083/connectors/debezium-source-connector/tasks/0/status
-{
-    "id": 0,
-    "state": "RUNNING",
-    "worker_id": "connect-0.connect.confluent.svc.cluster.local:8083"
+  "before": null,
+  "after": {
+    "id": 3,
+    "first_name": "XXX",
+    "last_name": "Doe",
+    "email": "johndoe@gmail.com"
+  },
+  "source": {
+    "version": "2.5.4.Final",
+    "connector": "postgresql",
+    "name": "prefix",
+    "ts_ms": 1756639787710,
+    "snapshot": "false",
+    "db": "postgres",
+    "sequence": "[\"22503520\",\"22503680\"]",
+    "schema": "public",
+    "table": "customers",
+    "txId": 761,
+    "lsn": 22503680,
+    "xmin": null
+  },
+  "op": "c",
+  "ts_ms": 1756639787931,
+  "transaction": null
 }
 ```
 
 ### Check the Connect topics:
 
 ```bash
-$ kubectl exec -it kafka-0 -- sh
-$ kafka-console-consumer --bootstrap-server kafka:9092 --topic confluent.connect-offsets --from-beginning
-$ kafka-console-consumer --bootstrap-server kafka:9092 --topic confluent.connect-status --from-beginning
-$ kafka-console-consumer --bootstrap-server kafka:9092 --topic confluent.connect-config --from-beginning
+$ kubectl exec kafka-0 -c kafka -- kafka-topics --bootstrap-server localhost:9092  --list | grep connect
+$ kubectl exec kafka-0 -c kafka -- kafka-console-consumer --bootstrap-server localhost:9092 --topic confluent.connect-offsets --from-beginning
+$ kubectl exec kafka-0 -c kafka -- kafka-console-consumer --bootstrap-server localhost:9092 --topic confluent.connect-status --from-beginning
+$ kubectl exec kafka-0 -c kafka -- kafka-console-consumer --bootstrap-server localhost:9092 --topic confluent.connect-configs --from-beginning
 ```
 
-### Scale with multiple connector instances
+### Datagen connector
 
 ```bash
-$ kubectl apply -f debezium-source-connector-filter1.yaml
-$ kubectl apply -f debezium-source-connector-filter1.yaml
-```
+$ kubectl apply -f datagen-connector-transactions.yaml
 
-```bash
-$ kubeclt get connectors -o wide 
+$ kubectl get connector
+NAME                             STATUS    CONNECTORSTATUS   TASKS-READY   AGE
+datagen-connector-transactions   CREATED   RUNNING           1/1           4m23s
+debezium-source-connector        CREATED   RUNNING           1/1           22m
 
-NAME                                STATUS    CONNECTORSTATUS   TASKS-READY   AGE     CONNECTENDPOINT                                   TASKS-FAILED   WORKERID                                             RESTARTPOLICY   KAFKACLUSTERID
-debezium-source-connector-filter1   CREATED   RUNNING           1/1           3m54s   http://connect.confluent.svc.cluster.local:8083                  connect-1.connect.confluent.svc.cluster.local:8083   OnFailure       3b240be5-cb23-4d82-85Q
-debezium-source-connector-filter2   CREATED   RUNNING           1/1           3m43s   http://connect.confluent.svc.cluster.local:8083                  connect-0.connect.confluent.svc.cluster.local:8083   OnFailure       3b240be5-cb23-4d82-85Q
+# check the topic
+$ kubectl exec kafka-0 -c kafka -- kafka-console-consumer --bootstrap-server localhost:9092 --topic prefix.public.transactions
 ```
 
 ### Error scenario1 : PostgreSQL becomes unavailable
@@ -286,7 +405,6 @@ When the server is available again, restart the connector using ControlCenter or
 - There are several options for determining how publications are created.
 In general, it is best to manually create publications for the tables that you want to capture, before you set up the connector.
 -  However, you can configure your environment in a way that permits Debezium to create publications automatically, and to specify the data that is added to them. (See publication.autocreate.mode)
-- 
 
 Resources:
 
