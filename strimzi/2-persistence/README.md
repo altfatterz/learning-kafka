@@ -1,7 +1,7 @@
-- Persistent storage uses `Persistent Volume Claims` to provision persistent volumes for storing data. 
-- `Persistent Volume Claims` can be used to provision volumes depending on the `Storage Class`.
-
 ### 1. Create a k8s cluster using k3d
+
+- Persistent storage uses `Persistent Volume Claims` to provision persistent volumes for storing data.
+- `Persistent Volume Claims` can be used to provision volumes depending on the `Storage Class`.
 
 ```bash
 # delete your previous cluster if you haven't done it.
@@ -23,7 +23,7 @@ $ kubectl create ns kafka
 ```bash
 $ kubectl get sc
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  81s
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  20s
 ```
 
 ### 3. Install the [Strimzi](https://strimzi.io/) operator
@@ -32,24 +32,15 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 $ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 ```
 
-### 4. Watch the created Pods PVCs and PVs
+### 4. Wait until the operator is running
 
-Terminal 1:
 ```bash
-$ watch kubectl get all -n kafka
+$ kubectl get pods -n kafka
+NAME                                        READY   STATUS    RESTARTS   AGE
+strimzi-cluster-operator-7c88589497-j97hl   1/1     Running   0          46s
 ```
 
-Terminal 2:
-```bash
-$ watch kubectl get pvc -n kafka
-```
-
-Terminal 3:
-```bash
-$ watch kubectl get pv -n kafka
-```
-
-### 4. Deploy a simple Kafka cluster (1 broker/1 zookeeper) but with storage configured using `persistence volume claim`
+### 4. Deploy a single node Kafka cluster but with storage configured using `persistence volume claim`
 
 ```bash
 $ kubectl apply -f kafka-persistent-claim.yaml -n kafka 
@@ -59,24 +50,30 @@ The following `PVC`s and `PV`s are created:
 
 ```bash
 $ kubectl get pvc -n kafka
-NAME                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-data-my-cluster-zookeeper-0   Bound    pvc-b049f816-adaf-44c3-9c97-e88fd2c47c2f   1Gi        RWO            local-path     3m1s
-data-my-cluster-kafka-0       Bound    pvc-18aad7b8-85eb-4cc0-9500-7db171f053f1   1Gi        RWO            local-path     2m3s
+NAME                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+data-0-my-cluster-dual-role-0   Bound    pvc-4c2da424-dd08-4af8-b85d-889e015a0430   200Mi      RWO            local-path     <unset>                 8s
 
 $ kubectl get pv -n kafka
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                               STORAGECLASS   REASON   AGE
-pvc-b049f816-adaf-44c3-9c97-e88fd2c47c2f   1Gi        RWO            Delete           Bound    kafka/data-my-cluster-zookeeper-0   local-path              3m7s
-pvc-18aad7b8-85eb-4cc0-9500-7db171f053f1   1Gi        RWO            Delete           Bound    kafka/data-my-cluster-kafka-0       local-path              2m12s
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                 STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+pvc-4c2da424-dd08-4af8-b85d-889e015a0430   200Mi      RWO            Delete           Bound    kafka/data-0-my-cluster-dual-role-0   local-path     <unset>                          8s
 ```
 
 ```bash
 $ ls -l /tmp/kafka-volume
 total 0
-drwxrwxrwx@ 3 altfatterz  wheel   96 Nov  5 13:43 pvc-18aad7b8-85eb-4cc0-9500-7db171f053f1_kafka_data-my-cluster-kafka-0
-drwxrwxrwx@ 4 altfatterz  wheel  128 Nov  5 13:42 pvc-b049f816-adaf-44c3-9c97-e88fd2c47c2f_kafka_data-my-cluster-zookeeper-0
+drwxrwxrwx@ 3 altfatterz  wheel  96 Oct 17 16:21 pvc-4c2da424-dd08-4af8-b85d-889e015a0430_kafka_data-0-my-cluster-dual-role-0
 ```
 
 ### 5. Create a topic using a strimzi resource definition:
+
+```bash
+$ kubectl get pods -n kafka
+
+NAME                                          READY   STATUS    RESTARTS   AGE
+my-cluster-dual-role-0                        1/1     Running   0          69s
+my-cluster-entity-operator-7c86ff87cf-xx6mg   2/2     Running   0          31s
+strimzi-cluster-operator-7c88589497-j97hl     1/1     Running   0          4m18s
+```
 
 After the services are up and running, create a topic:
 
@@ -96,20 +93,27 @@ $ kubectl describe kt my-topic -n kafka
 In one terminal create a producer: (this will start up the `kafka-producer` pod)
 
 ```bash
-$ kubectl -n kafka run kafka-producer -ti --image=quay.io/strimzi/kafka:0.38.0-kafka-3.6.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic
+$ kubectl -n kafka run kafka-producer -ti --image=quay.io/strimzi/kafka:0.48.0-kafka-4.1.0 --rm --restart=Never -- bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic
 ```
 
 In one another terminal create a consumer: (this will start up a `kafka-consumer` pod)
 
 ```bash
-$ kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.38.0-kafka-3.6.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
+$ kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.48.0-kafka-4.1.0 --rm --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
 ```
 
 ### 7. Check data:
 
+Delete the `my-cluster-dual-role-0` pod and you will see the `my-topic` is still there.
+
 ```bash
-$ tree /tmp/kafka-volume
+$ k delete pod my-cluster-dual-role-0 -n kafka
 ```
+
+```bash
+$ kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.48.0-kafka-4.1.0 --rm --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
+```
+
 
 ### 8. Cleanup
 
@@ -120,6 +124,14 @@ $ kubectl -n kafka delete $(kubectl get strimzi -o name -n kafka)
 ```
 This will remove all Strimzi custom resources, including the Apache Kafka cluster and any KafkaTopic custom resources
 but leave the Strimzi cluster operator running so that it can respond to new Kafka custom resources.
+
+- Deleting the PVCs
+
+```bash
+$ kubectl delete pvc -l strimzi.io/name=my-cluster-kafka -n kafka
+```
+
+Without deleting the PVC, the next Kafka cluster you might start will fail as it will try to use the volume that belonged to the previous Apache Kafka cluster.
 
 - Deleting the Strimzi cluster operator
 
