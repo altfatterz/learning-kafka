@@ -1,4 +1,4 @@
-Here we focus on how to encrypt the communication of data exchange.
+Here we focus on how to encrypt the communication of data exchange. We secure the external `9094` port
 
 ### 1. Create a k8s cluster using k3d
 
@@ -8,9 +8,7 @@ $ k3d cluster delete mycluster
 # Start a k8s cluster this time with with 3 agent nodes, 1 server node (control-plane), 
 # Create a cluster mapping the port 30080-30083 range to from the 3 agent nodes to 8080-8083 on the host
 # Note: Kubernetes’ default NodePort range is 30000-32767
-$ rm -r /tmp/kafka-volume
-$ mkdir -p /tmp/kafka-volume 
-$ k3d cluster create mycluster -p "8080-8083:30080-30083@agent:0,1,2" --agents 3 -v /tmp/kafka-volume:/var/lib/rancher/k3s/storage@all
+$ k3d cluster create mycluster -p "8080-8083:30080-30083@agent:0,1,2" --agents 3 
 # taint the server node that no workloads are scheduled on it
 $ kubectl taint nodes k3d-mycluster-server-0 key1=value1:NoSchedule
 # create the `kafka` namespace
@@ -25,6 +23,8 @@ $ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 
 ### 3. Create the Kafka cluster
 
+Wait until the operator is up and running, then:
+
 ```bash
 $ kubectl apply -f kafka-tls.yaml -n kafka
 ```
@@ -32,17 +32,43 @@ $ kubectl apply -f kafka-tls.yaml -n kafka
 ### 4. View the created pods / services
 
 ```bash
-$ watch kubectl get all -n kafka 
+$ kubectl get all -n kafka 
+
+NAME                                              READY   STATUS    RESTARTS   AGE
+pod/my-cluster-dual-role-0                        1/1     Running   0          79s
+pod/my-cluster-dual-role-1                        1/1     Running   0          79s
+pod/my-cluster-dual-role-2                        1/1     Running   0          79s
+pod/my-cluster-entity-operator-75f49f5f97-h5j6r   2/2     Running   0          26s
+pod/strimzi-cluster-operator-7c88589497-tmlnm     1/1     Running   0          2m7s
+
+NAME                                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                        AGE
+service/my-cluster-dual-role-0                NodePort    10.43.253.223   <none>        9094:30081/TCP                                 80s
+service/my-cluster-dual-role-1                NodePort    10.43.225.237   <none>        9094:30082/TCP                                 80s
+service/my-cluster-dual-role-2                NodePort    10.43.64.98     <none>        9094:30083/TCP                                 80s
+service/my-cluster-kafka-bootstrap            ClusterIP   10.43.91.248    <none>        9091/TCP,9092/TCP,9093/TCP                     80s
+service/my-cluster-kafka-brokers              ClusterIP   None            <none>        9090/TCP,9091/TCP,8443/TCP,9092/TCP,9093/TCP   80s
+service/my-cluster-kafka-external-bootstrap   NodePort    10.43.81.217    <none>        9094:30080/TCP                                 80s
+
+NAME                                         READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/my-cluster-entity-operator   1/1     1            1           26s
+deployment.apps/strimzi-cluster-operator     1/1     1            1           2m7s
+
+NAME                                                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/my-cluster-entity-operator-75f49f5f97   1         1         1       26s
+replicaset.apps/strimzi-cluster-operator-7c88589497     1         1         1       2m7s
 ```
 
 ### 5. Verify the advertised listener:
 
 ```bash
-$ kubectl exec my-cluster-kafka-0 -c kafka -it -n kafka -- cat /tmp/strimzi.properties | grep advertised
-```
+$ kubectl exec my-cluster-dual-role-0 -c kafka -it -n kafka -- cat /tmp/strimzi.properties | grep advertised
+advertised.listeners=CONTROLPLANE-9090://my-cluster-dual-role-0.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-dual-role-0.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9092://my-cluster-dual-role-0.my-cluster-kafka-brokers.kafka.svc:9092,TLS-9093://my-cluster-dual-role-0.my-cluster-kafka-brokers.kafka.svc:9093,EXTERNAL-9094://localhost:8081
 
-```bash
-advertised.listeners=CONTROLPLANE-9090://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9092://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9092,TLS-9093://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9093,EXTERNAL-9094://localhost:8081
+$ kubectl exec my-cluster-dual-role-1 -c kafka -it -n kafka -- cat /tmp/strimzi.properties | grep advertised
+advertised.listeners=CONTROLPLANE-9090://my-cluster-dual-role-1.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-dual-role-1.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9092://my-cluster-dual-role-1.my-cluster-kafka-brokers.kafka.svc:9092,TLS-9093://my-cluster-dual-role-1.my-cluster-kafka-brokers.kafka.svc:9093,EXTERNAL-9094://localhost:8082
+
+$ kubectl exec my-cluster-dual-role-2 -c kafka -it -n kafka -- cat /tmp/strimzi.properties | grep advertised
+advertised.listeners=CONTROLPLANE-9090://my-cluster-dual-role-2.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-dual-role-2.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9092://my-cluster-dual-role-2.my-cluster-kafka-brokers.kafka.svc:9092,TLS-9093://my-cluster-dual-role-2.my-cluster-kafka-brokers.kafka.svc:9093,EXTERNAL-9094://localhost:8083
 ```
 
 ### 6. Try to connect
@@ -51,7 +77,10 @@ It fails since TLS is enabled
 
 ```bash
 $ kcat -L -b localhost:8080
-%6|1665518123.452|FAIL|rdkafka#producer-1| [thrd:192.168.205.13:8080/bootstrap]: 192.168.205.13:8080/bootstrap: Disconnected while requesting ApiVersion: might be caused by incorrect security.protocol configuration (connecting to a SSL listener?) or broker version is < 0.10 (see api.version.request) (after 5ms in state APIVERSION_QUERY)
+%6|1760865001.799|FAIL|rdkafka#producer-1| [thrd:localhost:8080/bootstrap]: localhost:8080/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY)
+%6|1760865002.024|FAIL|rdkafka#producer-1| [thrd:localhost:8080/bootstrap]: localhost:8080/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY, 1 identical error(s) suppressed)
+%6|1760865002.482|FAIL|rdkafka#producer-1| [thrd:localhost:8080/bootstrap]: localhost:8080/bootstrap: Disconnected: connection closed by peer: receive 0 after POLLIN (after 6ms in state APIVERSION_QUERY)
+% ERROR: Failed to acquire metadata: Local: Broker transport failure (Are the brokers reachable? Also try increasing the metadata timeout with -m <timeout>?)
 ```
 
 Ok, we set the `security.protocol` to SSL, now we get different error message:
@@ -59,7 +88,9 @@ Ok, we set the `security.protocol` to SSL, now we get different error message:
 ```bash
 $ kcat -L -b localhost:8080 -X security.protocol=SSL
 
-%3|1665518763.819|FAIL|rdkafka#producer-1| [thrd:ssl://192.168.205.13:8080/bootstrap]: ssl://192.168.205.13:8080/bootstrap: SSL handshake failed: error:1416F086:SSL routines:tls_process_server_certificate:certificate verify failed: broker certificate could not be verified, verify that ssl.ca.location is correctly configured or root CA certificates are installed (brew install openssl) (after 8ms in state SSL_HANDSHAKE)
+%3|1760865020.028|FAIL|rdkafka#producer-1| [thrd:ssl://localhost:8080/bootstrap]: ssl://localhost:8080/bootstrap: SSL handshake failed: error:0A000086:SSL routines::certificate verify failed: broker certificate could not be verified, verify that ssl.ca.location is correctly configured or root CA certificates are installed (brew install openssl) (after 7ms in state SSL_HANDSHAKE)
+%3|1760865020.083|FAIL|rdkafka#producer-1| [thrd:ssl://localhost:8080/bootstrap]: ssl://localhost:8080/bootstrap: SSL handshake failed: error:0A000086:SSL routines::certificate verify failed: broker certificate could not be verified, verify that ssl.ca.location is correctly configured or root CA certificates are installed (brew install openssl) (after 7ms in state SSL_HANDSHAKE, 1 identical error(s) suppressed)
+% ERROR: Failed to acquire metadata: Local: Broker transport failure (Are the brokers reachable? Also try increasing the metadata timeout with -m <timeout>?)
 ```
 
 ### 5. Check the created secrets and configmaps
@@ -67,100 +98,85 @@ $ kcat -L -b localhost:8080 -X security.protocol=SSL
 ```bash
 $ kubectl get secret -n kafka
 
-my-cluster-cluster-ca-cert               Opaque   3      5m17s
-my-cluster-clients-ca-cert               Opaque   3      5m17s
-my-cluster-clients-ca                    Opaque   1      5m17s
-my-cluster-cluster-ca                    Opaque   1      5m17s
-my-cluster-cluster-operator-certs        Opaque   4      5m17s
-my-cluster-zookeeper-nodes               Opaque   4      5m17s
-my-cluster-kafka-brokers                 Opaque   12     3m25s
-my-cluster-entity-topic-operator-certs   Opaque   4      96s
-my-cluster-entity-user-operator-certs    Opaque   4      96s
+NAME                                     TYPE     DATA   AGE
+my-cluster-clients-ca                    Opaque   1      3m19s
+my-cluster-clients-ca-cert               Opaque   3      3m19s
+my-cluster-cluster-ca                    Opaque   1      3m19s
+my-cluster-cluster-ca-cert               Opaque   3      3m19s
+my-cluster-cluster-operator-certs        Opaque   2      3m19s
+my-cluster-dual-role-0                   Opaque   2      3m19s
+my-cluster-dual-role-1                   Opaque   2      3m19s
+my-cluster-dual-role-2                   Opaque   2      3m19s
+my-cluster-entity-topic-operator-certs   Opaque   2      2m25s
+my-cluster-entity-user-operator-certs    Opaque   2      2m25s
 ```
 
-- `my-cluster-cluster-ca-cert` and `my-cluster-clients-ca-cert` contain
+- `my-cluster-cluster-ca-cert` contains:
   - `ca.crt` 
   - `ca.p12` 
   - `ca.password`
-- `my-cluster-clients-ca` and `my-cluster-cluster-ca` contain 
+- `my-cluster-cluster-ca` contain:
+  - `ca.key`
+
+- `my-cluster-clients-ca-cert` contains:
   - `ca.crt`
-- `my-cluster-cluster-operator-certs` contains
+  - `ca.p12`
+  - `ca.password`
+- `my-cluster-clients-ca` contains:
+  - `ca.key`
+
+- `my-cluster-cluster-operator-certs` contains:
   - `cluster-operator.crt` 
-  - `cluster-operator.key` 
-  - `cluster-operator.p12` 
-  - `cluster-operator.password` 
-- `my-cluster-entity-topic-operator-certs` and `my-cluster-entity-user-operator-certs` contains 
+  - `cluster-operator.key`
+
+- `my-cluster-dual-role-0` contains:
+  - `my-cluster-dual-role-0.crt`
+  - `my-cluster-dual-role-0.key`
+- `my-cluster-dual-role-1` contains:
+  - `my-cluster-dual-role-1.crt`
+  - `my-cluster-dual-role-1.key`
+- `my-cluster-dual-role-2` contains:
+  - `my-cluster-dual-role-2.crt`
+  - `my-cluster-dual-role-2.key`
+
+- `my-cluster-entity-topic-operator-certs` contains: 
   - `entity-operator.crt` 
   - `entity-operator.key` 
-  - `entity-operator.p12` 
-  - `entity-operator.password`
-- `my-cluster-zookeeper-nodes` contains
-  - `my-cluster-zookeeper-0.crt`
-  - `my-cluster-zookeeper-0.key`
-  - `my-cluster-zookeeper-0.p12`
-  - `my-cluster-zookeeper-0.password`
-- `my-cluster-kafka-brokers` contains
-  - `my-cluster-kafka-0.crt`
-  - `my-cluster-kafka-0.key`
-  - `my-cluster-kafka-0.p12`
-  - `my-cluster-kafka-0.password`
-  - `my-cluster-kafka-1.crt`
-  - `my-cluster-kafka-1.key`
-  - `my-cluster-kafka-1.p12`
-  - `my-cluster-kafka-1.password`
-  - `my-cluster-kafka-2.crt`
-  - `my-cluster-kafka-2.key`
-  - `my-cluster-kafka-2.p12`
-  - `my-cluster-kafka-2.password`
-
+- `my-cluster-entity-user-operator-certs` contains:
+  - `entity-operator.key` 
+  - `entity-operator.crt`
+  
 ```bash
 $ kubectl get cm -n kafka
 
 NAME                                      DATA   AGE
-kube-root-ca.crt                          1      21m
-strimzi-cluster-operator                  1      21m
-my-cluster-zookeeper-config               2      18m
-my-cluster-kafka-0                        3      16m
-my-cluster-kafka-1                        3      16m
-my-cluster-kafka-2                        3      16m
-my-cluster-entity-topic-operator-config   1      14m
-my-cluster-entity-user-operator-config    1      14m
+kube-root-ca.crt                          1      12m
+my-cluster-dual-role-0                    5      11m
+my-cluster-dual-role-1                    5      11m
+my-cluster-dual-role-2                    5      11m
+my-cluster-entity-topic-operator-config   1      10m
+my-cluster-entity-user-operator-config    1      10m
+strimzi-cluster-operator                  1      12m
 ```
 
-### 6. Extract the Cluster CA secret:
+### 6 Extract CAs:
 
 ```bash
-$ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
-```
+$ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.crt}' | base64 -d > cluster-ca.crt
+$ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.p12}' | base64 -d > cluster-ca.p12
+$ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.password}' | base64 -d > cluster-ca.password
+$ kubectl get secret my-cluster-clients-ca-cert -n kafka -o jsonpath='{.data.ca\.crt}' | base64 -d > clients-ca.crt
+$ kubectl get secret my-cluster-clients-ca-cert -n kafka -o jsonpath='{.data.ca\.p12}' | base64 -d > clients-ca.p12
+$ kubectl get secret my-cluster-clients-ca-cert -n kafka -o jsonpath='{.data.ca\.password}' | base64 -d > clients-ca.password
 
-Examine the certificate 
-
-```bash
-$ openssl x509 -text -in ca.crt
-```
-
-```bash
-Certificate:
-    Data:
-        Version: 3 (0x2)
-        Serial Number:
-            76:64:b5:c3:b9:b5:3c:fa:b5:fe:32:84:d2:e5:58:e4:f8:d0:a3:97
-        Signature Algorithm: sha512WithRSAEncryption
-        Issuer: O = io.strimzi, CN = cluster-ca v0
-        Validity
-            Not Before: Nov  5 15:01:28 2023 GMT
-            Not After : Nov  4 15:01:28 2024 GMT
-        Subject: O = io.strimzi, CN = cluster-ca v0
-        Subject Public Key Info:
-            Public Key Algorithm: rsaEncryption
-                Public-Key: (4096 bit)
-                ...
+$ openssl x509 -text -in cluster-ca.crt
+$ openssl x509 -text -in clients-ca.crt
 ```
 
 ### 7. Try again, setting now the `ssl.ca.location`
 
 ```bash
-$ kcat -L -b localhost:8080 -X security.protocol=SSL -X ssl.ca.location=ca.crt
+$ kcat -L -b localhost:8080 -X security.protocol=SSL -X ssl.ca.location=cluster-ca.crt
 Metadata for all topics (from broker -1: ssl://localhost:8080/bootstrap):
  3 brokers:
   broker 0 at localhost:8081 (controller)
@@ -171,23 +187,17 @@ Metadata for all topics (from broker -1: ssl://localhost:8080/bootstrap):
 
 ### 8. Try with Producer / Consumer within the cluster:
 
-Extract the `ca.p12` from the Cluster CA secret
-
-```bash
-$ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.p12}' | base64 -d > ca.p12
-$ kubectl get secret my-cluster-cluster-ca-cert -n kafka -o jsonpath='{.data.ca\.password}' | base64 -d > ca.password
-```
-
 Run an interactive pod:
 
 ```bash
-$ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.38.0-kafka-3.6.0 producer-consumer -n kafka -- /bin/sh -c "sleep 3600"
+$ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.48.0-kafka-4.1.0 producer-consumer -n kafka -- /bin/sh -c "sleep 3600"
+$ kubectl exec -it producer-consumer -n kafka -- sh
 ```
 
-and copy the ca.p12 and config file into it.
+and copy the `cluseter-ca.p12` and config file into it.
 
 ```bash
-$ kubectl cp ca.p12 producer-consumer:/tmp -n kafka
+$ kubectl cp cluster-ca.p12 producer-consumer:/tmp -n kafka
 # after you modified the `ssl.truststore.password` inside the config.properties
 $ kubectl cp security-config.properties producer-consumer:/tmp -n kafka
 ```
@@ -217,21 +227,26 @@ Within the interactive pod we can verify what certificate is presented:
 $ openssl s_client -connect my-cluster-kafka-bootstrap:9093
 
 CONNECTED(00000003)
+Connecting to 10.43.91.248
+CONNECTED(00000003)
 Can't use SSL_get_servername
-depth=1 O = io.strimzi, CN = cluster-ca v0
-verify error:num=19:self signed certificate in certificate chain
+depth=1 O=io.strimzi, CN=cluster-ca v0
+verify error:num=19:self-signed certificate in certificate chain
 verify return:1
-depth=1 O = io.strimzi, CN = cluster-ca v0
+depth=1 O=io.strimzi, CN=cluster-ca v0
 verify return:1
-depth=0 O = io.strimzi, CN = my-cluster-kafka
+depth=0 O=io.strimzi, CN=my-cluster-kafka
 verify return:1
 ---
 Certificate chain
- 0 s:O = io.strimzi, CN = my-cluster-kafka
-   i:O = io.strimzi, CN = cluster-ca v0
- 1 s:O = io.strimzi, CN = cluster-ca v0
-   i:O = io.strimzi, CN = cluster-ca v0
----
+ 0 s:O=io.strimzi, CN=my-cluster-kafka
+   i:O=io.strimzi, CN=cluster-ca v0
+   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA512
+   v:NotBefore: Oct 19 09:07:19 2025 GMT; NotAfter: Oct 19 09:07:19 2026 GMT
+ 1 s:O=io.strimzi, CN=cluster-ca v0
+   i:O=io.strimzi, CN=cluster-ca v0
+   a:PKEY: rsaEncryption, 4096 (bit); sigalg: RSA-SHA512
+   v:NotBefore: Oct 19 09:07:18 2025 GMT; NotAfter: Oct 19 09:07:18 2026 GMT
 Server certificate
 -----BEGIN CERTIFICATE-----
 ...
@@ -280,6 +295,34 @@ SSL-Session:
     Extended master secret: no
     Max Early Data: 0
 ---
+```
+
+Present certificate for the externally 9094 port
+
+```bash
+$ openssl s_client -connect localhost:8080
+Connecting to ::1
+CONNECTED(00000005)
+Can't use SSL_get_servername
+depth=1 O=io.strimzi, CN=cluster-ca v0
+verify error:num=19:self-signed certificate in certificate chain
+verify return:1
+depth=1 O=io.strimzi, CN=cluster-ca v0
+verify return:1
+depth=0 O=io.strimzi, CN=my-cluster-kafka
+verify return:1
+---
+Certificate chain
+ 0 s:O=io.strimzi, CN=my-cluster-kafka
+   i:O=io.strimzi, CN=cluster-ca v0
+   a:PKEY: RSA, 2048 (bit); sigalg: sha512WithRSAEncryption
+   v:NotBefore: Oct 19 09:07:19 2025 GMT; NotAfter: Oct 19 09:07:19 2026 GMT
+ 1 s:O=io.strimzi, CN=cluster-ca v0
+   i:O=io.strimzi, CN=cluster-ca v0
+   a:PKEY: RSA, 4096 (bit); sigalg: sha512WithRSAEncryption
+   v:NotBefore: Oct 19 09:07:18 2025 GMT; NotAfter: Oct 19 09:07:18 2026 GMT
+---
+Server certificate
 ```
 
 ### 9. Cleanup

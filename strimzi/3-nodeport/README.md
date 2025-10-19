@@ -212,6 +212,44 @@ Partition: 0	Offset: 4
 ```
 
 
+# 9092 internal port is not secure 
+
+Run an interactive pod:
+
+```bash
+$ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.48.0-kafka-4.1.0 producer-consumer -n kafka -- /bin/sh -c "sleep 3600"
+$ kubectl exec -it producer-consumer -n kafka -- sh
+sh-5.1$ /opt/kafka/bin/kafka-console-producer.sh --version
+4.1.0
+sh-5.1$ /opt/kafka/bin/kafka-console-consumer.sh --version
+4.1.0
+
+$ /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
+$ /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic
+```
+
+# 9093 internal port is secure
+
+Run an interactive pod:
+
+```bash
+$ kubectl run --restart=Never --image=quay.io/strimzi/kafka:0.48.0-kafka-4.1.0 producer-consumer -n kafka -- /bin/sh -c "sleep 3600"
+$ kubectl exec -it producer-consumer -n kafka -- sh
+sh-5.1$ /opt/kafka/bin/kafka-console-producer.sh --version
+4.1.0
+sh-5.1$ /opt/kafka/bin/kafka-console-consumer.sh --version
+4.1.0
+
+$ /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic --from-beginning
+[2025-10-19 08:57:49,816] WARN [Consumer clientId=console-consumer, groupId=console-consumer-52269] Bootstrap broker my-cluster-kafka-bootstrap:9093 (id: -1 rack: null isFenced: false) disconnected (org.apache.kafka.clients.NetworkClient)
+...
+
+$ /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server my-cluster-kafka-bootstrap:9093 --topic my-topic
+>[2025-10-19 08:58:24,856] WARN [Producer clientId=console-producer] Bootstrap broker my-cluster-kafka-bootstrap:9093 (id: -1 rack: null isFenced: false) disconnected (org.apache.kafka.clients.NetworkClient)
+...
+```
+
+
 ### 9. Conclusions:
 
 Pros:
