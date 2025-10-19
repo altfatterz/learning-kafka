@@ -10,10 +10,8 @@ Let's try to do it connect to it from outside using a [Nodeport](https://kuberne
 $ k3d cluster delete mycluster
 # Start a k8s cluster this time with with 3 agent nodes, 1 server node (control-plane), 
 # Create a cluster mapping the port 30080-30083 range to from the 3 agent nodes to 8080-8083 on the host
-# Note: Kubernetes’ default NodePort range is 30000-32767
-$ rm -r /tmp/kafka-volume
-$ mkdir -p /tmp/kafka-volume 
-$ k3d cluster create mycluster -p "8080-8083:30080-30083@agent:0,1,2" --agents 3 -v /tmp/kafka-volume:/var/lib/rancher/k3s/storage@all
+# Note: Kubernetes’ default NodePort range is 30000-32767 
+$ k3d cluster create mycluster -p "8080-8083:30080-30083@agent:0,1,2" --agents 3
 # taint the server node that no workloads are scheduled on it
 $ kubectl taint nodes k3d-mycluster-server-0 key1=value1:NoSchedule
 # create the `kafka` namespace
@@ -24,21 +22,23 @@ $ kubectl create ns kafka
 
 ```bash
 $ kubectl get nodes -o wide
-NAME                     STATUS   ROLES                  AGE     VERSION        INTERNAL-IP   EXTERNAL-IP   OS-IMAGE   KERNEL-VERSION    CONTAINER-RUNTIME
-k3d-mycluster-server-0   Ready    control-plane,master   4m46s   v1.27.4+k3s1   172.21.0.3    <none>        K3s dev    6.4.16-linuxkit   containerd://1.7.1-k3s1
-k3d-mycluster-agent-2    Ready    <none>                 4m42s   v1.27.4+k3s1   172.21.0.5    <none>        K3s dev    6.4.16-linuxkit   containerd://1.7.1-k3s1
-k3d-mycluster-agent-0    Ready    <none>                 4m42s   v1.27.4+k3s1   172.21.0.4    <none>        K3s dev    6.4.16-linuxkit   containerd://1.7.1-k3s1
-k3d-mycluster-agent-1    Ready    <none>                 4m41s   v1.27.4+k3s1   172.21.0.6    <none>        K3s dev    6.4.16-linuxkit   containerd://1.7.1-k3s1
+NAME                     STATUS   ROLES                  AGE   VERSION        INTERNAL-IP   EXTERNAL-IP   OS-IMAGE           KERNEL-VERSION     CONTAINER-RUNTIME
+k3d-mycluster-agent-0    Ready    <none>                 21s   v1.31.5+k3s1   172.18.0.4    <none>        K3s v1.31.5+k3s1   6.10.14-linuxkit   containerd://1.7.23-k3s2
+k3d-mycluster-agent-1    Ready    <none>                 24s   v1.31.5+k3s1   172.18.0.5    <none>        K3s v1.31.5+k3s1   6.10.14-linuxkit   containerd://1.7.23-k3s2
+k3d-mycluster-agent-2    Ready    <none>                 21s   v1.31.5+k3s1   172.18.0.6    <none>        K3s v1.31.5+k3s1   6.10.14-linuxkit   containerd://1.7.23-k3s2
+k3d-mycluster-server-0   Ready    control-plane,master   33s   v1.31.5+k3s1   172.18.0.3    <none>        K3s v1.31.5+k3s1   6.10.14-linuxkit   containerd://1.7.23-k3s2
 ```
 
 ```bash
 $ docker ps
 9dfb32fddb15   ghcr.io/k3d-io/k3d-tools:5.6.0   "/app/k3d-tools noop"    3 minutes ago   Up 3 minutes                                                                                                                                         k3d-mycluster-tools
-3e4c46f6d571   ghcr.io/k3d-io/k3d-proxy:5.6.0   "/bin/sh -c nginx-pr…"   3 minutes ago   Up 3 minutes   80/tcp, 0.0.0.0:51515->6443/tcp, 0.0.0.0:8080->30080/tcp, 0.0.0.0:8081->30081/tcp, 0.0.0.0:8082->30082/tcp, 0.0.0.0:8083->30083/tcp   k3d-mycluster-serverlb
-4bd75cf5a82e   rancher/k3s:v1.27.4-k3s1         "/bin/k3s agent"         3 minutes ago   Up 3 minutes                                                                                                                                         k3d-mycluster-agent-2
-e85586562046   rancher/k3s:v1.27.4-k3s1         "/bin/k3s agent"         3 minutes ago   Up 3 minutes                                                                                                                                         k3d-mycluster-agent-1
-040be0c2ad22   rancher/k3s:v1.27.4-k3s1         "/bin/k3s agent"         3 minutes ago   Up 3 minutes                                                                                                                                         k3d-mycluster-agent-0
-3c9a5ee6d9f2   rancher/k3s:v1.27.4-k3s1         "/bin/k3s server --t…"   3 minutes ago   Up 3 minutes                                                                                                                                         k3d-mycluster-server-0
+IMAGE                            COMMAND                  CREATED          STATUS          PORTS                                                                                                                                                                                                                 NAMES
+a39022a380e1   ghcr.io/k3d-io/k3d-tools:5.8.3   "/app/k3d-tools noop"    46 seconds ago   Up 45 seconds                                                                                                                                                                                                                         k3d-mycluster-tools
+ce6c757e64f4   ghcr.io/k3d-io/k3d-proxy:5.8.3   "/bin/sh -c nginx-pr…"   46 seconds ago   Up 31 seconds   0.0.0.0:63624->6443/tcp, 0.0.0.0:8080->30080/tcp, [::]:8080->30080/tcp, 0.0.0.0:8081->30081/tcp, [::]:8081->30081/tcp, 0.0.0.0:8082->30082/tcp, [::]:8082->30082/tcp, 0.0.0.0:8083->30083/tcp, [::]:8083->30083/tcp   k3d-mycluster-serverlb
+cf88bb0e8fba   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint…"   46 seconds ago   Up 42 seconds                                                                                                                                                                                                                         k3d-mycluster-agent-2
+907c9b66e48f   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint…"   46 seconds ago   Up 42 seconds                                                                                                                                                                                                                         k3d-mycluster-agent-1
+ab299c8ecc74   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint…"   46 seconds ago   Up 42 seconds                                                                                                                                                                                                                         k3d-mycluster-agent-0
+701dbb8bd922   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint…"   46 seconds ago   Up 44 seconds                                                                                                                                                                                                                         k3d-mycluster-server-0
 ```
 
 ### 3. Install the Strimzi operator:
@@ -49,9 +49,12 @@ $ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 
 ### 4. View the created pods / services 
 
-Terminal:
+Wait until the operator is up and running
+
 ```bash
-$ watch kubectl get all -n kafka 
+$ kubectl get pods -n kafka
+NAME                                        READY   STATUS    RESTARTS   AGE
+strimzi-cluster-operator-7c88589497-xfb2t   1/1     Running   0          70s
 ```
 
 ### 5. Deploy Kafka with Nodeport config:
@@ -68,33 +71,30 @@ $ kubectl apply -f kafka-nodeport.yaml -n kafka
 ```bash
 $ kubectl get all -n kafka
 NAME                                              READY   STATUS    RESTARTS   AGE
-pod/strimzi-cluster-operator-95d88f6b5-r9f29      1/1     Running   0          3m45s
-pod/my-cluster-zookeeper-0                        1/1     Running   0          2m3s
-pod/my-cluster-kafka-0                            1/1     Running   0          53s
-pod/my-cluster-kafka-1                            1/1     Running   0          53s
-pod/my-cluster-kafka-2                            1/1     Running   0          53s
-pod/my-cluster-entity-operator-64dc7c8844-dcn26   0/3     Running   0          5s
+pod/my-cluster-dual-role-0                        1/1     Running   0          3m7s
+pod/my-cluster-dual-role-1                        1/1     Running   0          3m7s
+pod/my-cluster-dual-role-2                        1/1     Running   0          3m7s
+pod/my-cluster-entity-operator-687d45c589-7gnpz   2/2     Running   0          25s
+pod/strimzi-cluster-operator-7c88589497-xfb2t     1/1     Running   0          5m14s
 
-NAME                                          TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                                        AGE
-service/my-cluster-zookeeper-client           ClusterIP   10.43.53.199   <none>        2181/TCP                                       2m3s
-service/my-cluster-zookeeper-nodes            ClusterIP   None           <none>        2181/TCP,2888/TCP,3888/TCP                     2m3s
-service/my-cluster-kafka-brokers              ClusterIP   None           <none>        9090/TCP,9091/TCP,8443/TCP,9092/TCP,9093/TCP   54s
-service/my-cluster-kafka-bootstrap            ClusterIP   10.43.133.78   <none>        9091/TCP,9092/TCP,9093/TCP                     54s
-service/my-cluster-kafka-external-bootstrap   NodePort    10.43.86.210   <none>        9094:30080/TCP                                 54s
-service/my-cluster-kafka-1                    NodePort    10.43.72.247   <none>        9094:30082/TCP                                 54s
-service/my-cluster-kafka-0                    NodePort    10.43.242.81   <none>        9094:30081/TCP                                 54s
-service/my-cluster-kafka-2                    NodePort    10.43.209.63   <none>        9094:30083/TCP                                 54s
+NAME                                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                        AGE
+service/my-cluster-dual-role-0                NodePort    10.43.233.34    <none>        9094:30081/TCP                                 3m7s
+service/my-cluster-dual-role-1                NodePort    10.43.76.167    <none>        9094:30082/TCP                                 3m7s
+service/my-cluster-dual-role-2                NodePort    10.43.145.191   <none>        9094:30083/TCP                                 3m7s
+service/my-cluster-kafka-bootstrap            ClusterIP   10.43.146.143   <none>        9091/TCP,9092/TCP,9093/TCP                     3m7s
+service/my-cluster-kafka-brokers              ClusterIP   None            <none>        9090/TCP,9091/TCP,8443/TCP,9092/TCP,9093/TCP   3m7s
+service/my-cluster-kafka-external-bootstrap   NodePort    10.43.230.59    <none>        9094:30080/TCP                                 3m7s
 
 NAME                                         READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/strimzi-cluster-operator     1/1     1            1           3m45s
-deployment.apps/my-cluster-entity-operator   0/1     1            0           5s
+deployment.apps/my-cluster-entity-operator   1/1     1            1           25s
+deployment.apps/strimzi-cluster-operator     1/1     1            1           5m14s
 
 NAME                                                    DESIRED   CURRENT   READY   AGE
-replicaset.apps/strimzi-cluster-operator-95d88f6b5      1         1         1       3m45s
-replicaset.apps/my-cluster-entity-operator-64dc7c8844   1         1         0       5s
+replicaset.apps/my-cluster-entity-operator-687d45c589   1         1         1       25s
+replicaset.apps/strimzi-cluster-operator-7c88589497     1         1         1       5m14s
 ```
 
-Strimzi creates additional services - one for each Kafka broker. So in a Kafka cluster with N brokers we will have N+1 
+`Strimzi` creates additional services - one for each Kafka broker. So in a Kafka cluster with N brokers we will have N+1 
 node port services:
 - One which can be used by the Kafka clients as the bootstrap service for the initial connection and for receiving 
   the metadata about the Kafka cluster
@@ -103,19 +103,25 @@ node port services:
 ### 7. Verify the advertised listener:
 
 ```bash
-$ kubectl exec my-cluster-kafka-0 -c kafka -it -n kafka -- cat /tmp/strimzi.properties | grep advertised
-```
+$ kubectl exec my-cluster-dual-role-0 -c kafka -it -n kafka -- cat /tmp/strimzi.properties | grep advertised
+advertised.listeners=CONTROLPLANE-9090://my-cluster-dual-role-0.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-dual-role-0.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9092://my-cluster-dual-role-0.my-cluster-kafka-brokers.kafka.svc:9092,TLS-9093://my-cluster-dual-role-0.my-cluster-kafka-brokers.kafka.svc:9093,EXTERNAL-9094://localhost:8081
 
-```bash
-advertised.listeners=CONTROLPLANE-9090://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9092://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9092,TLS-9093://my-cluster-kafka-0.my-cluster-kafka-brokers.kafka.svc:9093,EXTERNAL-9094://localhost:8081
+$ kubectl exec my-cluster-dual-role-1 -c kafka -it -n kafka -- cat /tmp/strimzi.properties | grep advertised
+advertised.listeners=CONTROLPLANE-9090://my-cluster-dual-role-1.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-dual-role-1.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9092://my-cluster-dual-role-1.my-cluster-kafka-brokers.kafka.svc:9092,TLS-9093://my-cluster-dual-role-1.my-cluster-kafka-brokers.kafka.svc:9093,EXTERNAL-9094://localhost:8082
+
+$ kubectl exec my-cluster-dual-role-2 -c kafka -it -n kafka -- cat /tmp/strimzi.properties | grep advertised
+advertised.listeners=CONTROLPLANE-9090://my-cluster-dual-role-2.my-cluster-kafka-brokers.kafka.svc:9090,REPLICATION-9091://my-cluster-dual-role-2.my-cluster-kafka-brokers.kafka.svc:9091,PLAIN-9092://my-cluster-dual-role-2.my-cluster-kafka-brokers.kafka.svc:9092,TLS-9093://my-cluster-dual-role-2.my-cluster-kafka-brokers.kafka.svc:9093,EXTERNAL-9094://localhost:8083
 ```
 
 ### 8. Verify that we can connect
 
 ```bash
+$ brew install telnet
+
 $ telnet localhost 8080
 $ telnet localhost 8081
 $ telnet localhost 8082
+$ telnet localhost 8083
 
 Connected to localhost
 ```
@@ -123,7 +129,15 @@ Connected to localhost
 Verify that from your host you can connect using [`kcat`](https://github.com/edenhill/kcat) (formerly `kafkacat`)
 
 ```bash
-$ kcat -L -b localhost:8080 
+$ kcat -b localhost:8080 -L 
+Metadata for all topics (from broker 2: localhost:8083/2):
+ 3 brokers:
+  broker 0 at localhost:8081
+  broker 1 at localhost:8082
+  broker 2 at localhost:8083 (controller)
+  
+# get it in json  
+$ kcat -b localhost:8080 -L -J | jq .
 ```
 
 ### 8. Create a topic using a strimzi resource definition:
@@ -141,19 +155,62 @@ $ kubectl get kt -n kafka
 $ kubectl describe kt my-topic -n kafka
 ```
 
-### Produce and Consume via `kcat`
+### Produce and Consume via [kcat](https://github.com/edenhill/kcat)
 
 Produce:
+
 ```bash
-$ echo 'Learning Strimzi' | kcat -P -b localhost:8080 -t my-topic
+$ echo 'Learning Strimzi' | kcat -b localhost:8080 -P -t my-topic
 ```
 
 Consume:
 ```bash
-$ kcat -C -b localhost:8080 -t my-topic
+$ kcat -b localhost:8080 -C -t my-topic
 Learning Strimzi
 % Reached end of topic my-topic [0] at offset 1
 ```
+
+Produce: 
+
+```bash
+kcat -b localhost:8080 -t my-topic -K: -P <<EOF
+1:{"order_id":1,"order_ts":1534772501276,"total_amount":10.50,"customer_name":"Bob Smith"}
+2:{"order_id":2,"order_ts":1534772605276,"total_amount":3.32,"customer_name":"Sarah Black"}
+3:{"order_id":3,"order_ts":1534772742276,"total_amount":21.00,"customer_name":"Emma Turner"}
+EOF
+```
+
+Consume:
+```bash
+kcat -b localhost:8080 -C \
+-f '\nKey (%K bytes): %k\t\nValue (%S bytes): %s\n\Partition: %p\tOffset: %o\n--\n' \
+-t my-topic
+
+Key (-1 bytes):
+Value (16 bytes): Learning Strimzi
+Partition: 0	Offset: 0
+--
+
+Key (-1 bytes):
+Value (3 bytes): foo
+Partition: 0	Offset: 1
+--
+
+Key (1 bytes): 1
+Value (88 bytes): {"order_id":1,"order_ts":1534772501276,"total_amount":10.50,"customer_name":"Bob Smith"}
+Partition: 0	Offset: 2
+--
+
+Key (1 bytes): 2
+Value (89 bytes): {"order_id":2,"order_ts":1534772605276,"total_amount":3.32,"customer_name":"Sarah Black"}
+Partition: 0	Offset: 3
+--
+
+Key (1 bytes): 3
+Value (90 bytes): {"order_id":3,"order_ts":1534772742276,"total_amount":21.00,"customer_name":"Emma Turner"}
+Partition: 0	Offset: 4
+```
+
 
 ### 9. Conclusions:
 
