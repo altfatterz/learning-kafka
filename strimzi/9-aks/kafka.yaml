@@ -1,0 +1,146 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  namespace: kafka
+  name: controller
+  labels:
+    strimzi.io/cluster: kafka-aks-cluster
+spec:
+  replicas: 3
+  roles:
+    - controller
+  template:
+    pod:
+      metadata:
+        labels:
+          kafkaRole: controller
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - kafka
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    kafkaRole: broker
+                topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              kafkaRole: controller
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+        - labelSelector:
+            matchLabels:
+              kafkaRole: controller
+          maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 1Gi
+        # PVCs are deleted when the Kafka cluster is deleted.
+        deleteClaim: true
+        class: default
+
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  namespace: kafka
+  name: broker
+  labels:
+    strimzi.io/cluster: kafka-aks-cluster
+spec:
+  replicas: 3
+  roles:
+    - broker
+  template:
+    pod:
+      metadata:
+        labels:
+          kafkaRole: broker
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - kafka
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    kafkaRole: controller
+                topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              kafkaRole: broker
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+        - labelSelector:
+            matchLabels:
+              kafkaRole: broker
+          maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+  storage:
+    # You want to spread Kafka logs across multiple disks.
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 5Gi
+        deleteClaim: true
+        class: default
+      - id: 1
+        type: persistent-claim
+        size: 5Gi
+        deleteClaim: true
+        class: default
+
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  namespace: kafka
+  name: kafka-aks-cluster
+spec:
+  kafka:
+    version: 4.1.0
+    metadataVersion: 4.1-IV1
+    rack:
+      topologyKey: topology.kubernetes.io/zone
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+    config:
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
+      default.replication.factor: 3
+      min.insync.replicas: 2
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}

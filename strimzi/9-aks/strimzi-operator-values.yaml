@@ -1,0 +1,17 @@
+replicas: 3
+watchNamespaces:
+  - kafka
+leaderElection:
+  enabled: true
+podDisruptionBudget:
+  enabled: true
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: name
+              operator: In
+              values:
+                - strimzi-cluster-operator
+        topologyKey: topology.kubernetes.io/zone
