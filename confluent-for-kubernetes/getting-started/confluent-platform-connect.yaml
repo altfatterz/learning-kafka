@@ -7,8 +7,8 @@ metadata:
 spec:
   replicas: 1
   image:
-    application: confluentinc/cp-server-connect:7.6.1
-    init: confluentinc/confluent-init-container:2.8.0
+    application: confluentinc/cp-server-connect:8.1.1
+    init: confluentinc/confluent-init-container:3.1.1
   configOverrides:
     log4j:
       - log4j.rootLogger=INFO, stdout
@@ -19,8 +19,7 @@ spec:
         confluentHub:
           - name: kafka-connect-datagen
             owner: confluentinc
-            version: 0.6.5
-
+            version: 0.7.0
   dependencies:
     kafka:
       bootstrapEndpoint: kafka:9071

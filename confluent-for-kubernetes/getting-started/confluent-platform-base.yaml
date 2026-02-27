@@ -7,8 +7,12 @@ spec:
   replicas: 1
   dataVolumeCapacity: 10Gi
   image:
-    application: confluentinc/cp-server:7.6.1
-    init: confluentinc/confluent-init-container:2.8.0
+    application: docker.io/confluentinc/cp-server:8.1.1
+    init: confluentinc/confluent-init-container:3.1.1
+  dependencies:
+    metricsClient:
+      url: http://controlcenter.confluent.svc.cluster.local:9090
+
 ---
 apiVersion: platform.confluent.io/v1beta1
 kind: Kafka
@@ -21,16 +25,18 @@ spec:
   metricReporter:
     enabled: true
   image:
-    application: confluentinc/cp-server:7.6.1
-    init: confluentinc/confluent-init-container:2.8.0
+    application: confluentinc/cp-server:8.1.1
+    init: confluentinc/confluent-init-container:3.1.1
   dependencies:
     kRaftController:
       clusterRef:
         name: kraftcontroller
+    metricsClient:
+      url: http://controlcenter.confluent.svc.cluster.local:9090
+
 ---
 
 # https://docs.confluent.io/operator/current/co-manage-rest-api.html#
-
 apiVersion: platform.confluent.io/v1beta1
 kind: KafkaRestClass
 metadata:
