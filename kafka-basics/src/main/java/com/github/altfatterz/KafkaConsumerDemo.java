@@ -4,6 +4,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.errors.WakeupException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +33,17 @@ public class KafkaConsumerDemo {
         // consumer
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
 
+        final Thread mainThread = Thread.currentThread();
+
         // Adding a shutdown hook to clean up when the application exits
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Closing consumer.");
-            consumer.close();
+            logger.info("Detected shutdown, signaling consumer to wakeup...");
+            consumer.wakeup();
+            try {
+                mainThread.join(); // Wait for main thread to finish its finally block
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }));
 
         try {
@@ -55,16 +63,29 @@ public class KafkaConsumerDemo {
         }
 
         // poll for new data
-        while (true) {
-            // max.poll.records (default 500)
-            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(200));
+        try {
+            while (true) {
+                // max.poll.records (default 500)
+                // poll() will throw WakeupException if wakeup() was called
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(200));
 
-            logger.info("poll() returned nr of records:{}", records.count());
+                logger.info("poll() returned nr of records:{}", records.count());
 
-            for (ConsumerRecord<String, String> record : records) {
-                logger.info("Key: {},  Partition: {}, Offset: {}, Value:{},", record.key(), record.partition(),
-                        record.offset(), record.value() );
+                for (ConsumerRecord<String, String> record : records) {
+                    logger.info("Key: {},  Partition: {}, Offset: {}, Value:{},", record.key(), record.partition(),
+                            record.offset(), record.value());
+                }
             }
+        } catch (WakeupException e) {
+            // This is expected on shutdown, ignore it
+            logger.info("Consumer received wakeup signal.");
+        } catch (Exception e) {
+            logger.error("Unexpected error", e);
+        } finally {
+            // This is now safe because it's running in the MAIN thread
+            logger.info("Closing consumer safely...");
+            consumer.close();
+            logger.info("Consumer closed.");
         }
     }
 }

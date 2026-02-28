@@ -1,6 +1,6 @@
 services:
   broker:
-    image: confluentinc/cp-server:7.9.0
+    image: confluentinc/cp-server:8.1.1
     hostname: broker
     container_name: broker
     ports:
@@ -35,7 +35,7 @@ services:
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:7.9.0
+    image: confluentinc/cp-schema-registry:8.1.1
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -48,7 +48,7 @@ services:
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center:7.9.0
+    image: confluentinc/cp-enterprise-control-center-next-gen:2.3.2
     hostname: control-center
     container_name: control-center
     depends_on:
@@ -60,8 +60,9 @@ services:
       CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
       CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
       CONTROL_CENTER_REPLICATION_FACTOR: 1
-      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
-      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
-      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_REPLICATION: 1
+      CONTROL_CENTER_COMMAND_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_METRICS_TOPIC_REPLICATION: 1
+
       PORT: 9021
 

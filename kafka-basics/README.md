@@ -3,6 +3,9 @@
 #### Start kafka with control center 
 
 ```bash
+# cleanup
+$ docker compose down -v
+# fresh start
 $ docker compose up -d
 ```
 
@@ -10,7 +13,9 @@ $ docker compose up -d
 
 ```bash
 $ docker exec -it broker bash
+# delete the topic 
 $ kafka-topics --bootstrap-server broker:29092 --delete --topic test-topic
+# create the topic
 $ kafka-topics --bootstrap-server broker:9092 --create --topic test-topic --partitions 3 --replication-factor 1
 $ kafka-topics --bootstrap-server broker:29092 --describe --topic test-topic
 $ exit
@@ -75,9 +80,10 @@ Check the logs:
 ### Other ways to reset offsets
 
 ```bash
+$ kafka-consumer-groups --bootstrap-server broker:9092 --group kafka-basic-local-consumer-group --topic test-topic --reset-offsets --to-latest --dry-run
+$ kafka-consumer-groups --bootstrap-server broker:9092 --group kafka-basic-local-consumer-group --topic test-topic --reset-offsets --shift-by -10 --dry-run
 $ kafka-consumer-groups --bootstrap-server broker:9092 --group kafka-basic-local-consumer-group --topic test-topic --reset-offsets --shift-by 1 --dry-run
 $ kafka-consumer-groups --bootstrap-server broker:9092 --group kafka-basic-local-consumer-group --topic test-topic --reset-offsets --to-earliest --dry-run
-$ kafka-consumer-groups --bootstrap-server broker:9092 --group kafka-basic-local-consumer-group --topic test-topic --reset-offsets --to-latest --dry-run
 $ kafka-consumer-groups --bootstrap-server broker:9092 --group kafka-basic-local-consumer-group --topic test-topic --reset-offsets --to-offset 100 --dry-run
 $ kafka-consumer-groups --bootstrap-server broker:9092 --group kafka-basic-local-consumer-group --topic test-topic --reset-offsets --to-datetime '2024-03-17T12:28:15.000' --dry-run
 
@@ -96,9 +102,19 @@ kafka-basic-local-consumer-group test-topic                     2          5
 
 the timestamp in Kafka is stored in UTC format. 
 
+# Safe close of consumer
+
+```bash
+# notice when you close consumer we see in the logs:
+
+^C08:34:06.064 [Thread-0] INFO  c.g.altfatterz.KafkaConsumerDemo - Detected shutdown, signaling consumer to wakeup...
+08:34:06.065 [main] INFO  c.g.altfatterz.KafkaConsumerDemo - Consumer received wakeup signal.
+08:34:06.065 [main] INFO  c.g.altfatterz.KafkaConsumerDemo - Closing consumer safely...
+```
+
 # Running with Confluent Cloud
 
-1. Install Confluent CLI: https://docs.co   nfluent.io/confluent-cli/current/install.html
+1. Install Confluent CLI: https://docs.confluent.io/confluent-cli/current/install.html
 2. Connect the CLI to your Confluent Cloud cluster: https://docs.confluent.io/confluent-cli/current/connect.html
 
 
@@ -106,15 +122,17 @@ the timestamp in Kafka is stored in UTC format.
 
 ```bash
 
-confluent version
+$ confluent version
 
-Version:     v4.26.0
-Git Ref:     d2facf65
-Build Date:  2025-04-21T23:27:56Z
-Go Version:  go1.22.7 (darwin/arm64)
+confluent - Confluent CLI
+
+Version:     v4.50.0
+Git Ref:     455d65b4
+Build Date:  2026-01-13T21:07:21Z
+Go Version:  go1.25.5 (darwin/arm64)
 Development: false
 
-confluent update
+$ brew upgrade confluentinc/tap/cli
 
 ```
 
