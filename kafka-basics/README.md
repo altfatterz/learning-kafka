@@ -139,14 +139,47 @@ $ brew upgrade confluentinc/tap/cli
 # Confluent Shell
 
 ```bash
-$ confluent shell
+$ confluent login
+
+# check environments
+$ confluent environment list
+# check billing 
+$ confluent billing promo list
+$ confluent billing promo add <promo-code>
+```
+
+# Check clusters
+
+```bash
+# create a basic cluster - the cluster will be available over the internet
+$ confluent kafka cluster create gcp-zurich-cluster --cloud gcp --region europe-west6 --type basic
+$ confluent kafka cluster list
+$ confluent kafka cluster describe <id>
+$ confluent kafka cluster use <id>
 ```
 
 # Create a topic
 
 ```bash
-$ confluent kafka topic create test-topic --cluster lkc-ro6ok7
+$ confluent kafka topic create test-topic
 $ confluent kafka topic list
+     Name    | Internal | Replication Factor | Partition Count
+-------------+----------+--------------------+------------------
+  test-topic | false    |                  3 |               6
+```
+
+# Create an API-KEY
+
+```bash
+# create an api-key, example: confluent api-key create --resource lkc-nz59d3 
+$ confluent api-key create --resource <cluster-id>
+$ confluent api-key list
+ 
+```
+
+```bash
+# Create a Kafka client configuration file.
+$ confluent kafka client-config create java
 ```
 
 # Modify configurations `cloud-consumer.properties / cloud-producer.properties`
@@ -173,6 +206,7 @@ You might need to set the api-key
 
 ```bash
 $ confluent api-key use <KEY-NAME>
+# store is only needed if you created the API key inside the Confluent Cloud Console, the CLI on your laptop has no idea what that secret is
 $ confluent api-key store <KEY-NAME> <SECRET>
 $ confluent api-key list
 
@@ -196,10 +230,19 @@ Manage api keys (both for kafka and schema-registry)
 $ confluent api-key list
 ```
 
-Delete Kafka cluster:
+## Schema Registry
 
 ```bash
-$ confluent kafka cluster delete lkc-ro6ok7
+# get schema-registry connect info, schema registry is per environment
+$ confluent schema-registry cluster describe
+# list schemas
+$ confluent schema-registry schema list
+```
+
+# Delete Kafka cluster:
+
+```bash
+$ confluent kafka cluster delete <id>
 ```
 
 Resources:
