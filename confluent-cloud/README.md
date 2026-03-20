@@ -115,7 +115,7 @@ $ confluent kafka topic produce cli-test
 $ confluent kafka topic produce cli-test --parse-key --delimiter ":"
 
 # consume cli-test
-$ confluent kafka topic consume cli-test
+$ confluent kafka topic consume --from-beginning --print-key --delimiter ":" cli-test
 ```
 
 ### Confluent Environment
@@ -128,7 +128,6 @@ Stream Governance package, more info here: https://docs.confluent.io/cloud/curre
 ```bash
 # Manage confluent environments
 $ confluent environment
- 
 ```
 
 ### Kafka clusters
@@ -156,6 +155,24 @@ $ confluent kafka
 More info here: https://docs.confluent.io/cloud/current/billing/overview.html?ajs_aid=e2f60d85-3bbb-450a-b450-461daee489f2&ajs_uid=1160#compare-billing-units-for-ak-clusters
 
 
+### Kafka CLI Tools with Confluent Cloud
+
+```bash
+export BOOTSTRAP_SERVER=TODO
+export CLUSTER_API_KEY=TODO
+export CLUSTER_API_SECRET=TODO
+
+$ envsubst < kafka-cli.properties.template > kafka-cli.properties
+
+$ kafka-topics --bootstrap-server=$BOOTSTRAP_SERVER --command-config kafka-cli.properties --create --topic demo-topic --create --partitions 3 --replication-factor 2
+$ kafka-console-producer --bootstrap-server=$BOOTSTRAP_SERVER --producer.config kafka-cli.properties --topic demo-topic --property parse.key=true --property key.separator=":"
+$ kafka-console-consumer --bootstrap-server=$BOOTSTRAP_SERVER --consumer.config kafka-cli.properties --topic demo-topic --from-beginning --group console-consumer --property print.key=true --property key.separator=":"
+$ kafka-consumer-groups --bootstrap-server=$BOOTSTRAP_SERVER --command-config kafka-cli.properties --list
+$ kafka-consumer-groups --bootstrap-server=$BOOTSTRAP_SERVER --command-config kafka-cli.properties --describe --group console-consumer
+```
+
+
+------------------------------------------------------------------------------------------------------------------------
 
 Schema Registry is created per `enviroment`
 
