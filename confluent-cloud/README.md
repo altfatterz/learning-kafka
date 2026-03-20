@@ -158,31 +158,38 @@ More info here: https://docs.confluent.io/cloud/current/billing/overview.html?aj
 ### Kafka CLI Tools with Confluent Cloud
 
 ```bash
-export BOOTSTRAP_SERVER=TODO
+export BOOTSTRAP_SERVERS=TODO
 export CLUSTER_API_KEY=TODO
 export CLUSTER_API_SECRET=TODO
 
 $ envsubst < kafka-cli.properties.template > kafka-cli.properties
 
-$ kafka-topics --bootstrap-server=$BOOTSTRAP_SERVER --command-config kafka-cli.properties --create --topic demo-topic --create --partitions 3 --replication-factor 2
-$ kafka-console-producer --bootstrap-server=$BOOTSTRAP_SERVER --producer.config kafka-cli.properties --topic demo-topic --property parse.key=true --property key.separator=":"
-$ kafka-console-consumer --bootstrap-server=$BOOTSTRAP_SERVER --consumer.config kafka-cli.properties --topic demo-topic --from-beginning --group console-consumer --property print.key=true --property key.separator=":"
-$ kafka-consumer-groups --bootstrap-server=$BOOTSTRAP_SERVER --command-config kafka-cli.properties --list
-$ kafka-consumer-groups --bootstrap-server=$BOOTSTRAP_SERVER --command-config kafka-cli.properties --describe --group console-consumer
+$ kafka-topics --bootstrap-server=$BOOTSTRAP_SERVERS --command-config kafka-cli.properties --create --topic demo-topic --create --partitions 3 --replication-factor 2
+$ kafka-console-producer --bootstrap-server=$BOOTSTRAP_SERVERS --producer.config kafka-cli.properties --topic demo-topic --property parse.key=true --property key.separator=":"
+$ kafka-console-consumer --bootstrap-server=$BOOTSTRAP_SERVERS --consumer.config kafka-cli.properties --topic demo-topic --from-beginning --group console-consumer --property print.key=true --property key.separator=":"
+$ kafka-consumer-groups --bootstrap-server=$BOOTSTRAP_SERVERS --command-config kafka-cli.properties --list
+$ kafka-consumer-groups --bootstrap-server=$BOOTSTRAP_SERVERS --command-config kafka-cli.properties --describe --group console-consumer
 ```
-
 
 ------------------------------------------------------------------------------------------------------------------------
 
-Schema Registry is created per `enviroment`
+## Schema Registry
 
-export API_KEY=
-export API_SECRET=
+```bash
+# get schema-registry connect info, schema registry is per environment
+$ confluent schema-registry cluster describe
+
+$ confluent api-key create 
+```
+
+Schema Registry is created per `enviroment`
 
 List all subjects in your Schema Registry:
 
 ```bash
-$ curl -s -u $API_KEY:$API_SECRET$ GET https://psrc-9zg5y.europe-west3.gcp.confluent.cloud/subjects
+$ export API_KEY=<API_KEY>
+$ export API_SECRET=<APS_SECRET>
+$ curl -s -u $API_KEY:$API_SECRET https://psrc-9zg5y.europe-west3.gcp.confluent.cloud/subjects
 ```
 
 Register an Avro schema under the subject `kafka-value`:
@@ -204,14 +211,6 @@ $ curl -s -u $API_KEY:$API_SECRET -X DELETE https://psrc-9zg5y.europe-west3.gcp.
 ```
 
 Schema Registry reference: https://docs.confluent.io/platform/current/schema-registry/develop/api.html
-
-
-### Kafka cluster 
-
-```bash
-$ confluent kafka cluster list
-```
-
 
 
 ### Commercial Workshops from Confluent

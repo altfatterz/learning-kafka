@@ -126,10 +126,10 @@ $ confluent version
 
 confluent - Confluent CLI
 
-Version:     v4.50.0
-Git Ref:     455d65b4
-Build Date:  2026-01-13T21:07:21Z
-Go Version:  go1.25.5 (darwin/arm64)
+Version:     v4.55.0
+Git Ref:     4fb7a0a9
+Build Date:  2026-03-17T22:42:46Z
+Go Version:  go1.25.7 (darwin/arm64)
 Development: false
 
 $ brew upgrade confluentinc/tap/cli
@@ -152,7 +152,7 @@ $ confluent billing promo add <promo-code>
 
 ```bash
 # create a basic cluster - the cluster will be available over the internet
-$ confluent kafka cluster create gcp-zurich-cluster --cloud gcp --region europe-west6 --type basic
+$ confluent kafka cluster create gcp-zurich-basic-cluster --cloud gcp --region europe-west6 --type basic
 $ confluent kafka cluster list
 $ confluent kafka cluster describe <id>
 $ confluent kafka cluster use <id>
@@ -173,6 +173,7 @@ $ confluent kafka topic list
 ```bash
 # create an api-key, example: confluent api-key create --resource lkc-nz59d3 
 $ confluent api-key create --resource <cluster-id>
+
 $ confluent api-key list
  
 ```
@@ -183,6 +184,15 @@ $ confluent kafka client-config create java
 ```
 
 # Modify configurations `cloud-consumer.properties / cloud-producer.properties`
+
+```bash
+$ export BOOTSTRAP_SERVERS=pkc-lzoyy.europe-west6.gcp.confluent.cloud:9092
+$ export CLUSTER_API_KEY=SVV55RCF3MXZDQ6P
+$ export CLUSTER_API_SECRET=cfltt02V9DIkgA2i60n2djndVQ9/SEJXbumzgR5jQj2pXOoPWBXYrPh+AyWjzwSA
+
+$ envsubst < cloud-consumer.properties.template > cloud-consumer.properties
+$ envsubst < cloud-producer.properties.template > cloud-producer.properties
+```
 
 Start the consumer
 
@@ -228,15 +238,6 @@ Manage api keys (both for kafka and schema-registry)
 
 ```bash
 $ confluent api-key list
-```
-
-## Schema Registry
-
-```bash
-# get schema-registry connect info, schema registry is per environment
-$ confluent schema-registry cluster describe
-# list schemas
-$ confluent schema-registry schema list
 ```
 
 # Delete Kafka cluster:

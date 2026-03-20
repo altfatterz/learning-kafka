@@ -1,7 +1,9 @@
-bootstrap.servers=pkc-lzoyy.europe-west6.gcp.confluent.cloud:9092
+bootstrap.servers=${BOOTSTRAP_SERVERS}
 security.protocol=SASL_SSL
-sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username='SQMK5BEA7NHXZ47Y' password='cfltoT71wK3a2KlLYgXzzAVPBa8RpSMik57CO7dmt9xIvpJ9nSSL2pYTrt+iLcPQ';
 sasl.mechanism=PLAIN
+sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+  username='${CLUSTER_API_KEY}' \
+  password='${CLUSTER_API_SECRET}';
 
 # Best practice for Kafka producer to prevent data loss
 acks=all
