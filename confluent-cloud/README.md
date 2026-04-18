@@ -75,7 +75,8 @@ Each Confluent Cloud API key is associated with a `principal` (specific user or 
 Two types:
 
 - `Cloud API Key` 
-  - grants access to the Confluent Cloud Management APIs, such as for Provisioning and Metrics integrations.
+  - A Cloud API key is at the Organization level and is only used for REST API clients.
+  - grants access to the Confluent Cloud Management APIs, such as for `Provisioning` and `Metrics` integrations.
   - `confluent api-key create --resource cloud`
 
 - `Resource specific api key`
@@ -85,8 +86,11 @@ Two types:
       - associated to service account: `confluent api-key create --resource lkc-123456 --service-account sa-123456`
     - a Confluent Cloud Schema Registry (Schema Registry API key), - `confluent api-key create --resource lsrc-123456`
     - Flink (Flink API key scoped to an Environment + Region pair), - `confluent api-key create --resource flink --cloud aws --region us-east-1`
+      - Required to access the Flink compute pools and statements in a specified region.
     - a ksqlDB application. - `confluent api-key create --resource lksqlc-123456`
+      - Required to interact with your ksqlDB applications in Confluent Cloud.
     - TableFlow - `confluent api-key create --resource tableflow`
+      - Required to interact with Tableflow Iceberg REST catalog.
 
 ```bash
 # Manage the API keys of all resources (cluster, SR, ksqlDB, Cloud metrics)
@@ -105,6 +109,18 @@ $ confluent api-key list
 $ confluent api-key store EE44WAH5G3MDFWXO cfltL3cduVkBj4FFPOEpzKuhv6n5aiMNAt7qapNfUDJ+qjmcvclyD3msF/PrOHog
 $ confluent api-key use EE44WAH5G3MDFWXO
 ```
+
+Best practices for Using API Keys
+
+- Ensure only service account API keys are used in production
+- User account API keys recommended only for development and testing 
+- Delete unneeded API keys and service accounts
+- Rotate API keys regularly:
+  - Create a new API key
+  - Update the resource or application to use the new API key 
+  - Delete the old API key
+
+- If a user leaves and a user account is deleted, all API keys created with that user account are deleted, which might break applications.
 
 ### Producer / Consumer
 
