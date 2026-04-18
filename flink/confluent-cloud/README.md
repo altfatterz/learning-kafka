@@ -374,7 +374,6 @@ $ confluent flink statement stop <my-statement>
 - Deploy a Flink SQL Statement on `Confluent Cloud for Apache Flink` with dbt (data build tool)
   - https://docs.confluent.io/cloud/current/flink/operate-and-deploy/deploy-flink-dbt.html
 
-
 ### Clean up
 
 ```bash
