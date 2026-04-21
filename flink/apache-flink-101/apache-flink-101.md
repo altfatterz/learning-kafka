@@ -288,3 +288,19 @@ GroupAggregate(select=[COUNT(*) AS count])
  |
 ```
 
+### Stateful Stream processing
+
+More info here: https://docs.confluent.io/cloud/current/flink/concepts/overview.html#stateful-stream-processing
+
+Query types:
+- `Stateless Queries`
+  - ex: filtering, projection/transformation
+- `Materializing Queries` - stateful
+  - group by aggregations
+  - joins
+- `Temporal Queries` - keeping state is limited to the time window
+  - time-windowed aggregations
+
+- Flink keeps it's state `local` for high performance, and for fault tolerance it `checkpoints` it's state by copying it to remote object store like S3 
+
+
