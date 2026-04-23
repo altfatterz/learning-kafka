@@ -37,6 +37,7 @@ WITH (
 - `event time` - counting the events based on when it occured rather than when it is processed.
 
 - In general, the use of `event time` is to be preferred, but for this exercise, we will experiment with windows that use processing time.
+- For `event time` we would need to define `watermark` which will be introduced later, for time defined as `PROCTIME()` no watermark is needed.
 - `Processing time` windowing requires adding a timestamp column that is tied to the system's time-of-day clock.
 
 ```bash

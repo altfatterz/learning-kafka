@@ -303,4 +303,4 @@ Query types:
 
 - Flink keeps it's state `local` for high performance, and for fault tolerance it `checkpoints` it's state by copying it to remote object store like S3 
 
-
+### Event Time and Watermarks - TODO
